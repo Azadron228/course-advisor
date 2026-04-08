@@ -12,6 +12,16 @@ class TestScaffolding(unittest.TestCase):
     def test_frontend_requirements_exists(self):
         self.assertTrue(os.path.exists('frontend/requirements.txt'), "frontend/requirements.txt is missing")
 
+    def test_frontend_requirements_content(self):
+        requirements_path = 'frontend/requirements.txt'
+        if not os.path.exists(requirements_path):
+             self.skipTest("frontend/requirements.txt is missing")
+        with open(requirements_path, 'r') as f:
+            content = f.read()
+        self.assertIn('streamlit', content)
+        self.assertIn('httpx', content)
+        self.assertIn('pandas', content)
+
     def test_docker_compose_services(self):
         with open('docker-compose.yml', 'r') as f:
             config = yaml.safe_load(f)
