@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic-ai
+psycopg[binary]
+pgvector
+beautifulsoup4
+openai
