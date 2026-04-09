@@ -1,4 +1,6 @@
+import os
 from pydantic_ai import Agent
+from pydantic_ai.models.test import TestModel
 from pydantic import BaseModel, Field
 
 class AgentRecommendation(BaseModel):
@@ -7,9 +9,12 @@ class AgentRecommendation(BaseModel):
     tags: list[str] = Field(description="Short tags describing the fit, e.g., 'Matches interests', 'Fills gap'")
 
 # Define the agent
+model = 'openai:gpt-4o'
+if not os.getenv("OPENAI_API_KEY"):
+    model = TestModel()
+
 recommendation_agent = Agent(
-    'openai:gpt-4o', 
-    result_type=AgentRecommendation,
+    model, 
     system_prompt=(
         "You are a professional university advisor. "
         "Your task is to analyze a student's transcript and current skills "

@@ -18,13 +18,13 @@ class ContentScorer:
         # 3. Query pgvector for cosine similarity to course.embedding
         # PostgreSQL <=> is cosine distance, so 1 - distance = similarity
         with get_connection() as conn:
+            # We need to register vector on the connection
+            from pgvector.psycopg import register_vector
+            register_vector(conn)
+            
             with conn.cursor() as cur:
-                # We need to register vector on every cursor if using pgvector-python
-                from pgvector.psycopg import register_vector
-                register_vector(cur)
-                
                 cur.execute(
-                    "SELECT 1 - (embedding <=> %s) AS score FROM courses WHERE id = %s",
+                    "SELECT 1 - (embedding <=> %s::vector) AS score FROM courses WHERE id = %s",
                     (vector, course_id)
                 )
                 result = cur.fetchone()

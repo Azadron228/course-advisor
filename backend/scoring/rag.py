@@ -17,5 +17,5 @@ class RAGScorer:
             "Evaluate how well this course fits the student."
         )
         
-        result = await recommendation_agent.run(user_prompt)
+        result = await recommendation_agent.run(user_prompt, result_type=AgentRecommendation)
         return result.data

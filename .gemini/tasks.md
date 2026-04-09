@@ -8,4 +8,4 @@
 - [x] Task 6: PydanticAI Agent & RAG Scorer <!-- id: 6 -->
 - [x] Task 7: Hybrid Scorer Orchestration <!-- id: 7 -->
 - [x] Task 8: Streamlit UI <!-- id: 8 -->
-- [ ] Task 9: Seed Data & End-to-End Test <!-- id: 9 -->
+- [x] Task 9: Seed Data & End-to-End Test <!-- id: 9 -->

@@ -9,6 +9,7 @@ import json
 
 def get_connection():
     conn = psycopg.connect(DATABASE_URL)
+    from pgvector.psycopg import register_vector
     register_vector(conn)
     return conn
 
