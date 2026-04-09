@@ -91,7 +91,7 @@ The final score is a weighted average of four components:
 - Dynamic list or grid showing recommended courses with their score breakdowns.
 
 ## 6. Success Criteria
-- [ ] Successfully parse a list of transcript entries.
+- [ ] Successfully parse a list of transcript entries from transctipt.html.
 - [ ] Return structured JSON matching `RecommendationResponse`.
 - [ ] Correctly rank courses based on hybrid logic.
 - [ ] Run entirely locally via Docker Compose.

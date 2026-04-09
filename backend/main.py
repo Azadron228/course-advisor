@@ -9,12 +9,16 @@ app = FastAPI()
 scorer = HybridScorer()
 
 @app.post("/recommend", response_model=RecommendationResponse)
-async def get_recommendations(student: Student, preference: UserPreference):
+async def get_recommendations(
+    student: Student, 
+    preference: UserPreference,
+    model_provider: ModelProvider = ModelProvider.OPENAI
+):
     courses = get_all_courses()
     if not courses:
          # Return empty instead of error, Task 9 will add seed data
          return RecommendationResponse(results=[])
-    return await scorer.recommend(student, courses, preference)
+    return await scorer.recommend(student, courses, preference, provider=model_provider)
 
 @app.post("/parse-transcript", response_model=List[TranscriptEntry])
 async def parse_transcript(payload: dict = Body(...)):

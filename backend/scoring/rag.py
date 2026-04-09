@@ -1,8 +1,8 @@
-from backend.agent import recommendation_agent, AgentRecommendation
-from backend.models import Student, Course
+from backend.agent import recommendation_agent, AgentRecommendation, get_model
+from backend.models import Student, Course, ModelProvider
 
 class RAGScorer:
-    async def score(self, student: Student, course: Course) -> AgentRecommendation:
+    async def score(self, student: Student, course: Course, provider: ModelProvider = ModelProvider.OPENAI) -> AgentRecommendation:
         # Construct the prompt
         transcript_summary = ", ".join([e.subject_name for e in student.transcript])
         current_skills = ", ".join(student.current_skills)
@@ -17,5 +17,6 @@ class RAGScorer:
             "Evaluate how well this course fits the student."
         )
         
-        result = await recommendation_agent.run(user_prompt, result_type=AgentRecommendation)
+        model = get_model(provider)
+        result = await recommendation_agent.run(user_prompt, model=model, result_type=AgentRecommendation)
         return result.data

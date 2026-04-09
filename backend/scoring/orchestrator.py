@@ -19,7 +19,8 @@ class HybridScorer:
         self, 
         student: Student, 
         courses: List[Course], 
-        preference: UserPreference
+        preference: UserPreference,
+        provider: ModelProvider = ModelProvider.OPENAI
     ) -> RecommendationResponse:
         results = []
         
@@ -27,7 +28,7 @@ class HybridScorer:
             # 1. Get individual component scores
             content_sim = self.content_scorer.score(student, course.id)
             skill_gap = self.skill_gap_scorer.score(student, course)
-            rag_result = await self.rag_scorer.score(student, course)
+            rag_result = await self.rag_scorer.score(student, course, provider)
             pref_score = self.preference_scorer.score(student, course, preference)
             
             # 2. Apply weights (as per spec section 4)

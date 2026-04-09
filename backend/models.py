@@ -1,6 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+from enum import Enum
+
+class ModelProvider(str, Enum):
+    OPENAI = "openai"
+    OLLAMA = "ollama"
+
 class TranscriptEntry(BaseModel):
     subject_name: str
     credits: float
