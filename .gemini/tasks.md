@@ -7,5 +7,5 @@
 - [x] Task 5: Skill Gap Scorer <!-- id: 5 -->
 - [x] Task 6: PydanticAI Agent & RAG Scorer <!-- id: 6 -->
 - [x] Task 7: Hybrid Scorer Orchestration <!-- id: 7 -->
-- [ ] Task 8: Streamlit UI <!-- id: 8 -->
+- [x] Task 8: Streamlit UI <!-- id: 8 -->
 - [ ] Task 9: Seed Data & End-to-End Test <!-- id: 9 -->
