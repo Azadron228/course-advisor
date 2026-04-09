@@ -5,3 +5,5 @@ psycopg[binary]
 pgvector
 beautifulsoup4
 openai
+alembic
+sqlalchemy

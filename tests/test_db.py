@@ -9,12 +9,9 @@ class TestDatabaseSchema(unittest.TestCase):
         time.sleep(1)
 
     def test_schema_initialization(self):
-        from backend.db import init_db, get_connection
+        from backend.db import get_connection
         
-        # Ensure we can connect and initialize without errors
-        init_db()
-        
-        # Verify the table was created and the vector extension is loaded
+        # Verify the table exists and the vector extension is loaded (assuming migration was run)
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'courses';")
