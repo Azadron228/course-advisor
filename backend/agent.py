@@ -6,7 +6,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field
-from backend.models import ModelProvider
+from models import ModelProvider
 
 class AgentRecommendation(BaseModel):
     score: float = Field(ge=0, le=1, description="Relevance score from 0 to 1")

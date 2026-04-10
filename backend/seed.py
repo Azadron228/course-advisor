@@ -1,5 +1,5 @@
-from backend.db import get_connection
-from backend.embeddings import get_embedding
+from db import get_connection
+from embeddings import get_embedding
 import json
 import os
 
@@ -46,7 +46,7 @@ def seed():
     print("Starting database seeding...")
     with get_connection() as conn:
         with conn.cursor() as cur:
-            from pgvector.psycopg import register_vector
+            from pgvector.psycopg2 import register_vector
             register_vector(cur)
             
             for c in COURSES:

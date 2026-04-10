@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 pydantic-ai
-psycopg[binary]
+psycopg2-binary
 pgvector
 beautifulsoup4
 openai

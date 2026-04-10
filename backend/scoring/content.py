@@ -1,6 +1,6 @@
-from backend.db import get_connection
-from backend.embeddings import get_embedding
-from backend.models import Student
+from db import get_connection
+from embeddings import get_embedding
+from models import Student
 
 class ContentScorer:
     def score(self, student: Student, course_id: str) -> float:
@@ -19,7 +19,7 @@ class ContentScorer:
         # PostgreSQL <=> is cosine distance, so 1 - distance = similarity
         with get_connection() as conn:
             # We need to register vector on the connection
-            from pgvector.psycopg import register_vector
+            from pgvector.psycopg2 import register_vector
             register_vector(conn)
             
             with conn.cursor() as cur:

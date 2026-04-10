@@ -1,4 +1,4 @@
-from backend.models import Student, Course, UserPreference
+from models import Student, Course, UserPreference
 
 class PreferenceScorer:
     def score(self, student: Student, course: Course, preference: UserPreference) -> float:

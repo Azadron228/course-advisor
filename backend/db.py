@@ -1,15 +1,15 @@
 import os
-import psycopg
-from pgvector.psycopg import register_vector
+import psycopg2
+from pgvector.psycopg2 import register_vector
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://advisor:advisor_password@localhost:5432/course_advisor")
 
-from backend.models import Course
+from models import Course
 import json
 
 def get_connection():
-    conn = psycopg.connect(DATABASE_URL)
-    from pgvector.psycopg import register_vector
+    conn = psycopg2.connect(DATABASE_URL)
+    from pgvector.psycopg2 import register_vector
     register_vector(conn)
     return conn
 

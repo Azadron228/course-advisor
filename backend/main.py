@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Body
-from backend.models import Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider
-from backend.scoring.orchestrator import HybridScorer
-from backend.parser import parse_transcript_html
-from backend.db import get_all_courses
+from models import Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider
+from scoring.orchestrator import HybridScorer
+from parser import parse_transcript_html
+from db import get_all_courses
 from typing import List
 
 app = FastAPI()
