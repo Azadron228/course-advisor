@@ -1,5 +1,5 @@
-from db import get_connection
-from embeddings import get_embedding
+from  app.db import get_connection
+from  app.embeddings import get_embedding
 import json
 import os
 

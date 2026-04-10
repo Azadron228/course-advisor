@@ -1,6 +1,6 @@
-from db import get_connection
-from embeddings import get_embedding
-from models import Student
+from  app.db import get_connection
+from  app.embeddings import get_embedding
+from  app.models import Student
 
 class ContentScorer:
     def score(self, student: Student, course_id: str) -> float:

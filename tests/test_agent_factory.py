@@ -1,8 +1,8 @@
 import os
 import unittest
 from unittest.mock import patch
-from backend.agent import get_model
-from backend.models import ModelProvider
+from backend.app.agent import get_model
+from backend.app.models import ModelProvider
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.models.test import TestModel

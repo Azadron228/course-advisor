@@ -39,7 +39,7 @@ recommendation_agent = Agent(
 - [ ] **Step 2: Implement RAG Scorer**
 
 ```python
-from backend.agent import recommendation_agent
+from  agent import recommendation_agent
 
 class RAGScorer:
     async def score(self, student: Student, course: Course) -> AgentRecommendation:

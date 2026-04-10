@@ -1,13 +1,13 @@
 from typing import List
-from models import (
+from  app.models import (
     Student, Course, UserPreference, 
     RecommendationResponse, RecommendationResult, ScoreBreakdown,
     ModelProvider
 )
-from scoring.content import ContentScorer
-from scoring.skill_gap import SkillGapScorer
-from scoring.rag import RAGScorer
-from scoring.preference import PreferenceScorer
+from  app.scoring.content import ContentScorer
+from  app.scoring.skill_gap import SkillGapScorer
+from  app.scoring.rag import RAGScorer
+from  app.scoring.preference import PreferenceScorer
 
 class HybridScorer:
     def __init__(self):

@@ -6,7 +6,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field
-from models import ModelProvider
+from  app.models import ModelProvider
 
 class AgentRecommendation(BaseModel):
     score: float = Field(ge=0, le=1, description="Relevance score from 0 to 1")
@@ -24,7 +24,7 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO):
             provider = ModelProvider.OLLAMA
         else:
             return TestModel()
-
+        
     if provider == ModelProvider.GEMINI:
         # GoogleModel automatically uses GOOGLE_API_KEY from env
         return GoogleModel(

@@ -1,5 +1,5 @@
 import unittest
-from backend.models import TranscriptEntry, Student, Course, ModelProvider
+from backend.app.models import TranscriptEntry, Student, Course, ModelProvider
 from pydantic import ValidationError
 
 class TestModels(unittest.TestCase):

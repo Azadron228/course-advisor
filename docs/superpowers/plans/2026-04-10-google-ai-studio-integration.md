@@ -60,7 +60,7 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.models.gemini import GeminiModel # Add this
 from pydantic import BaseModel, Field
-from backend.models import ModelProvider
+from  models import ModelProvider
 
 # ... (AgentRecommendation class remains same)
 
@@ -165,8 +165,8 @@ git commit -m "refactor: default to AUTO provider and fix frontend API call"
 import os
 import unittest
 from unittest.mock import patch
-from backend.agent import get_model
-from backend.models import ModelProvider
+from  agent import get_model
+from  models import ModelProvider
 from pydantic_ai.models.gemini import GeminiModel
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.models.test import TestModel

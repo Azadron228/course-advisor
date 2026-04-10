@@ -1,4 +1,4 @@
-from models import Student, Course
+from  app.models import Student, Course
 
 class SkillGapScorer:
     def score(self, student: Student, course: Course) -> float:

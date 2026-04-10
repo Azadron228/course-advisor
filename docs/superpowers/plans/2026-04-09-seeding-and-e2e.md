@@ -24,8 +24,8 @@ Include a mix of CS courses (AI, Web, Data Science) with descriptions and skills
 - [ ] **Step 2: Implement insertion logic**
 
 ```python
-from backend.db import get_connection
-from backend.embeddings import get_embedding
+from  db import get_connection
+from  embeddings import get_embedding
 import json
 
 COURSES = [

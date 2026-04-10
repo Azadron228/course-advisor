@@ -9,7 +9,7 @@ class TestDatabaseSchema(unittest.TestCase):
         time.sleep(1)
 
     def test_schema_initialization(self):
-        from backend.db import get_connection
+        from backend.app.db import get_connection
         
         # Verify the table exists and the vector extension is loaded (assuming migration was run)
         with get_connection() as conn:

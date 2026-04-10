@@ -1,6 +1,6 @@
 import unittest
-from backend.scoring.skill_gap import SkillGapScorer
-from backend.models import Student, Course
+from backend.app.scoring.skill_gap import SkillGapScorer
+from backend.app.models import Student, Course
 
 class TestSkillGapScorer(unittest.TestCase):
     def test_skill_gap_score(self):

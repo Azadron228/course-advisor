@@ -26,8 +26,8 @@ Implement `get_embedding` in `backend/embeddings.py` using the `openai` client. 
 
 ```python
 import unittest
-from backend.scoring.content import ContentScorer
-from backend.models import Student, TranscriptEntry
+from  scoring.content import ContentScorer
+from  models import Student, TranscriptEntry
 
 class TestContentScorer(unittest.TestCase):
     def test_score_calculation(self):
@@ -44,8 +44,8 @@ class TestContentScorer(unittest.TestCase):
 - [ ] **Step 3: Implement Content Scorer**
 
 ```python
-from backend.db import get_connection
-from backend.embeddings import get_embedding
+from  db import get_connection
+from  embeddings import get_embedding
 
 class ContentScorer:
     def score(self, student: Student, course_id: str) -> float:
@@ -68,8 +68,8 @@ class ContentScorer:
 
 ```python
 import unittest
-from backend.scoring.skill_gap import SkillGapScorer
-from backend.models import Student, Course
+from  scoring.skill_gap import SkillGapScorer
+from  models import Student, Course
 
 class TestSkillGapScorer(unittest.TestCase):
     def test_skill_gap_score(self):

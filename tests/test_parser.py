@@ -1,5 +1,5 @@
 import unittest
-from backend.parser import parse_transcript_html
+from backend.app.parser import parse_transcript_html
 
 class TestParser(unittest.TestCase):
     def test_parse_transcript_real_sample(self):

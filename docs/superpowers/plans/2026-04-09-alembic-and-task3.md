@@ -108,7 +108,7 @@ Run: `pytest tests/test_db.py`
 
 ```python
 import unittest
-from backend.models import TranscriptEntry, Student, Course
+from  models import TranscriptEntry, Student, Course
 
 class TestModels(unittest.TestCase):
     def test_transcript_entry_validation(self):
@@ -160,7 +160,7 @@ class Course(BaseModel):
 
 ```python
 import unittest
-from backend.parser import parse_transcript_html
+from  parser import parse_transcript_html
 
 class TestParser(unittest.TestCase):
     def test_parse_transcript(self):

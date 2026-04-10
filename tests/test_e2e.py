@@ -1,8 +1,8 @@
 import unittest
 import asyncio
-from backend.parser import parse_transcript_html
-from backend.scoring.orchestrator import HybridScorer
-from backend.models import Student, UserPreference, Course
+from backend.app.parser import parse_transcript_html
+from backend.app.scoring.orchestrator import HybridScorer
+from backend.app.models import Student, UserPreference, Course
 import os
 
 class TestEndToEnd(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestEndToEnd(unittest.TestCase):
         
         # 4. Test Orchestrator
         from unittest.mock import AsyncMock
-        from backend.agent import AgentRecommendation
+        from backend.app.agent import AgentRecommendation
         
         # Mock RAGScorer to avoid agent complexity in this test
         self.scorer.rag_scorer.score = AsyncMock(return_value=AgentRecommendation(

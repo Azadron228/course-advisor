@@ -1,5 +1,5 @@
-from agent import recommendation_agent, AgentRecommendation, get_model
-from models import Student, Course, ModelProvider
+from  app.agent import recommendation_agent, AgentRecommendation, get_model
+from  app.models import Student, Course, ModelProvider
 
 class RAGScorer:
     async def score(self, student: Student, course: Course, provider: ModelProvider = ModelProvider.AUTO) -> AgentRecommendation:
@@ -19,4 +19,4 @@ class RAGScorer:
         
         model = get_model(provider)
         result = await recommendation_agent.run(user_prompt, model=model, output_type=AgentRecommendation)
-        return result.data
+        return result.output
