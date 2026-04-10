@@ -1,8 +1,10 @@
 import os
 from pydantic_ai import Agent
 from pydantic_ai.models.test import TestModel
-from pydantic_ai.models.openai import OpenAIModel
-from pydantic_ai.models.gemini import GeminiModel
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field
 from backend.models import ModelProvider
 
@@ -24,30 +26,33 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO):
             return TestModel()
 
     if provider == ModelProvider.GEMINI:
-        return GeminiModel(
+        # GoogleModel automatically uses GOOGLE_API_KEY from env
+        return GoogleModel(
             model_name=os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash"),
-            api_key=os.getenv("GOOGLE_API_KEY"),
         )
 
     if provider == ModelProvider.OLLAMA:
         base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        return OpenAIModel(
-            model_name='llama3',
+        provider_obj = OpenAIProvider(
             base_url=f"{base_url}/v1",
-            api_key='ollama',
+            api_key='ollama', # Placeholder for local models
+        )
+        return OpenAIChatModel(
+            model_name='llama3',
+            provider=provider_obj,
         )
     
     if provider == ModelProvider.OPENAI:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
+        # OpenAIChatModel automatically uses OPENAI_API_KEY from env
+        if not os.getenv("OPENAI_API_KEY"):
             return TestModel()
-        return OpenAIModel('gpt-4o', api_key=api_key)
+        return OpenAIChatModel('gpt-4o')
 
     return TestModel()
 
 # Define the agent shell (model is passed during run)
 recommendation_agent = Agent(
-    'gemini-1.5-flash', # Placeholder, overwritten in run
+    TestModel(), # Placeholder, overwritten in run
     system_prompt=(
         "You are a professional university advisor. "
         "Your task is to analyze a student's transcript and current skills "
