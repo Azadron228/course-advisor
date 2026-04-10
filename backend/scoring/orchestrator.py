@@ -1,7 +1,8 @@
 from typing import List
 from backend.models import (
     Student, Course, UserPreference, 
-    RecommendationResponse, RecommendationResult, ScoreBreakdown
+    RecommendationResponse, RecommendationResult, ScoreBreakdown,
+    ModelProvider
 )
 from backend.scoring.content import ContentScorer
 from backend.scoring.skill_gap import SkillGapScorer
@@ -20,7 +21,7 @@ class HybridScorer:
         student: Student, 
         courses: List[Course], 
         preference: UserPreference,
-        provider: ModelProvider = ModelProvider.OPENAI
+        provider: ModelProvider = ModelProvider.AUTO
     ) -> RecommendationResponse:
         results = []
         

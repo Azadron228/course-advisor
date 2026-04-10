@@ -1,8 +1,14 @@
 import unittest
-from backend.models import TranscriptEntry, Student, Course
+from backend.models import TranscriptEntry, Student, Course, ModelProvider
 from pydantic import ValidationError
 
 class TestModels(unittest.TestCase):
+    def test_model_provider_enum(self):
+        self.assertEqual(ModelProvider.OPENAI, "openai")
+        self.assertEqual(ModelProvider.OLLAMA, "ollama")
+        self.assertEqual(ModelProvider.GEMINI, "gemini")
+        self.assertEqual(ModelProvider.AUTO, "auto")
+
     def test_transcript_entry_validation(self):
         entry = TranscriptEntry(subject_name="Math", credits=6.0, mark=85.0)
         self.assertEqual(entry.subject_name, "Math")
