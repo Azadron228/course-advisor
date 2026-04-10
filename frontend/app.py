@@ -49,7 +49,6 @@ if st.button("Get Recommendations"):
                     
                     rec_resp = httpx.post(
                         f"{BACKEND_URL}/recommend", 
-                        params={"model_provider": model_provider},
                         json={"student": student_data, "preference": pref_data}, 
                         timeout=60.0 # Increased timeout for local LLM
                     )

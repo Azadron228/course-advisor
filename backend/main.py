@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Body
-from backend.models import Student, UserPreference, RecommendationResponse, TranscriptEntry
+from backend.models import Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider
 from backend.scoring.orchestrator import HybridScorer
 from backend.parser import parse_transcript_html
 from backend.db import get_all_courses
@@ -12,7 +12,7 @@ scorer = HybridScorer()
 async def get_recommendations(
     student: Student, 
     preference: UserPreference,
-    model_provider: ModelProvider = ModelProvider.OPENAI
+    model_provider: ModelProvider = ModelProvider.AUTO
 ):
     courses = get_all_courses()
     if not courses:
