@@ -10,6 +10,8 @@ from ..scoring.skill_gap import SkillGapScorer
 from ..scoring.rag import RAGScorer
 from ..scoring.preference import PreferenceScorer
 
+from ..analysis_agent import analysis_agent, AnalysisDeps, is_capable_model, parse_global_analysis, GlobalAnalysis
+
 logger = logging.getLogger(__name__)
 
 class HybridScorer:
@@ -28,15 +30,14 @@ class HybridScorer:
     ) -> RecommendationResponse:
         results = []
         
+        # 1. Individual course scoring
         for course in courses:
-            # 1. Get individual component scores
+            # ... (existing scoring logic)
             content_sim = self.content_scorer.score(student, course.id)
             skill_gap = self.skill_gap_scorer.score(student, course)
             rag_result = await self.rag_scorer.score(student, course, provider)
             pref_score = self.preference_scorer.score(student, course, preference)
             
-            # 2. Apply weights (as per spec section 4)
-            # Content: 30%, Skill Gap: 30%, RAG: 20%, Preference: 20%
             total_score = (
                 (content_sim * 0.3) +
                 (skill_gap * 0.3) +
@@ -44,14 +45,6 @@ class HybridScorer:
                 (pref_score * 0.2)
             )
             
-            logger.info(
-                f"Course {course.id} ({course.subject_name}) scores: "
-                f"content={content_sim:.2f}, skill_gap={skill_gap:.2f}, "
-                f"rag={rag_result.score:.2f}, preference={pref_score:.2f} | "
-                f"total={total_score:.2f}"
-            )
-            
-            # 3. Build breakdown
             breakdown = ScoreBreakdown(
                 skill_gap=skill_gap,
                 content_sim=content_sim,
@@ -70,7 +63,42 @@ class HybridScorer:
                 reason_tags=rag_result.tags
             ))
             
-        # 4. Sort by total score descending
         results.sort(key=lambda x: x.score, reverse=True)
         
-        return RecommendationResponse(results=results)
+        # 2. Global Analysis (Skill Gap & Learning Path)
+        # Requirement: Add analysis results and learning path
+        analysis_data = None
+        learning_path = []
+        
+        try:
+            model = get_model(provider)
+            deps = AnalysisDeps(student=student, courses=courses)
+            
+            if is_capable_model(model):
+                analysis_res = await analysis_agent.run(
+                    "Perform global analysis.",
+                    model=model,
+                    deps=deps
+                )
+                analysis_data = analysis_res.output.skill_gap_analysis
+                learning_path = analysis_res.output.learning_path
+            else:
+                # Basic mock/heuristic fallback for weak models if needed, 
+                # but for now we try to run it.
+                analysis_res = await analysis_agent.run(
+                    "Perform global analysis. Output valid JSON matching GlobalAnalysis schema.",
+                    model=model,
+                    deps=deps,
+                    output_type=str
+                )
+                parsed = parse_global_analysis(analysis_res.output)
+                analysis_data = parsed.skill_gap_analysis
+                learning_path = parsed.learning_path
+        except Exception as e:
+            logger.error(f"Global analysis failed: {e}")
+
+        return RecommendationResponse(
+            results=results,
+            skill_gap_analysis=analysis_data,
+            learning_path=learning_path
+        )

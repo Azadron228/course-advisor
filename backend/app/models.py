@@ -78,5 +78,24 @@ class RecommendationResult(BaseModel):
     is_external: bool = False
     url: Optional[str] = None
 
+class DomainGap(BaseModel):
+    domain: str
+    gap_score: float = Field(ge=0, le=1)
+    missing_skills: List[str]
+
+class SkillGapAnalysis(BaseModel):
+    overall_gap_score: float
+    domain_breakdown: List[DomainGap]
+    critical_skills: List[str]
+
+class LearningPathStep(BaseModel):
+    order: int
+    title: str
+    description: str
+    resource_id: Optional[str] = None # Internal course ID or external URL
+    is_external: bool = False
+
 class RecommendationResponse(BaseModel):
     results: List[RecommendationResult] = Field(default_factory=list)
+    skill_gap_analysis: Optional[SkillGapAnalysis] = None
+    learning_path: List[LearningPathStep] = Field(default_factory=list)

@@ -165,7 +165,7 @@ if st.button("🚀 Generate Personalized Recommendations"):
                         f"{BACKEND_URL}/recommend", 
                         json={"student": student_data, "preference": pref_data}, 
                         headers=headers,
-                        timeout=90.0
+                        timeout=120.0 # Increased for global analysis
                     )
                     
                     if rec_resp.status_code == 401:
@@ -176,12 +176,50 @@ if st.button("🚀 Generate Personalized Recommendations"):
                         st.error(f"Error: {rec_resp.text}")
                         st.stop()
                         
-                    recommendations = rec_resp.json()["results"]
+                    data = rec_resp.json()
+                    recommendations = data.get("results", [])
+                    analysis = data.get("skill_gap_analysis")
+                    path = data.get("learning_path", [])
                     
+                    # --- Analysis Results ---
+                    if analysis:
+                        st.divider()
+                        st.header("📊 Your Skill Gap Analysis")
+                        
+                        col_a, col_b = st.columns([1, 2])
+                        with col_a:
+                            st.metric("Overall Gap Score", f"{analysis['overall_gap_score']:.2f}")
+                            st.write("**Critical Skills Missing:**")
+                            for skill in analysis.get('critical_skills', []):
+                                st.error(f"缺失: {skill}")
+                        
+                        with col_b:
+                            st.write("**Gap Score by Domain:**")
+                            for domain in analysis.get('domain_breakdown', []):
+                                st.progress(domain['gap_score'], text=f"{domain['domain']}: {domain['gap_score']:.2f}")
+                                with st.expander(f"See missing {domain['domain']} skills"):
+                                    st.write(", ".join(domain.get('missing_skills', [])))
+
+                    # --- Learning Path ---
+                    if path:
+                        st.divider()
+                        st.header("🗺️ Recommended Learning Path")
+                        for step in sorted(path, key=lambda x: x['order']):
+                            with st.chat_message("user" if step['order'] % 2 == 0 else "assistant"):
+                                st.write(f"**Step {step['order']}: {step['title']}**")
+                                st.write(step['description'])
+                                if step.get('resource_id'):
+                                    if step.get('is_external'):
+                                        st.link_button("🌐 External Resource", step['resource_id'])
+                                    else:
+                                        st.info(f"📍 Course ID: {step['resource_id']}")
+
+                    # --- Recommendations ---
                     if not recommendations:
                         st.warning("No matches found.")
                     else:
-                        st.success("Found your top matches!")
+                        st.divider()
+                        st.header("🔝 Top Recommended Courses")
                         for idx, rec in enumerate(recommendations):
                             score_val = rec.get('score', 0.0)
                             score_pct = score_val * 100

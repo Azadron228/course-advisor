@@ -1,6 +1,7 @@
 from datetime import timedelta
 from fastapi import FastAPI, HTTPException, Body, UploadFile, File, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from .models import (
     Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider,
     User, UserCreate, Token, UserInDB
@@ -19,6 +20,16 @@ from rq import Queue
 from rq.job import Job
 
 app = FastAPI()
+
+# Allow CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 scorer = HybridScorer()
 
 # Redis connection
