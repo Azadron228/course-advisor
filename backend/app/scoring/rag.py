@@ -1,5 +1,5 @@
-from  app.agent import recommendation_agent, AgentRecommendation, get_model, AgentDeps, is_capable_model, parse_agent_recommendation
-from  app.models import Student, Course, ModelProvider
+from ..agent import recommendation_agent, AgentRecommendation, get_model, AgentDeps, is_capable_model, parse_agent_recommendation
+from ..models import Student, Course, ModelProvider
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,8 +24,18 @@ class RAGScorer:
                 return result.output
             else:
                 # Use str + manual parse for weak models
+                # Requirement 1: Provide explicit schema for weak models
+                prompt = (
+                    "Evaluate how well this course fits the student.\n\n"
+                    "Output MUST be ONLY a valid JSON object with the following structure:\n"
+                    "{\n"
+                    "  \"score\": 0.85,\n"
+                    "  \"reasoning\": \"Detailed explanation here...\",\n"
+                    "  \"tags\": [\"Tag 1\", \"Tag 2\"]\n"
+                    "}"
+                )
                 result = await recommendation_agent.run(
-                    "Evaluate how well this course fits the student. Output ONLY a valid JSON object matching the AgentRecommendation schema.",
+                    prompt,
                     model=model,
                     deps=deps,
                     output_type=str

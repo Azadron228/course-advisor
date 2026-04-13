@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException, Body
-from  app.models import Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider
-from  app.scoring.orchestrator import HybridScorer
-from  app.parser import parse_transcript_html
-from  app.db import get_all_courses
+from fastapi import FastAPI, HTTPException, Body, UploadFile, File
+from .models import Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider
+from .scoring.orchestrator import HybridScorer
+from .parser import parse_transcript_html
+from .db import get_all_courses
 from typing import List
 
 app = FastAPI()
@@ -11,21 +11,27 @@ scorer = HybridScorer()
 @app.post("/recommend", response_model=RecommendationResponse)
 async def get_recommendations(
     student: Student, 
-    preference: UserPreference,
-    model_provider: ModelProvider = ModelProvider.AUTO
+    preference: UserPreference
 ):
     courses = get_all_courses()
     if not courses:
          # Return empty instead of error, Task 9 will add seed data
          return RecommendationResponse(results=[])
-    return await scorer.recommend(student, courses, preference, provider=model_provider)
+    # Defaulting to AUTO since it was removed from query
+    return await scorer.recommend(student, courses, preference, provider=ModelProvider.AUTO)
 
 @app.post("/parse-transcript", response_model=List[TranscriptEntry])
-async def parse_transcript(payload: dict = Body(...)):
-    html = payload.get("html", "")
-    if not html:
-        raise HTTPException(status_code=400, detail="HTML content is required")
-    return parse_transcript_html(html)
+async def parse_transcript(file: UploadFile = File(...)):
+    if not file.filename.endswith('.html'):
+        raise HTTPException(status_code=400, detail="Only HTML files are supported")
+    
+    content = await file.read()
+    try:
+        html_content = content.decode('utf-8')
+    except UnicodeDecodeError:
+        html_content = content.decode('latin-1') # Fallback
+        
+    return parse_transcript_html(html_content)
 
 if __name__ == "__main__":
     import uvicorn

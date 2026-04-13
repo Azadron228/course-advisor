@@ -1,13 +1,16 @@
+import logging
 from typing import List
-from  app.models import (
+from ..models import (
     Student, Course, UserPreference, 
     RecommendationResponse, RecommendationResult, ScoreBreakdown,
     ModelProvider
 )
-from  app.scoring.content import ContentScorer
-from  app.scoring.skill_gap import SkillGapScorer
-from  app.scoring.rag import RAGScorer
-from  app.scoring.preference import PreferenceScorer
+from ..scoring.content import ContentScorer
+from ..scoring.skill_gap import SkillGapScorer
+from ..scoring.rag import RAGScorer
+from ..scoring.preference import PreferenceScorer
+
+logger = logging.getLogger(__name__)
 
 class HybridScorer:
     def __init__(self):
@@ -39,6 +42,13 @@ class HybridScorer:
                 (skill_gap * 0.3) +
                 (rag_result.score * 0.2) +
                 (pref_score * 0.2)
+            )
+            
+            logger.info(
+                f"Course {course.id} ({course.subject_name}) scores: "
+                f"content={content_sim:.2f}, skill_gap={skill_gap:.2f}, "
+                f"rag={rag_result.score:.2f}, preference={pref_score:.2f} | "
+                f"total={total_score:.2f}"
             )
             
             # 3. Build breakdown

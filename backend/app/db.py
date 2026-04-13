@@ -4,7 +4,7 @@ from pgvector.psycopg2 import register_vector
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://advisor:advisor_password@localhost:5432/course_advisor")
 
-from  app.models import Course
+from .models import Course
 import json
 
 def get_connection():

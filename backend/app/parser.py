@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import List
-from  app.models import TranscriptEntry
+from .models import TranscriptEntry
 
 def parse_transcript_html(html_content: str) -> List[TranscriptEntry]:
     soup = BeautifulSoup(html_content, 'html.parser')

@@ -10,15 +10,28 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.google import GoogleProvider
-from pydantic import BaseModel, Field, model_validator
-from  app.models import ModelProvider, Student, Course
+from pydantic import BaseModel, Field, model_validator, AliasChoices
+from .models import ModelProvider, Student, Course
 
 logger = logging.getLogger(__name__)
 
 class AgentRecommendation(BaseModel):
-    score: float = Field(ge=0, le=1, description="Relevance score from 0 to 1")
-    reasoning: str = Field(description="Brief explanation of why this course was recommended")
-    tags: List[str] = Field(description="Short tags describing the fit, e.g., 'Matches interests', 'Fills gap'")
+    score: float = Field(
+        default=0.0,
+        ge=0, le=1, 
+        validation_alias=AliasChoices('score', 'relevanceScore', 'relevance_score'),
+        description="Relevance score from 0 to 1"
+    )
+    reasoning: str = Field(
+        default="No reasoning provided.",
+        validation_alias=AliasChoices('reasoning', 'conclusiveReasoning', 'conclusive_reasoning', 'reason'),
+        description="Brief explanation of why this course was recommended"
+    )
+    tags: List[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices('tags', 'descriptionTags', 'description_tags', 'reason_tags'),
+        description="Short tags describing the fit, e.g., 'Matches interests', 'Fills gap'"
+    )
 
     @model_validator(mode='after')
     def validate_cross_fields(self) -> 'AgentRecommendation':
@@ -56,7 +69,7 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO):
             api_key='ollama',
         )
         return OpenAIChatModel(
-            model_name='llama3',
+            model_name='llama3.2', # Standardized to llama3.2
             provider=provider_obj,
         )
     
@@ -67,9 +80,6 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO):
 
     return TestModel()
 
-# Requirement 3: retries=3
-# Requirement 2: deps_type=AgentDeps
-# Requirement 6: Keep agents stateless
 recommendation_agent = Agent(
     model=get_model(),
     output_type=AgentRecommendation,
@@ -79,7 +89,6 @@ recommendation_agent = Agent(
 
 @recommendation_agent.system_prompt
 def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
-    # Requirement 2: remove globals from prompt, use deps
     student = ctx.deps.student
     course = ctx.deps.course
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
@@ -90,7 +99,9 @@ def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
         f"You are a professional university advisor. "
         f"Your task is to analyze a student's transcript and current skills "
         f"against a specific course description and its taught skills. "
-        f"Provide a relevance score (0-1), a concise reasoning, and descriptive tags.\n\n"
+        f"Provide a relevance score (0-1) in a field named 'score', "
+        f"a concise reasoning in a field named 'reasoning', "
+        f"and descriptive tags in a field named 'tags'.\n\n"
         f"Student Transcript: {transcript_summary}\n"
         f"Student Current Skills: {current_skills}\n"
         f"Course: {course.subject_name}\n"
@@ -100,7 +111,6 @@ def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
     )
 
 def is_capable_model(model: Any) -> bool:
-    # Requirement 1 helper
     model_name = ""
     if hasattr(model, 'model_name'):
         model_name = model.model_name
@@ -113,17 +123,15 @@ def is_capable_model(model: Any) -> bool:
     return any(p in model_name.lower() for p in capable_prefixes)
 
 def parse_agent_recommendation(text: str) -> AgentRecommendation:
-    # Requirement 1 helper
     try:
         data = json.loads(text)
         return AgentRecommendation(**data)
-    except (json.JSONDecodeError, ValueError):
-        # Regex fallback
+    except (json.JSONDecodeError, ValueError) as e:
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
              try:
                  data = json.loads(match.group())
                  return AgentRecommendation(**data)
-             except (json.JSONDecodeError, ValueError):
-                 pass
-        raise ValueError(f"Could not parse AgentRecommendation from LLM output: {text}")
+             except Exception as inner_e:
+                 raise ValueError(f"Found JSON but failed validation: {inner_e}") from inner_e
+        raise ValueError(f"Could not parse AgentRecommendation from LLM output: {text}") from e
