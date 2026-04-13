@@ -10,6 +10,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   backend:
     build: ./backend
     ports:
@@ -18,10 +25,32 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=http://ollama:11434 
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - REDIS_URL=redis://redis:6379
     depends_on:
       - db
       - ollama
+      - redis
+    develop:
+      watch: 
+        - action: sync
+          path: ./backend
+          target: /app
+
+  rq-worker:
+    build: ./backend
+    command: rq worker --url redis://redis:6379
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - REDIS_URL=redis://redis:6379
+      - PYTHONPATH=/app
+    depends_on:
+      - db
+      - ollama
+      - redis
     develop:
       watch: 
         - action: sync
@@ -52,3 +81,4 @@ services:
 volumes:
   postgres_data:
   ollama_data:
+  redis_data:
