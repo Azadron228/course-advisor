@@ -27,6 +27,7 @@ services:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
       - OLLAMA_BASE_URL=http://ollama:11434
       - REDIS_URL=redis://redis:6379
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
     depends_on:
       - db
       - ollama
@@ -46,6 +47,7 @@ services:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
       - OLLAMA_BASE_URL=http://ollama:11434
       - REDIS_URL=redis://redis:6379
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PYTHONPATH=/app
     depends_on:
       - db

@@ -12,8 +12,12 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from .models import ModelProvider, Student, Course
+from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)
+
+# Initialize Tavily client
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 class AgentRecommendation(BaseModel):
     score: float = Field(
@@ -89,6 +93,7 @@ recommendation_agent = Agent(
 
 @recommendation_agent.system_prompt
 def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
+    # Requirement 2: remove globals from prompt, use deps
     student = ctx.deps.student
     course = ctx.deps.course
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
@@ -104,13 +109,41 @@ def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
         f"and descriptive tags in a field named 'tags'.\n\n"
         f"Student Transcript: {transcript_summary}\n"
         f"Student Current Skills: {current_skills}\n"
-        f"Course: {course.subject_name}\n"
-        f"Course Description: {course.description}\n"
-        f"Skills Taught in Course: {course_skills}\n"
-        "Consider if the course adds new value or complements existing knowledge."
+        f"Internal Course: {course.subject_name}\n"
+        f"Internal Course Description: {course.description}\n"
+        f"Skills Taught in Internal Course: {course_skills}\n\n"
+        f"If the internal course has significant skill gaps or if the student needs supplementary "
+        f"learning, you MUST use the 'search_external_resources' tool to find 1-2 high-quality "
+        f"online courses (Coursera, edX, Udemy) or documentation. "
+        f"Include these in your reasoning if relevant."
     )
 
+@recommendation_agent.tool
+async def search_external_resources(ctx: RunContext[AgentDeps], query: str) -> str:
+    """
+    Search for high-quality external online courses or learning resources (Coursera, edX, YouTube, Documentation)
+    to supplement the student's learning path or fill specific skill gaps not covered by the internal course.
+    """
+    if not TAVILY_API_KEY:
+        return "External search is currently unavailable (API key missing)."
+    
+    try:
+        tavily = TavilyClient(api_key=TAVILY_API_KEY)
+        # Search for online courses specifically
+        search_query = f"best online courses or tutorials for {query} on Coursera edX Udemy"
+        response = tavily.search(query=search_query, search_depth="basic", max_results=3)
+        
+        results = []
+        for res in response.get('results', []):
+            results.append(f"- [{res['title']}]({res['url']}): {res['content'][:200]}...")
+            
+        return "\n".join(results) if results else "No external resources found."
+    except Exception as e:
+        logger.error(f"Tavily search error: {e}")
+        return f"Error searching for external resources: {str(e)}"
+
 def is_capable_model(model: Any) -> bool:
+    # Requirement 1 helper
     model_name = ""
     if hasattr(model, 'model_name'):
         model_name = model.model_name
@@ -123,6 +156,7 @@ def is_capable_model(model: Any) -> bool:
     return any(p in model_name.lower() for p in capable_prefixes)
 
 def parse_agent_recommendation(text: str) -> AgentRecommendation:
+    # Requirement 1 helper
     try:
         data = json.loads(text)
         return AgentRecommendation(**data)
