@@ -9,3 +9,5 @@ alembic
 sqlalchemy
 rq
 redis
+pyjwt
+pwdlib[argon2]
