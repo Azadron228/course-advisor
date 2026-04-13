@@ -18,10 +18,15 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_BASE_URL=http://ollama:11434 
     depends_on:
       - db
       - ollama
+    develop:
+      watch: 
+        - action: sync
+          path: ./backend
+          target: /app
 
   ollama:
     image: ollama/ollama:latest
@@ -38,6 +43,11 @@ services:
       - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
 
 volumes:
   postgres_data:

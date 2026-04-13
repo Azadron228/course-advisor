@@ -1,55 +1,36 @@
-from ..agent import recommendation_agent, AgentRecommendation, get_model, AgentDeps, is_capable_model, parse_agent_recommendation
-from ..models import Student, Course, ModelProvider
 import logging
+import asyncio
+import os
+import redis
+from rq import Queue
+from ..agent import AgentRecommendation
+from ..models import Student, Course, ModelProvider
 
 logger = logging.getLogger(__name__)
 
+# Redis for enqueuing from the app
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_conn = redis.from_url(redis_url)
+q = Queue(connection=redis_conn)
+
 class RAGScorer:
     async def score(self, student: Student, course: Course, provider: ModelProvider = ModelProvider.AUTO) -> AgentRecommendation:
-        model = get_model(provider)
-        deps = AgentDeps(student=student, course=course)
+        # Requirement: Wrap all agent.run() calls in RQ jobs
+        from ..tasks import run_agent_task
         
-        # Requirement 1: Adapt output_type per model
-        capable = is_capable_model(model)
+        job = q.enqueue(
+            run_agent_task,
+            student.model_dump(),
+            course.model_dump(),
+            provider.value
+        )
         
-        try:
-            if capable:
-                # Use Schema for capable models
-                result = await recommendation_agent.run(
-                    "Evaluate how well this course fits the student.",
-                    model=model,
-                    deps=deps,
-                    output_type=AgentRecommendation
-                )
-                return result.output
-            else:
-                # Use str + manual parse for weak models
-                # Requirement 1: Provide explicit schema for weak models
-                prompt = (
-                    "Evaluate how well this course fits the student.\n\n"
-                    "Output MUST be ONLY a valid JSON object with the following structure:\n"
-                    "{\n"
-                    "  \"score\": 0.85,\n"
-                    "  \"reasoning\": \"Detailed explanation here...\",\n"
-                    "  \"tags\": [\"Tag 1\", \"Tag 2\"]\n"
-                    "}"
-                )
-                result = await recommendation_agent.run(
-                    prompt,
-                    model=model,
-                    deps=deps,
-                    output_type=str
-                )
-                try:
-                    return parse_agent_recommendation(result.output)
-                except ValueError as e:
-                    # Requirement 5: Log result.all_messages() on validation errors
-                    logger.error(f"Manual validation error: {e}. All messages: {result.all_messages()}")
-                    raise
-        except Exception as e:
-            # Check if we can extract messages from the exception if it's a pydantic-ai error
-            if hasattr(e, 'result') and hasattr(e.result, 'all_messages'):
-                logger.error(f"Agent run failed validation: {e}. All messages: {e.result.all_messages()}")
-            else:
-                logger.error(f"Agent run failed with exception: {e}")
-            raise
+        # Poll for completion
+        while not job.is_finished and not job.is_failed:
+            await asyncio.sleep(0.5)
+            
+        if job.is_failed:
+            logger.error(f"Agent job {job.get_id()} failed.")
+            raise Exception(f"Agent job {job.get_id()} failed.")
+            
+        return AgentRecommendation(**job.result)
