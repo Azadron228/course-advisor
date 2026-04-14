@@ -9,6 +9,8 @@ services:
       - POSTGRES_PASSWORD=advisor_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - advisor-net
 
   redis:
     image: redis:alpine
@@ -16,6 +18,8 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - advisor-net
 
   backend:
     build: ./backend
@@ -37,6 +41,8 @@ services:
         - action: sync
           path: ./backend
           target: /app
+    networks:
+      - advisor-net
 
   rq-worker:
     build: ./backend
@@ -58,6 +64,8 @@ services:
         - action: sync
           path: ./backend
           target: /app
+    networks:
+      - advisor-net
 
   ollama:
     image: ollama/ollama:latest
@@ -65,6 +73,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    networks:
+      - advisor-net
 
   frontend:
     build: ./frontend
@@ -79,6 +89,8 @@ services:
         - action: sync
           path: ./frontend
           target: /app
+    networks:
+      - advisor-net
 
   frontend-next:
     build: ./frontend-next
@@ -93,6 +105,12 @@ services:
         - action: sync
           path: ./frontend-next
           target: /app
+    networks:
+      - advisor-net
+
+networks:
+  advisor-net:
+    driver: bridge
 
 volumes:
   postgres_data:
