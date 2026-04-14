@@ -61,7 +61,7 @@ def test_login_for_access_token():
     )
     response = client.post(
         "/token",
-        data={"username": "test@example.com", "password": "password123"},
+        data={"email": "test@example.com", "password": "password123"},
     )
     assert response.status_code == 200
     data = response.json()
@@ -75,7 +75,7 @@ def test_login_invalid_credentials():
     )
     response = client.post(
         "/token",
-        data={"username": "test@example.com", "password": "wrongpassword"},
+        data={"email": "test@example.com", "password": "wrongpassword"},
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
@@ -102,7 +102,7 @@ def test_get_recommendations_authorized():
     )
     login_response = client.post(
         "/token",
-        data={"username": "test@example.com", "password": "password123"},
+        data={"email": "test@example.com", "password": "password123"},
     )
     token = login_response.json()["access_token"]
 

@@ -3,22 +3,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import api from '@/lib/api';
-import { 
-  RecommendationResponse, 
-  RecommendationResult, 
-  SkillGapAnalysis, 
-  LearningPathStep 
+import {
+  RecommendationResponse,
+  RecommendationResult,
+  SkillGapAnalysis,
+  LearningPathStep
 } from '@/lib/types';
 import { Card, CardContent, CardHeader } from '@/components/ui-base';
-import { 
-  GraduationCap, 
-  Upload, 
-  LogOut, 
-  Target, 
-  Zap, 
-  Map, 
-  Search, 
-  CheckCircle2, 
+import {
+  GraduationCap,
+  Upload,
+  LogOut,
+  Target,
+  Zap,
+  Map,
+  Search,
+  CheckCircle2,
   AlertCircle,
   ExternalLink,
   ChevronRight,
@@ -59,8 +59,8 @@ export default function DashboardPage() {
       const interestList = interests.split(',').map(s => s.trim()).filter(Boolean);
       const recResp = await api.post('/recommend', {
         student: {
-          id: user?.username || 'user',
-          name: user?.username || 'User',
+          id: user?.email || 'user',
+          name: user?.email || 'User',
           transcript: transcriptEntries,
           current_skills: interestList
         },
@@ -103,8 +103,8 @@ export default function DashboardPage() {
                   <span>Difficulty</span>
                   <span>{difficulty.toFixed(1)}</span>
                 </div>
-                <input 
-                  type="range" min="0" max="1" step="0.1" 
+                <input
+                  type="range" min="0" max="1" step="0.1"
                   className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   value={difficulty}
                   onChange={(e) => setDifficulty(parseFloat(e.target.value))}
@@ -115,8 +115,8 @@ export default function DashboardPage() {
                   <span>Workload</span>
                   <span>{workload.toFixed(1)}</span>
                 </div>
-                <input 
-                  type="range" min="0" max="1" step="0.1" 
+                <input
+                  type="range" min="0" max="1" step="0.1"
                   className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
                   value={workload}
                   onChange={(e) => setWorkload(parseFloat(e.target.value))}
@@ -160,9 +160,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
-                {user?.username?.[0] || 'U'}
+                {user?.email?.[0] || 'U'}
               </div>
-              <span className="text-sm font-medium text-slate-700">{user?.username}</span>
+              <span className="text-sm font-medium text-slate-700">{user?.email}</span>
             </div>
             <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors">
               <LogOut size={18} />
@@ -183,7 +183,7 @@ export default function DashboardPage() {
       <main className="flex-1 overflow-y-auto p-10 space-y-10">
         <AnimatePresence mode="wait">
           {!results && !isLoading ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="h-full flex flex-col items-center justify-center text-center space-y-6"
@@ -197,7 +197,7 @@ export default function DashboardPage() {
               </div>
             </motion.div>
           ) : isLoading ? (
-            <motion.div 
+            <motion.div
               key="loading"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -210,7 +210,7 @@ export default function DashboardPage() {
               <p className="text-slate-500 font-medium animate-pulse">Our AI is analyzing your academic DNA...</p>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -264,8 +264,8 @@ export default function DashboardPage() {
                                 <span className="text-slate-400">{(domain.gap_score * 100).toFixed(0)}%</span>
                               </div>
                               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-orange-500 rounded-full" 
+                                <div
+                                  className="h-full bg-orange-500 rounded-full"
                                   style={{ width: `${domain.gap_score * 100}%` }}
                                 />
                               </div>
@@ -299,11 +299,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="relative space-y-8 before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-blue-100">
                   {results?.learning_path.sort((a, b) => a.order - b.order).map((step, i) => (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      key={i} 
+                      key={i}
                       className="relative pl-16"
                     >
                       <div className="absolute left-0 w-12 h-12 rounded-full bg-white border-4 border-blue-50 flex items-center justify-center z-10 shadow-sm">
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                             {step.resource_id && (
                               <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-4">
                                 {step.is_external ? (
-                                  <a 
+                                  <a
                                     href={step.resource_id} target="_blank" rel="noopener noreferrer"
                                     className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 uppercase tracking-widest"
                                   >

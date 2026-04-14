@@ -1,33 +1,36 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/lib/auth-context';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader } from '@/components/ui-base';
 import Link from 'next/link';
 import { GraduationCap, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
+export default function RegisterPage() {
+  const [email, setemail] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('password', password);
-      
-      const resp = await api.post('/token', formData);
-      login(resp.data.access_token, username);
+      await api.post('/register', {
+        email,
+        password,
+        email,
+        full_name: fullName
+      });
+      router.push('/login?registered=true');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.detail || 'Registration failed.');
     } finally {
       setIsLoading(false);
     }
@@ -42,8 +45,8 @@ export default function LoginPage() {
               <GraduationCap size={32} />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
-          <p className="text-slate-500 text-sm">Log in to your AI Course Advisor</p>
+          <h1 className="text-2xl font-bold text-slate-900">Create Account</h1>
+          <p className="text-slate-500 text-sm">Join the AI Course Advisor community</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,13 +56,31 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Username</label>
+              <label className="text-sm font-medium text-slate-700">email</label>
               <input
                 type="text"
                 required
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setemail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Full Name</label>
+              <input
+                type="text"
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Email</label>
+              <input
+                type="email"
+                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -78,13 +99,13 @@ export default function LoginPage() {
               className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center"
             >
               {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
-              {isLoading ? 'Logging in...' : 'Sign In'}
+              {isLoading ? 'Creating account...' : 'Sign Up'}
             </button>
           </form>
           <div className="mt-6 text-center text-sm text-slate-500">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-blue-600 font-medium hover:underline">
-              Register now
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">
+              Log in
             </Link>
           </div>
         </CardContent>

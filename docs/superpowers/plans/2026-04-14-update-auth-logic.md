@@ -4,7 +4,7 @@
 
 **Goal:** Refactor authentication logic in `backend/app/auth.py` to use SQLAlchemy sessions and email-based identification.
 
-**Architecture:** Update auth functions to accept a `Session` object and query users by email instead of username. Update JWT token data to use email as the subject.
+**Architecture:** Update auth functions to accept a `Session` object and query users by email instead of email. Update JWT token data to use email as the subject.
 
 **Tech Stack:** FastAPI, SQLAlchemy, PyJWT, Argon2 (via pwdlib).
 
@@ -33,7 +33,7 @@ def test_repro_current_breakage():
     db = SessionLocal()
     try:
         # This should fail because authenticate_user currently doesn't accept 'db'
-        # and it calls get_user_by_username which is missing from db.py
+        # and it calls get_user_by_email which is missing from db.py
         authenticate_user(db, "test@example.com", "password")
     except TypeError as e:
         print(f"Caught expected TypeError: {e}")

@@ -22,7 +22,7 @@
 
 - [ ] **Step 1: Define SQLAlchemy Base and Models**
 
-Add SQLAlchemy ORM models for `User` and `Course`. Update Pydantic schemas to use `email` instead of `username`.
+Add SQLAlchemy ORM models for `User` and `Course`. Update Pydantic schemas to use `email` instead of `email`.
 
 ```python
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -264,7 +264,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(db, form_data.username, form_data.password) # form_data.username will contain email
+    user = authenticate_user(db, form_data.email, form_data.password) # form_data.email will contain email
     # ...
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires

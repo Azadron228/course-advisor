@@ -51,7 +51,7 @@ export interface RecommendationResponse {
 }
 
 export interface User {
-  username: string;
+  email: string;
   email?: string;
   full_name?: string;
 }

@@ -79,22 +79,6 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8501:8501"
-    environment:
-      - BACKEND_URL=http://backend:8000
-    depends_on:
-      - backend
-    develop:
-      watch:
-        - action: sync
-          path: ./frontend
-          target: /app
-    networks:
-      - advisor-net
-
-  frontend-next:
-    build: ./frontend-next
-    ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -103,7 +87,7 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./frontend-next
+          path: ./frontend
           target: /app
     networks:
       - advisor-net

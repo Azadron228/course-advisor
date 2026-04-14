@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, username: string) => void;
+  login: (token: string, email: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -21,24 +21,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
-    const savedUsername = localStorage.getItem('username');
-    if (savedToken && savedUsername) {
+    const savedemail = localStorage.getItem('email');
+    if (savedToken && savedemail) {
       setToken(savedToken);
-      setUser({ username: savedUsername });
+      setUser({ email: savedemail });
     }
   }, []);
 
-  const login = (newToken: string, username: string) => {
+  const login = (newToken: string, email: string) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('username', username);
+    localStorage.setItem('email', email);
     setToken(newToken);
-    setUser({ username });
+    setUser({ email });
     router.push('/dashboard');
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    localStorage.removeItem('email');
     setToken(null);
     setUser(null);
     router.push('/login');
