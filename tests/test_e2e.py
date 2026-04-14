@@ -36,15 +36,16 @@ class TestEndToEnd(unittest.TestCase):
         ]
         
         # 4. Test Orchestrator
-        from unittest.mock import AsyncMock
+        from unittest.mock import AsyncMock, MagicMock
         from backend.app.agent import AgentRecommendation
         
         # Mock RAGScorer to avoid agent complexity in this test
         self.scorer.rag_scorer.score = AsyncMock(return_value=AgentRecommendation(
-            score=0.9, reasoning="Good fit", tags=["AI"]
+            score=0.9, reasoning="Excellent fit for the student's profile.", tags=["AI"]
         ))
         
-        resp = asyncio.run(self.scorer.recommend(student, courses, pref))
+        db = MagicMock()
+        resp = asyncio.run(self.scorer.recommend(db, student, courses, pref))
         
         self.assertEqual(len(resp.results), 2)
         self.assertGreater(resp.results[0].score, 0)
