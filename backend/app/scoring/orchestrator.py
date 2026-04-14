@@ -1,11 +1,11 @@
 import logging
 from typing import List
 from sqlalchemy.orm import Session
-from ..models import (
-    Student, Course, UserPreference, 
-    RecommendationResponse, RecommendationResult, ScoreBreakdown,
-    ModelProvider
+from ..schemas.course import Student, Course, UserPreference
+from ..schemas.recommendation import (
+    RecommendationResponse, RecommendationResult, ScoreBreakdown
 )
+from ..schemas.internal import ModelProvider
 from ..scoring.content import ContentScorer
 from ..scoring.skill_gap import SkillGapScorer
 from ..scoring.rag import RAGScorer

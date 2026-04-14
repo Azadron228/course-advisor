@@ -1,7 +1,8 @@
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
-from ..models import Student, CourseORM
+from ..schemas.course import Student
+from ..models import CourseORM
 from ..embeddings import get_embedding
 
 logger = logging.getLogger(__name__)

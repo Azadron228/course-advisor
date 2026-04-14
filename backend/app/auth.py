@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from .models import TokenData, UserORM
+from .schemas.token import TokenData
+from .models import UserORM
 from .db import get_user_by_email, get_db
 from sqlalchemy.orm import Session
 from .core.config import settings

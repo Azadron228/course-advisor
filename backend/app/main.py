@@ -3,10 +3,12 @@ from fastapi import FastAPI, HTTPException, Body, UploadFile, File, Depends, sta
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from .models import (
-    Student, UserPreference, RecommendationResponse, TranscriptEntry, ModelProvider,
-    User, UserCreate, Token, UserInDB
-)
+from .schemas.course import Student, UserPreference, TranscriptEntry
+from .schemas.recommendation import RecommendationResponse
+from .schemas.internal import ModelProvider
+from .schemas.user import UserBase as User, UserCreate, UserInDB
+from .schemas.token import Token
+from .models import UserORM
 from .scoring.orchestrator import HybridScorer
 from .parser import parse_transcript_html
 from .db import get_all_courses, get_user_by_email, create_user, get_db

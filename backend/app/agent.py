@@ -11,7 +11,8 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field, model_validator, AliasChoices
-from .models import ModelProvider, Student, Course
+from .schemas.internal import ModelProvider
+from .schemas.course import Student, CoursePublic as Course
 from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)

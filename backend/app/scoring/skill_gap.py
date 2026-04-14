@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..models import Student, Course
+from ..schemas.course import Student, CoursePublic as Course
 
 class SkillGapScorer:
     def score(self, db: Session, student: Student, course: Course) -> float:

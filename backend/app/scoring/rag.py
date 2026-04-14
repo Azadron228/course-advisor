@@ -4,8 +4,10 @@ import os
 import redis
 from rq import Queue
 from sqlalchemy.orm import Session
+from ..schemas.internal import ModelProvider
+from ..schemas.course import Student, Course
+from ..schemas.recommendation import RecommendationResult # Not actually used here but for reference
 from ..agent import AgentRecommendation
-from ..models import Student, Course, ModelProvider
 
 logger = logging.getLogger(__name__)
 

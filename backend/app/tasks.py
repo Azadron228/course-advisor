@@ -1,5 +1,6 @@
 import asyncio
-from .models import Student, Course, ModelProvider
+from .schemas.course import Student, CoursePublic as Course
+from .schemas.internal import ModelProvider
 from .agent import recommendation_agent, get_model, AgentDeps, is_capable_model, parse_agent_recommendation, AgentRecommendation
 
 # Task to run the agent

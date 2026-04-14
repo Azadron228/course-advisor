@@ -6,7 +6,9 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 from pydantic_ai import Agent, RunContext
 from pydantic import BaseModel, Field
-from .models import Student, Course, SkillGapAnalysis, LearningPathStep, ModelProvider
+from .schemas.course import Student, CoursePublic as Course
+from .schemas.recommendation import SkillGapAnalysis, LearningPathStep
+from .schemas.internal import ModelProvider
 from .agent import get_model, is_capable_model
 
 logger = logging.getLogger(__name__)

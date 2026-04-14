@@ -2,7 +2,7 @@ import asyncio
 import os
 import redis
 from rq import Queue
-from .models import Student, Course, UserPreference
+from .schemas.course import Student, Course, UserPreference
 from .scoring.orchestrator import HybridScorer
 from .db import SessionLocal
 

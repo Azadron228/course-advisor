@@ -3,7 +3,8 @@ import logging
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
-from .models import Base, CourseORM, UserORM, Course
+from .models import Base, CourseORM, UserORM
+from .schemas.course import Course
 from .core.config import settings
 
 logger = logging.getLogger(__name__)
