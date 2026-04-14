@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import FastAPI, HTTPException, Body, UploadFile, File, Depends, status
+from fastapi import FastAPI, HTTPException, Body, UploadFile, File, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -17,11 +17,18 @@ from .core.config import settings
 from .core.security import get_password_hash, create_access_token
 from typing import List
 import os
-import redis
-from rq import Queue
-from rq.job import Job
+from contextlib import asynccontextmanager
+from arq import create_pool
+from arq.connections import RedisSettings
+from arq.jobs import Job, JobStatus
 
-app = FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
+    yield
+    await app.state.arq_pool.close()
+
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json", lifespan=lifespan)
 
 # Allow CORS
 app.add_middleware(
@@ -33,10 +40,6 @@ app.add_middleware(
 )
 
 scorer = HybridScorer()
-
-# Redis connection
-redis_conn = redis.from_url(settings.REDIS_URL)
-q = Queue(connection=redis_conn)
 
 # --- Auth Endpoints ---
 
@@ -79,40 +82,48 @@ async def get_recommendations(
          return RecommendationResponse(results=[])
     return await scorer.recommend(db, student, courses, preference, provider=ModelProvider.AUTO)
 
-from .jobs import run_hybrid_recommendation
 
 @app.post("/enqueue-recommendation")
 async def enqueue_recommendation(
+    request: Request,
     student: Student,
     preference: UserPreference,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    job = q.enqueue(
-        run_hybrid_recommendation,
+    job = await request.app.state.arq_pool.enqueue_job(
+        'run_hybrid_recommendation',
         student.model_dump(),
         [c.model_dump() for c in get_all_courses(db)],
         preference.model_dump()
     )
-    return {"job_id": job.get_id()}
+    if job is None:
+        raise HTTPException(status_code=500, detail="Failed to enqueue job")
+    return {"job_id": job.job_id}
 
 @app.get("/jobs/{job_id}")
 async def get_job_status(
     job_id: str,
+    request: Request,
     current_user: User = Depends(get_current_active_user)
 ):
+    job = Job(job_id, request.app.state.arq_pool)
     try:
-        job = Job.fetch(job_id, connection=redis_conn)
+        status_val = await job.status()
     except Exception:
         raise HTTPException(status_code=404, detail="Job not found")
         
+    if status_val == JobStatus.not_found:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    info = await job.info()
     return {
-        "job_id": job.id,
-        "status": job.get_status(),
-        "result": job.result if job.is_finished else None,
-        "enqueued_at": job.enqueued_at,
-        "started_at": job.started_at,
-        "ended_at": job.ended_at
+        "job_id": job.job_id,
+        "status": status_val.value if hasattr(status_val, 'value') else str(status_val),
+        "result": await job.result(timeout=0) if status_val == JobStatus.complete else None,
+        "enqueued_at": info.enqueue_time if info else None,
+        "started_at": info.start_time if info else None,
+        "ended_at": None
     }
 
 @app.post("/parse-transcript", response_model=List[TranscriptEntry])
