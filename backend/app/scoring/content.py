@@ -21,7 +21,7 @@ class ContentScorer:
         
         # 3. Query pgvector for cosine similarity to course.embedding using SQLAlchemy
         course = db.scalar(select(CourseORM).where(CourseORM.id == course_id))
-        if course and course.embedding:
+        if course is not None and course.embedding is not None:
             # 1 - cosine_distance is the standard similarity in pgvector
             query = select(1 - CourseORM.embedding.cosine_distance(vector)).where(CourseORM.id == course_id)
             result = db.scalar(query)
