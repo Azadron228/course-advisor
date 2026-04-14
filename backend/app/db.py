@@ -1,85 +1,60 @@
 import os
-import sqlite3
-import psycopg2
-from pgvector.psycopg2 import register_vector
-from typing import Optional, List
-from .models import Course, UserInDB
+import time
+import logging
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.exc import OperationalError
+from .models import Base, CourseORM, UserORM
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://advisor:advisor_password@localhost:5432/course_advisor")
-USERS_DB = "users.db"
+logger = logging.getLogger(__name__)
 
-def get_connection():
-    conn = psycopg2.connect(DATABASE_URL)
-    register_vector(conn)
-    return conn
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://advisor:advisor_password@db:5432/course_advisor")
 
-def init_users_db():
-    conn = sqlite3.connect(USERS_DB)
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            email TEXT,
-            full_name TEXT,
-            hashed_password TEXT,
-            disabled BOOLEAN DEFAULT 0
-        )
-    """)
-    conn.commit()
-    conn.close()
+# Connection retry logic
+MAX_RETRIES = 5
+RETRY_DELAY = 2
 
-def get_user_by_username(username: str) -> Optional[UserInDB]:
-    conn = sqlite3.connect(USERS_DB)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-    row = cur.fetchone()
-    conn.close()
-    if row:
-        return UserInDB(
-            username=row["username"],
-            email=row["email"],
-            full_name=row["full_name"],
-            hashed_password=row["hashed_password"],
-            disabled=bool(row["disabled"])
-        )
-    return None
+engine = None
 
-def create_user(username: str, hashed_password: str, email: str = None, full_name: str = None):
-    conn = sqlite3.connect(USERS_DB)
-    cur = conn.cursor()
+# Only attempt connection if not in a test environment
+if os.getenv("TESTING") != "1":
+    for i in range(MAX_RETRIES):
+        try:
+            engine = create_engine(DATABASE_URL)
+            # Test connection
+            with engine.connect() as conn:
+                pass
+            logger.info("Successfully connected to the database")
+            break
+        except OperationalError as e:
+            if i == MAX_RETRIES - 1:
+                logger.error(f"Could not connect to database after {MAX_RETRIES} attempts")
+                raise e
+            logger.warning(f"Database connection attempt {i+1} failed. Retrying in {RETRY_DELAY} seconds...")
+            time.sleep(RETRY_DELAY)
+else:
+    # Use in-memory SQLite for tests if DATABASE_URL is not provided or if testing
+    engine = create_engine("sqlite:///:memory:")
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
     try:
-        cur.execute(
-            "INSERT INTO users (username, hashed_password, email, full_name) VALUES (?, ?, ?, ?)",
-            (username, hashed_password, email, full_name)
-        )
-        conn.commit()
+        yield db
     finally:
-        conn.close()
+        db.close()
 
-# Initialize users DB on import
-init_users_db()
+# Migration helpers (will use ORM versions of old functions)
+def get_all_courses(db: Session):
+    return db.scalars(select(CourseORM)).all()
 
-def get_all_courses():
-    courses = []
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, subject_name, credits, description, skills_taught, difficulty, workload FROM courses")
-            for row in cur.fetchall():
-                import json
-                skills = row[4]
-                if isinstance(skills, str):
-                    skills = json.loads(skills)
-                
-                courses.append(Course(
-                    id=row[0],
-                    subject_name=row[1],
-                    credits=row[2],
-                    description=row[3],
-                    skills_taught=skills,
-                    difficulty=row[5],
-                    workload=row[6],
-                    prerequisites=[]
-                ))
-    return courses
+def get_user_by_email(db: Session, email: str):
+    return db.scalar(select(UserORM).where(UserORM.email == email))
+
+def create_user(db: Session, email: str, hashed_password: str, full_name: str = None):
+    db_user = UserORM(email=email, hashed_password=hashed_password, full_name=full_name)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
