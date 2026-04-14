@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
-from .models import Base, CourseORM, UserORM
+from .models import Base, CourseORM, UserORM, Course
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,29 @@ def get_db():
 
 # Migration helpers (will use ORM versions of old functions)
 def get_all_courses(db: Session):
-    return db.scalars(select(CourseORM)).all()
+    from .models import Course as CourseModel
+    orms = db.scalars(select(CourseORM)).all()
+    courses = []
+    for o in orms:
+        # Handle skills_taught which might be stored as a list or a JSON string in some setups
+        skills = o.skills_taught
+        if isinstance(skills, str):
+            import json
+            skills = json.loads(skills)
+        if not isinstance(skills, list):
+            skills = []
+            
+        courses.append(CourseModel(
+            id=o.id,
+            subject_name=o.subject_name,
+            credits=o.credits,
+            description=o.description,
+            skills_taught=skills,
+            difficulty=o.difficulty if o.difficulty is not None else 0.0,
+            workload=o.workload if o.workload is not None else 0.0,
+            prerequisites=[]
+        ))
+    return courses
 
 def get_user_by_email(db: Session, email: str):
     return db.scalar(select(UserORM).where(UserORM.email == email))
