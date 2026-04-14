@@ -6,7 +6,7 @@ from ...schemas.user import UserBase as User, UserCreate
 from ...schemas.token import Token
 from ...core.config import settings
 from ...core.security import get_password_hash, create_access_token, verify_password
-from ...db import get_user_by_email, create_user
+from ...crud import get_user_by_email, create_user
 from ..deps import get_db
 
 router = APIRouter()

@@ -5,7 +5,7 @@ from ...schemas.course import Student, UserPreference
 from ...schemas.recommendation import RecommendationResponse
 from ...schemas.internal import ModelProvider
 from ...schemas.user import UserBase as User
-from ...db import get_all_courses
+from ...crud import get_all_courses
 from ...scoring.orchestrator import HybridScorer
 from ..deps import get_db, get_current_active_user, get_arq_pool
 

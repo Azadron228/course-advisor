@@ -2,7 +2,8 @@ import jwt
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from ..db import SessionLocal, get_user_by_email
+from ..db import SessionLocal
+from ..crud import get_user_by_email
 from ..models import UserORM
 from ..schemas.token import TokenData
 from ..core.config import settings

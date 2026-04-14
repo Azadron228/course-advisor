@@ -44,9 +44,9 @@ services:
     networks:
       - advisor-net
 
-  rq-worker:
+  arq-worker:
     build: ./backend
-    command: rq worker --url redis://redis:6379
+    command: arq app.core.worker.WorkerSettings
     env_file:
       - .env
     environment:
