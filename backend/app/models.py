@@ -1,18 +1,42 @@
-from pydantic import BaseModel, Field
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import String, Float, JSON, CheckConstraint, Text
+from pgvector.sqlalchemy import Vector
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 
 from enum import Enum
+
+class Base(DeclarativeBase):
+    pass
+
+class UserORM(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    disabled: Mapped[bool] = mapped_column(default=False)
+
+class CourseORM(Base):
+    __tablename__ = "courses"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    subject_name: Mapped[str] = mapped_column(String, nullable=False)
+    credits: Mapped[float] = mapped_column(Float, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    skills_taught: Mapped[dict] = mapped_column(JSON, nullable=False)
+    difficulty: Mapped[float] = mapped_column(Float, CheckConstraint('difficulty >= 0 AND difficulty <= 1'))
+    workload: Mapped[float] = mapped_column(Float, CheckConstraint('workload >= 0 AND workload <= 1'))
+    embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536))
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
+    email: Optional[str] = None
 
 class User(BaseModel):
-    username: str
-    email: Optional[str] = None
+    email: EmailStr
     full_name: Optional[str] = None
     disabled: Optional[bool] = None
 
@@ -20,9 +44,8 @@ class UserInDB(User):
     hashed_password: str
 
 class UserCreate(BaseModel):
-    username: str
+    email: EmailStr
     password: str
-    email: Optional[str] = None
     full_name: Optional[str] = None
 
 class UserOut(User):
