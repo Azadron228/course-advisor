@@ -37,13 +37,6 @@ else:
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # Migration helpers (will use ORM versions of old functions)
 def get_all_courses(db: Session):
     from .models import Course as CourseModel
