@@ -10,17 +10,16 @@ from .models import (
 from .scoring.orchestrator import HybridScorer
 from .parser import parse_transcript_html
 from .db import get_all_courses, get_user_by_email, create_user, get_db
-from .auth import (
-    authenticate_user, create_access_token, get_current_active_user, 
-    ACCESS_TOKEN_EXPIRE_MINUTES, get_password_hash
-)
+from .auth import authenticate_user, get_current_active_user
+from .core.config import settings
+from .core.security import get_password_hash, create_access_token
 from typing import List
 import os
 import redis
 from rq import Queue
 from rq.job import Job
 
-app = FastAPI()
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
 # Allow CORS
 app.add_middleware(
@@ -34,8 +33,7 @@ app.add_middleware(
 scorer = HybridScorer()
 
 # Redis connection
-redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_conn = redis.from_url(redis_url)
+redis_conn = redis.from_url(settings.REDIS_URL)
 q = Queue(connection=redis_conn)
 
 # --- Auth Endpoints ---
@@ -51,15 +49,15 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
-    # OAuth2PasswordRequestForm.email will contain the email entered by the user
-    user = authenticate_user(db, form_data.email, form_data.password)
+    # OAuth2PasswordRequestForm.username will contain the email entered by the user
+    user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )

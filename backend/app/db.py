@@ -1,14 +1,12 @@
-import os
 import time
 import logging
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import OperationalError
 from .models import Base, CourseORM, UserORM, Course
+from .core.config import settings
 
 logger = logging.getLogger(__name__)
-
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://advisor:advisor_password@db:5432/course_advisor")
 
 # Connection retry logic
 MAX_RETRIES = 5
@@ -17,10 +15,10 @@ RETRY_DELAY = 2
 engine = None
 
 # Only attempt connection if not in a test environment
-if os.getenv("TESTING") != "1":
+if not settings.TESTING:
     for i in range(MAX_RETRIES):
         try:
-            engine = create_engine(DATABASE_URL)
+            engine = create_engine(settings.DATABASE_URL)
             # Test connection
             with engine.connect() as conn:
                 pass
@@ -33,7 +31,7 @@ if os.getenv("TESTING") != "1":
             logger.warning(f"Database connection attempt {i+1} failed. Retrying in {RETRY_DELAY} seconds...")
             time.sleep(RETRY_DELAY)
 else:
-    # Use in-memory SQLite for tests if DATABASE_URL is not provided or if testing
+    # Use in-memory SQLite for tests if testing
     engine = create_engine("sqlite:///:memory:")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
