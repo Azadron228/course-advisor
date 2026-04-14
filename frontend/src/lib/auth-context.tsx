@@ -3,13 +3,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from './types';
 import { useRouter } from 'next/navigation';
+import api from './api';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, email: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,35 +19,54 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
-    const savedemail = localStorage.getItem('email');
-    if (savedToken && savedemail) {
+    if (savedToken) {
       setToken(savedToken);
-      setUser({ email: savedemail });
+      fetchUser(savedToken);
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
-  const login = (newToken: string, email: string) => {
+  const fetchUser = async (authToken: string) => {
+    try {
+      const response = await api.get('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user', error);
+      logout();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = async (newToken: string) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('email', email);
     setToken(newToken);
-    setUser({ email });
-    router.push('/dashboard');
+    const userData = await fetchUser(newToken);
+    if (userData?.is_admin) {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('email');
     setToken(null);
     setUser(null);
     router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

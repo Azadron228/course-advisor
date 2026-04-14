@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { GraduationCap, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setemail] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,13 +20,18 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const formData = new FormData();
-      formData.append('email', email);
+      const formData = new URLSearchParams();
+      formData.append('username', email);
       formData.append('password', password);
 
-      const resp = await api.post('/token', formData);
-      login(resp.data.access_token, email);
+      const resp = await api.post('/api/v1/auth/token', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      await login(resp.data.access_token);
     } catch (err: any) {
+      console.error(err);
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -53,13 +58,13 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">email</label>
+              <label className="text-sm font-medium text-slate-700">Email</label>
               <input
-                type="text"
+                type="email"
                 required
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={email}
-                onChange={(e) => setemail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">

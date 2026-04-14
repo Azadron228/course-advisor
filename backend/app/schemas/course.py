@@ -9,6 +9,7 @@ class CourseBase(BaseModel):
     skills_taught: List[str]
     difficulty: float = Field(ge=0, le=1)
     workload: float = Field(ge=0, le=1)
+    materials_content: Optional[str] = None
 
 class CourseCreate(CourseBase):
     pass

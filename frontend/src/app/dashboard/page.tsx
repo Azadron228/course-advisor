@@ -22,9 +22,11 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronRight,
-  Loader2
+  Loader2,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -52,15 +54,15 @@ export default function DashboardPage() {
       // 1. Parse transcript
       const formData = new FormData();
       formData.append('file', file);
-      const parseResp = await api.post('/parse-transcript', formData);
+      const parseResp = await api.post('/api/v1/parser/parse-transcript', formData);
       const transcriptEntries = parseResp.data;
 
       // 2. Get recommendations
       const interestList = interests.split(',').map(s => s.trim()).filter(Boolean);
-      const recResp = await api.post('/recommend', {
+      const recResp = await api.post('/api/v1/recommendations/recommend', {
         student: {
           id: user?.email || 'user',
-          name: user?.email || 'User',
+          name: user?.full_name || user?.email || 'User',
           transcript: transcriptEntries,
           current_skills: interestList
         },
@@ -91,6 +93,17 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Admin Link if applicable */}
+          {user?.is_admin && (
+            <Link 
+              href="/admin"
+              className="flex items-center gap-2 p-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
+            >
+              <Settings size={18} />
+              <span className="font-semibold">Admin Panel</span>
+            </Link>
+          )}
+
           {/* Goals Section */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-slate-900 font-semibold">
@@ -158,13 +171,13 @@ export default function DashboardPage() {
 
         <div className="p-6 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
-                {user?.email?.[0] || 'U'}
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="w-8 h-8 flex-shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold uppercase">
+                {user?.full_name?.[0] || user?.email?.[0] || 'U'}
               </div>
-              <span className="text-sm font-medium text-slate-700">{user?.email}</span>
+              <span className="text-sm font-medium text-slate-700 truncate">{user?.full_name || user?.email}</span>
             </div>
-            <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors">
+            <button onClick={logout} className="text-slate-400 hover:text-red-500 transition-colors ml-2">
               <LogOut size={18} />
             </button>
           </div>

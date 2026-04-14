@@ -30,8 +30,8 @@ def get_all_courses(db: Session):
 def get_user_by_email(db: Session, email: str):
     return db.scalar(select(UserORM).where(UserORM.email == email))
 
-def create_user(db: Session, email: str, hashed_password: str, full_name: str = None):
-    db_user = UserORM(email=email, hashed_password=hashed_password, full_name=full_name)
+def create_user(db: Session, email: str, hashed_password: str, full_name: str = None, is_admin: bool = False):
+    db_user = UserORM(email=email, hashed_password=hashed_password, full_name=full_name, is_admin=is_admin)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

@@ -8,9 +8,8 @@ import { GraduationCap, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
-  const [email, setemail] = useState('');
-  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,14 +21,14 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      await api.post('/register', {
+      await api.post('/api/v1/auth/register', {
         email,
         password,
-        email,
         full_name: fullName
       });
       router.push('/login?registered=true');
     } catch (err: any) {
+      console.error(err);
       setError(err.response?.data?.detail || 'Registration failed.');
     } finally {
       setIsLoading(false);
@@ -56,13 +55,13 @@ export default function RegisterPage() {
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">email</label>
+              <label className="text-sm font-medium text-slate-700">Email</label>
               <input
-                type="text"
+                type="email"
                 required
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={email}
-                onChange={(e) => setemail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
@@ -72,15 +71,6 @@ export default function RegisterPage() {
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Email</label>
-              <input
-                type="email"
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">

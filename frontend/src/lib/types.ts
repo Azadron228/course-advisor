@@ -51,7 +51,8 @@ export interface RecommendationResponse {
 }
 
 export interface User {
+  id: number;
   email: string;
-  email?: string;
   full_name?: string;
+  is_admin: boolean;
 }

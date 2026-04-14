@@ -1,7 +1,11 @@
-from  app.db import get_connection
-from  app.embeddings import get_embedding
-import json
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.models import Base, CourseORM, UserORM
+from app.embeddings import get_embedding
+from app.core.config import settings
+from app.core.security import get_password_hash
+import json
 
 COURSES = [
     {
@@ -44,26 +48,52 @@ COURSES = [
 
 def seed():
     print("Starting database seeding...")
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            from pgvector.psycopg2 import register_vector
-            register_vector(cur)
-            
-            for c in COURSES:
-                print(f"Seeding course: {c['subject_name']}")
-                emb = get_embedding(c["description"])
-                cur.execute(
-                    """
-                    INSERT INTO courses (id, subject_name, credits, description, skills_taught, difficulty, workload, embedding) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) 
-                    ON CONFLICT (id) DO UPDATE SET 
-                        subject_name = EXCLUDED.subject_name,
-                        description = EXCLUDED.description,
-                        skills_taught = EXCLUDED.skills_taught,
-                        embedding = EXCLUDED.embedding
-                    """,
-                    (c["id"], c["subject_name"], c["credits"], c["description"], json.dumps(c["skills_taught"]), c["difficulty"], c["workload"], emb)
-                )
+    engine = create_engine(settings.DATABASE_URL)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    # Seed Courses
+    for c in COURSES:
+        print(f"Seeding course: {c['subject_name']}")
+        emb = get_embedding(c["description"])
+        
+        # Check if course exists
+        course = session.query(CourseORM).filter(CourseORM.id == c["id"]).first()
+        if not course:
+            course = CourseORM(
+                id=c["id"],
+                subject_name=c["subject_name"],
+                credits=c["credits"],
+                description=c["description"],
+                skills_taught=c["skills_taught"],
+                difficulty=c["difficulty"],
+                workload=c["workload"],
+                embedding=emb
+            )
+            session.add(course)
+        else:
+            course.subject_name = c["subject_name"]
+            course.description = c["description"]
+            course.skills_taught = c["skills_taught"]
+            course.embedding = emb
+    
+    # Seed Admin User
+    print("Seeding admin user...")
+    admin_email = "admin@example.com"
+    admin_user = session.query(UserORM).filter(UserORM.email == admin_email).first()
+    if not admin_user:
+        admin_user = UserORM(
+            email=admin_email,
+            hashed_password=get_password_hash("admin"),
+            full_name="System Administrator",
+            is_admin=True
+        )
+        session.add(admin_user)
+    else:
+        admin_user.is_admin = True
+    
+    session.commit()
+    session.close()
     print("Seeding complete.")
 
 if __name__ == "__main__":

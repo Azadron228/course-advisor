@@ -43,3 +43,8 @@ async def get_current_active_user(current_user: UserORM = Depends(get_current_us
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+async def get_current_admin_user(current_user: UserORM = Depends(get_current_active_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
+    return current_user

@@ -5,7 +5,7 @@ from arq import create_pool
 from arq.connections import RedisSettings
 
 from .core.config import settings
-from .api.v1 import auth, recommendations, parser
+from .api.v1 import auth, recommendations, parser, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,3 +28,4 @@ app.add_middleware(
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(recommendations.router, prefix=f"{settings.API_V1_STR}/recommendations", tags=["recommendations"])
 app.include_router(parser.router, prefix=f"{settings.API_V1_STR}/parser", tags=["parser"])
+app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])

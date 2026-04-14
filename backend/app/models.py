@@ -13,6 +13,7 @@ class UserORM(Base):
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     disabled: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False)
 
 class CourseORM(Base):
     __tablename__ = "courses"
@@ -23,4 +24,5 @@ class CourseORM(Base):
     skills_taught: Mapped[dict] = mapped_column(JSON, nullable=False)
     difficulty: Mapped[float] = mapped_column(Float, CheckConstraint('difficulty >= 0 AND difficulty <= 1'))
     workload: Mapped[float] = mapped_column(Float, CheckConstraint('workload >= 0 AND workload <= 1'))
+    materials_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536))
