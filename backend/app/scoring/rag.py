@@ -3,6 +3,7 @@ import asyncio
 import os
 import redis
 from rq import Queue
+from sqlalchemy.orm import Session
 from ..agent import AgentRecommendation
 from ..models import Student, Course, ModelProvider
 
@@ -14,7 +15,7 @@ redis_conn = redis.from_url(redis_url)
 q = Queue(connection=redis_conn)
 
 class RAGScorer:
-    async def score(self, student: Student, course: Course, provider: ModelProvider = ModelProvider.AUTO) -> AgentRecommendation:
+    async def score(self, db: Session, student: Student, course: Course, provider: ModelProvider = ModelProvider.AUTO) -> AgentRecommendation:
         # Requirement: Wrap all agent.run() calls in RQ jobs
         from ..tasks import run_agent_task
         

@@ -1,7 +1,8 @@
+from sqlalchemy.orm import Session
 from ..models import Student, Course
 
 class SkillGapScorer:
-    def score(self, student: Student, course: Course) -> float:
+    def score(self, db: Session, student: Student, course: Course) -> float:
         taught = set(course.skills_taught)
         current = set(student.current_skills)
         if not taught:

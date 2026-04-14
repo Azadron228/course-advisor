@@ -1,12 +1,13 @@
 import logging
-from ..db import get_connection
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from ..models import Student, CourseORM
 from ..embeddings import get_embedding
-from ..models import Student
 
 logger = logging.getLogger(__name__)
 
 class ContentScorer:
-    def score(self, student: Student, course_id: str) -> float:
+    def score(self, db: Session, student: Student, course_id: str) -> float:
         # 1. Aggregate transcript subject names
         subjects = [entry.subject_name for entry in student.transcript]
         if not subjects:
@@ -18,24 +19,17 @@ class ContentScorer:
         # 2. Get embedding for the aggregated text
         vector = get_embedding(aggregated_text)
         
-        # 3. Query pgvector for cosine similarity to course.embedding
-        with get_connection() as conn:
-            from pgvector.psycopg2 import register_vector
-            register_vector(conn)
+        # 3. Query pgvector for cosine similarity to course.embedding using SQLAlchemy
+        course = db.scalar(select(CourseORM).where(CourseORM.id == course_id))
+        if course and course.embedding:
+            # 1 - cosine_distance is the standard similarity in pgvector
+            query = select(1 - CourseORM.embedding.cosine_distance(vector)).where(CourseORM.id == course_id)
+            result = db.scalar(query)
+            if result is not None:
+                score = float(result)
+                if score == 0.0:
+                     logger.warning(f"Content similarity score is 0.0 for course {course_id}. Check if embeddings are zero-vectors.")
+                return score
             
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT 1 - (embedding <=> %s::vector) AS score, embedding IS NULL as is_null FROM courses WHERE id = %s",
-                    (vector, course_id)
-                )
-                result = cur.fetchone()
-                if result:
-                    score = float(result[0])
-                    is_null = result[1]
-                    if is_null:
-                        logger.warning(f"Embedding is NULL for course {course_id}")
-                    if score == 0.0:
-                         logger.warning(f"Content similarity score is 0.0 for course {course_id}. Check if embeddings are zero-vectors.")
-                    return score
-        logger.warning(f"No result found for course {course_id} in database.")
+        logger.warning(f"No result found or embedding is NULL for course {course_id} in database.")
         return 0.0

@@ -1,7 +1,8 @@
+from sqlalchemy.orm import Session
 from ..models import Student, Course, UserPreference
 
 class PreferenceScorer:
-    def score(self, student: Student, course: Course, preference: UserPreference) -> float:
+    def score(self, db: Session, student: Student, course: Course, preference: UserPreference) -> float:
         # 1. Check interest tags overlap
         interest_match = 0.0
         course_text = (course.subject_name + " " + course.description).lower()

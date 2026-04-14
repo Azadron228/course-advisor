@@ -1,5 +1,6 @@
 import logging
 from typing import List
+from sqlalchemy.orm import Session
 from ..models import (
     Student, Course, UserPreference, 
     RecommendationResponse, RecommendationResult, ScoreBreakdown,
@@ -11,6 +12,7 @@ from ..scoring.rag import RAGScorer
 from ..scoring.preference import PreferenceScorer
 
 from ..analysis_agent import analysis_agent, AnalysisDeps, is_capable_model, parse_global_analysis, GlobalAnalysis
+from ..agent import get_model
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,7 @@ class HybridScorer:
         
     async def recommend(
         self, 
+        db: Session,
         student: Student, 
         courses: List[Course], 
         preference: UserPreference,
@@ -32,11 +35,11 @@ class HybridScorer:
         
         # 1. Individual course scoring
         for course in courses:
-            # ... (existing scoring logic)
-            content_sim = self.content_scorer.score(student, course.id)
-            skill_gap = self.skill_gap_scorer.score(student, course)
-            rag_result = await self.rag_scorer.score(student, course, provider)
-            pref_score = self.preference_scorer.score(student, course, preference)
+            # content_sim needs the database to query embeddings
+            content_sim = self.content_scorer.score(db, student, course.id)
+            skill_gap = self.skill_gap_scorer.score(db, student, course)
+            rag_result = await self.rag_scorer.score(db, student, course, provider)
+            pref_score = self.preference_scorer.score(db, student, course, preference)
             
             total_score = (
                 (content_sim * 0.3) +

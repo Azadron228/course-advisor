@@ -4,6 +4,7 @@ import redis
 from rq import Queue
 from .models import Student, Course, UserPreference
 from .scoring.orchestrator import HybridScorer
+from .db import SessionLocal
 
 # Redis for workers
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -19,7 +20,11 @@ def run_hybrid_recommendation(student_dict, courses_list, preference_dict):
     scorer = HybridScorer()
     
     async def _run():
-        response = await scorer.recommend(student, courses, preference)
-        return response.model_dump()
+        db = SessionLocal()
+        try:
+            response = await scorer.recommend(db, student, courses, preference)
+            return response.model_dump()
+        finally:
+            db.close()
         
     return asyncio.run(_run())
