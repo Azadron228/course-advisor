@@ -11,7 +11,7 @@ from ..scoring.skill_gap import SkillGapScorer
 from ..scoring.rag import RAGScorer
 from ..scoring.preference import PreferenceScorer
 
-from ..analysis_agent import analysis_agent, AnalysisDeps, is_capable_model, parse_global_analysis, GlobalAnalysis
+from ..analysis_agent import get_analysis_agent, AnalysisDeps, is_capable_model, parse_global_analysis, GlobalAnalysis
 from ..agent import get_model
 
 logger = logging.getLogger(__name__)
@@ -74,29 +74,13 @@ class HybridScorer:
         learning_path = []
         
         try:
-            model = get_model(provider)
-            deps = AnalysisDeps(student=student, courses=courses)
+            llm = get_model(provider)
+            agent = get_analysis_agent(llm, student, courses)
             
-            if is_capable_model(model):
-                analysis_res = await analysis_agent.run(
-                    "Perform global analysis.",
-                    model=model,
-                    deps=deps
-                )
-                analysis_data = analysis_res.output.skill_gap_analysis
-                learning_path = analysis_res.output.learning_path
-            else:
-                # Basic mock/heuristic fallback for weak models if needed, 
-                # but for now we try to run it.
-                analysis_res = await analysis_agent.run(
-                    "Perform global analysis. Output valid JSON matching GlobalAnalysis schema.",
-                    model=model,
-                    deps=deps,
-                    output_type=str
-                )
-                parsed = parse_global_analysis(analysis_res.output)
-                analysis_data = parsed.skill_gap_analysis
-                learning_path = parsed.learning_path
+            response = await agent.run(user_msg="Perform global analysis and output JSON.")
+            parsed = parse_global_analysis(str(response))
+            analysis_data = parsed.skill_gap_analysis
+            learning_path = parsed.learning_path
         except Exception as e:
             logger.error(f"Global analysis failed: {e}")
 

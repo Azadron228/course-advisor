@@ -1,7 +1,9 @@
 import unittest
 import json
-from app.agent import AgentRecommendation, is_capable_model, parse_agent_recommendation
+from backend.app.agent import AgentRecommendation, is_capable_model, parse_agent_recommendation
 from pydantic import ValidationError
+from llama_index.llms.openai import OpenAI
+from llama_index.llms.ollama import Ollama
 
 class TestAgentRefactor(unittest.TestCase):
     def test_recommendation_validation(self):
@@ -30,11 +32,9 @@ class TestAgentRefactor(unittest.TestCase):
         self.assertEqual(rec_low.score, 0.1)
 
     def test_capable_model_helper(self):
-        self.assertTrue(is_capable_model("gpt-4o"))
-        self.assertTrue(is_capable_model("gemini-1.5-flash"))
-        self.assertTrue(is_capable_model("claude-3-sonnet"))
-        self.assertFalse(is_capable_model("llama3.2"))
-        self.assertFalse(is_capable_model("mistral"))
+        self.assertTrue(is_capable_model(OpenAI(model="gpt-4o")))
+        self.assertFalse(is_capable_model(Ollama(model="llama3.2")))
+        self.assertFalse(is_capable_model(Ollama(model="mistral")))
 
     def test_parse_agent_recommendation(self):
         # Normal JSON

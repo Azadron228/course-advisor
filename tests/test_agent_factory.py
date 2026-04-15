@@ -2,28 +2,30 @@ import os
 import unittest
 from unittest.mock import patch
 from backend.app.agent import get_model
-from backend.app.models import ModelProvider
-from pydantic_ai.models.google import GoogleModel
-from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.models.test import TestModel
+from backend.app.schemas.internal import ModelProvider
+from llama_index.llms.openai import OpenAI
+from llama_index.llms.ollama import Ollama
 
 class TestAgentFactory(unittest.TestCase):
-    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_google_key"})
-    def test_get_model_auto_prefers_gemini(self):
-        model = get_model(ModelProvider.AUTO)
-        self.assertIsInstance(model, GoogleModel)
-
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test_openai_key"}, clear=True)
-    def test_get_model_auto_falls_back_to_openai(self):
-        # Ensure GOOGLE_API_KEY is not set
+    def test_get_model_auto_prefers_openai_if_set(self):
         model = get_model(ModelProvider.AUTO)
-        self.assertIsInstance(model, OpenAIChatModel)
-        self.assertEqual(model.model_name, 'gpt-4o')
+        self.assertIsInstance(model, OpenAI)
+        self.assertEqual(model.model, 'gpt-4o')
+
+    @patch.dict(os.environ, {"OLLAMA_BASE_URL": "http://localhost:11434"}, clear=True)
+    def test_get_model_auto_prefers_ollama_if_set(self):
+        # Clear OpenAI to avoid picking it
+        with patch.dict(os.environ, {"OPENAI_API_KEY": ""}):
+            model = get_model(ModelProvider.AUTO)
+            self.assertIsInstance(model, Ollama)
+            self.assertEqual(model.model, 'llama3.2')
 
     @patch.dict(os.environ, {}, clear=True)
-    def test_get_model_auto_fallback_to_test(self):
+    def test_get_model_auto_fallback_to_openai_dummy(self):
         model = get_model(ModelProvider.AUTO)
-        self.assertIsInstance(model, TestModel)
+        self.assertIsInstance(model, OpenAI)
+        self.assertEqual(model.api_key, "sk-dummy")
 
 if __name__ == '__main__':
     unittest.main()

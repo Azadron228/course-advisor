@@ -1,7 +1,11 @@
 fastapi
 uvicorn
-pydantic-ai
+llama-index
+llama-index-llms-ollama
+llama-index-llms-openai
+llama-index-embeddings-openai
 pydantic-settings
+pydantic[email]
 psycopg2-binary
 pgvector
 beautifulsoup4
@@ -14,3 +18,4 @@ pyjwt
 pwdlib[argon2]
 tavily-python
 PyPDF2
+python-multipart

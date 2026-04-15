@@ -1,9 +1,9 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from .models import CourseORM, UserORM
+from .schemas.course import Course as CourseModel
 
 def get_all_courses(db: Session):
-    from .models import Course as CourseModel
     orms = db.scalars(select(CourseORM)).all()
     courses = []
     for o in orms:

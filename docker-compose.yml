@@ -21,13 +21,15 @@ services:
 
   backend:
     build: ./backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
       - REDIS_URL=redis://redis:6379
       - TAVILY_API_KEY=${TAVILY_API_KEY}
     depends_on:
@@ -44,12 +46,14 @@ services:
 
   arq-worker:
     build: ./backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: arq app.core.worker.WorkerSettings
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
       - REDIS_URL=redis://redis:6379
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PYTHONPATH=/app

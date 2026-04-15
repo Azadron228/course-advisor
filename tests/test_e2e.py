@@ -2,7 +2,8 @@ import unittest
 import asyncio
 from backend.app.parser import parse_transcript_html
 from backend.app.scoring.orchestrator import HybridScorer
-from backend.app.models import Student, UserPreference, Course
+from backend.app.schemas.course import Student, UserPreference, Course
+from backend.app.schemas.course import TranscriptEntry # In case it's needed
 import os
 
 class TestEndToEnd(unittest.TestCase):
