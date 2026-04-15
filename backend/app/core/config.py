@@ -28,8 +28,6 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://ollama:11434"
     TAVILY_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
-    GOOGLE_API_KEY: Optional[str] = None
-    GEMINI_MODEL_NAME: str = "gemini-1.5-flash"
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:

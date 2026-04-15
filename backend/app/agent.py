@@ -7,9 +7,7 @@ from typing import Any, Union, Type, List, Optional
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.openai import OpenAIProvider
-from pydantic_ai.providers.google import GoogleProvider
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from .schemas.internal import ModelProvider
 from .schemas.course import Student, CoursePublic as Course
@@ -53,20 +51,13 @@ class AgentDeps:
 def get_model(provider: ModelProvider = ModelProvider.AUTO):
     # Auto-detection logic
     if provider == ModelProvider.AUTO:
-        if os.getenv("GOOGLE_API_KEY"):
-            provider = ModelProvider.GEMINI
-        elif os.getenv("OPENAI_API_KEY"):
+        if os.getenv("OPENAI_API_KEY"):
             provider = ModelProvider.OPENAI
         elif os.getenv("OLLAMA_BASE_URL"):
             provider = ModelProvider.OLLAMA
         else:
             return TestModel()
     
-    if provider == ModelProvider.GEMINI:
-        return GoogleModel(
-            model_name=os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash"),
-        )
-
     if provider == ModelProvider.OLLAMA:
         base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         provider_obj = OpenAIProvider(
@@ -155,7 +146,7 @@ def is_capable_model(model: Any) -> bool:
     else:
         model_name = str(model)
     
-    capable_prefixes = ('gpt-4o', 'gemini', 'claude')
+    capable_prefixes = ('gpt-4o', 'claude')
     return any(p in model_name.lower() for p in capable_prefixes)
 
 def parse_agent_recommendation(text: str) -> AgentRecommendation:
