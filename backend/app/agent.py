@@ -100,11 +100,12 @@ def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)
     course_skills = ", ".join(course.skills_taught)
+    materials_prompt = f"\nAdditional Course Materials (Text extracted from syllabi/notes): {course.materials_content}" if course.materials_content else ""
     
     return (
         f"You are a professional university advisor. "
         f"Your task is to analyze a student's transcript and current skills "
-        f"against a specific course description and its taught skills. "
+        f"against a specific course description, its taught skills, and supplementary materials. "
         f"Provide a relevance score (0-1) in a field named 'score', "
         f"a concise reasoning in a field named 'reasoning', "
         f"and descriptive tags in a field named 'tags'.\n\n"
@@ -112,7 +113,8 @@ def get_system_prompt(ctx: RunContext[AgentDeps]) -> str:
         f"Student Current Skills: {current_skills}\n"
         f"Internal Course: {course.subject_name}\n"
         f"Internal Course Description: {course.description}\n"
-        f"Skills Taught in Internal Course: {course_skills}\n\n"
+        f"Skills Taught in Internal Course: {course_skills}\n"
+        f"{materials_prompt}\n\n"
         f"If the internal course has significant skill gaps or if the student needs supplementary "
         f"learning, you MUST use the 'search_external_resources' tool to find 1-2 high-quality "
         f"online courses (Coursera, edX, Udemy) or documentation. "

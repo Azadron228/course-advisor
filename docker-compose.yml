@@ -1,8 +1,6 @@
 services:
   db:
     image: pgvector/pgvector:pg16
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_DB=course_advisor
       - POSTGRES_USER=advisor

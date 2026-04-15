@@ -17,6 +17,8 @@ class CourseCreate(CourseBase):
 class CoursePublic(CourseBase):
     model_config = ConfigDict(from_attributes=True)
 
+Course = CoursePublic
+
 class TranscriptEntry(BaseModel):
     subject_name: str
     credits: float

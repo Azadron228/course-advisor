@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader } from '@/components/ui-base';
-import { Loader2, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, X, Check, FileUp, FileCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Course {
@@ -15,6 +15,7 @@ interface Course {
   skills_taught: string[];
   difficulty: number;
   workload: number;
+  materials_content?: string;
 }
 
 export default function AdminPage() {
@@ -23,6 +24,8 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Course>>({});
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -78,6 +81,33 @@ export default function AdminPage() {
     }
   };
 
+  const handleUploadClick = (courseId: string) => {
+    setUploadingId(courseId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !uploadingId) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setIsLoading(true);
+      await api.post(`/api/v1/admin/courses/${uploadingId}/materials`, formData);
+      alert('Materials uploaded successfully and AI embeddings updated.');
+      fetchCourses();
+    } catch (err) {
+      console.error('Failed to upload materials', err);
+      alert('Failed to upload materials');
+    } finally {
+      setIsLoading(false);
+      setUploadingId(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -88,11 +118,18 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
+      <input 
+        type="file" 
+        className="hidden" 
+        ref={fileInputRef} 
+        onChange={handleFileChange}
+        accept=".pdf,.txt,.html"
+      />
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-            <p className="text-slate-500">Manage Course Inventory</p>
+            <p className="text-slate-500">Manage Course Inventory & Materials</p>
           </div>
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
             <Plus size={20} /> Add Course
@@ -163,12 +200,17 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-slate-900">{course.subject_name}</h2>
                         <span className="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded font-mono">
                           {course.id}
                         </span>
+                        {course.materials_content && (
+                          <span className="flex items-center gap-1 bg-green-50 text-green-600 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider border border-green-100">
+                            <FileCheck size={12} /> Materials Added
+                          </span>
+                        )}
                       </div>
                       <p className="text-slate-600 mt-2 text-sm line-clamp-2">{course.description}</p>
                       <div className="flex gap-4 mt-4 text-sm">
@@ -178,10 +220,18 @@ export default function AdminPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleEdit(course)} className="p-2 text-slate-500 hover:bg-slate-100 rounded">
+                      <button 
+                        onClick={() => handleUploadClick(course.id)} 
+                        title="Upload Materials (PDF, TXT)"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded flex items-center gap-1 border border-transparent hover:border-blue-100"
+                      >
+                        <FileUp size={18} />
+                        <span className="text-xs font-semibold">Materials</span>
+                      </button>
+                      <button onClick={() => handleEdit(course)} className="p-2 text-slate-500 hover:bg-slate-100 rounded border border-transparent">
                         <Pencil size={18} />
                       </button>
-                      <button onClick={() => handleDelete(course.id)} className="p-2 text-red-500 hover:bg-red-50 rounded">
+                      <button onClick={() => handleDelete(course.id)} className="p-2 text-red-500 hover:bg-red-50 rounded border border-transparent">
                         <Trash2 size={18} />
                       </button>
                     </div>
