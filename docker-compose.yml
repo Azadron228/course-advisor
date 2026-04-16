@@ -29,12 +29,11 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
       - REDIS_URL=redis://redis:6379
       - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db
-      - ollama
       - redis
     develop:
       watch: 
@@ -53,28 +52,17 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgresql://advisor:advisor_password@db:5432/course_advisor
-      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
       - REDIS_URL=redis://redis:6379
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - PYTHONPATH=/app
     depends_on:
       - db
-      - ollama
       - redis
     develop:
       watch: 
         - action: sync
           path: ./backend
           target: /app
-    networks:
-      - advisor-net
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
     networks:
       - advisor-net
 
@@ -100,5 +88,4 @@ networks:
 
 volumes:
   postgres_data:
-  ollama_data:
   redis_data:

@@ -41,4 +41,9 @@ class RAGScorer:
             
         result = await job.result()
         await pool.close()
+        
+        if isinstance(result, dict) and "error" in result:
+             logger.error(f"Agent job failed with {result.get('error_type', 'Exception')}: {result['error']}")
+             raise Exception(f"Agent recommendation failed: {result['error']}")
+             
         return AgentRecommendation(**result)

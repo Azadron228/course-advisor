@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 llama-index
-llama-index-llms-ollama
 llama-index-llms-openai
 llama-index-embeddings-openai
 pydantic-settings

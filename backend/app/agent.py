@@ -7,7 +7,6 @@ from typing import Any, Union, Type, List, Optional
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.openai import OpenAI
-from llama_index.llms.ollama import Ollama
 from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
@@ -52,32 +51,17 @@ class AgentDeps:
     course: Course
 
 def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
-    # Auto-detection logic
+    # Auto-detection logic - default to OpenAI
     if provider == ModelProvider.AUTO:
-        if os.getenv("OPENAI_API_KEY"):
-            provider = ModelProvider.OPENAI
-        elif os.getenv("OLLAMA_BASE_URL"):
-            provider = ModelProvider.OLLAMA
-        else:
-            # Fallback to OpenAI if no Ollama but API key might be missing
-            provider = ModelProvider.OPENAI
-    
-    if provider == ModelProvider.OLLAMA:
-        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        return Ollama(
-            model="llama3.2", # Updated to llama3.2
-            base_url=base_url,
-            request_timeout=120.0,
-        )
+        provider = ModelProvider.OPENAI
     
     if provider == ModelProvider.OPENAI:
-        if not os.getenv("OPENAI_API_KEY"):
-            # Return a dummy model or raise error. LlamaIndex doesn't have a direct TestModel like pydantic-ai
-            # For testing purposes, we might just return OpenAI with dummy key
-            return OpenAI(model="gpt-4o", api_key="sk-dummy")
-        return OpenAI(model="gpt-4o")
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key or api_key == "sk-placeholder-key":
+            return OpenAI(model="gpt-5.4-nano", api_key="sk-dummy")
+        return OpenAI(model="gpt-5.4-nano")
 
-    return OpenAI(model="gpt-4o", api_key="sk-dummy")
+    return OpenAI(model="gpt-5.4-nano", api_key=os.getenv("OPENAI_API_KEY", "sk-dummy"))
 
 async def search_external_resources(query: str) -> str:
     """

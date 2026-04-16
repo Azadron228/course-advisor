@@ -25,7 +25,6 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
 
     # External APIs
-    OLLAMA_BASE_URL: str = "http://ollama:11434"
     TAVILY_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
 

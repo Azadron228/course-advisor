@@ -1,12 +1,11 @@
 import unittest
-from backend.app.models import TranscriptEntry, Student, Course, ModelProvider
+from backend.app.schemas.course import TranscriptEntry, Student, Course
+from backend.app.schemas.internal import ModelProvider
 from pydantic import ValidationError
 
 class TestModels(unittest.TestCase):
     def test_model_provider_enum(self):
         self.assertEqual(ModelProvider.OPENAI, "openai")
-        self.assertEqual(ModelProvider.OLLAMA, "ollama")
-        self.assertEqual(ModelProvider.GEMINI, "gemini")
         self.assertEqual(ModelProvider.AUTO, "auto")
 
     def test_transcript_entry_validation(self):
@@ -34,7 +33,6 @@ class TestModels(unittest.TestCase):
             subject_name="Intro to CS",
             credits=6.0,
             description="Basics of programming",
-            prerequisites=[],
             skills_taught=["Programming"],
             difficulty=0.2,
             workload=0.3
@@ -47,7 +45,6 @@ class TestModels(unittest.TestCase):
                 subject_name="Advanced CS",
                 credits=6.0,
                 description="Complex stuff",
-                prerequisites=[],
                 skills_taught=["Algorithms"],
                 difficulty=1.5, # Invalid
                 workload=0.5

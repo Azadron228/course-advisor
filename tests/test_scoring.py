@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 from sqlalchemy.orm import Session
 from backend.app.scoring.skill_gap import SkillGapScorer
-from backend.app.models import Student, Course
+from backend.app.schemas.course import Student, Course
 
 class TestSkillGapScorer(unittest.TestCase):
     def setUp(self):
@@ -35,7 +35,7 @@ class TestSkillGapScorer(unittest.TestCase):
         self.assertEqual(score, 0.0)
 
 from backend.app.scoring.content import ContentScorer
-from backend.app.models import TranscriptEntry
+from backend.app.schemas.course import TranscriptEntry
 
 class TestContentScorer(unittest.TestCase):
     def setUp(self):
@@ -60,7 +60,7 @@ class TestContentScorer(unittest.TestCase):
             self.assertEqual(score, 0.85)
 
 from backend.app.scoring.preference import PreferenceScorer
-from backend.app.models import UserPreference
+from backend.app.schemas.course import UserPreference
 
 class TestPreferenceScorer(unittest.TestCase):
     def setUp(self):
