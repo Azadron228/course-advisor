@@ -23,6 +23,8 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
+    REDIS_CHAT_MAX_MESSAGES: int = 20
+    REDIS_CHAT_EXPIRE_SECONDS: int = 86400
 
     # External APIs
     TAVILY_API_KEY: Optional[str] = None

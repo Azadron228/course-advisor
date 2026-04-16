@@ -56,3 +56,13 @@ export interface User {
   full_name?: string;
   is_admin: boolean;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatResponse {
+  response: string;
+  history: ChatMessage[];
+}

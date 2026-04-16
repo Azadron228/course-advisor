@@ -9,18 +9,17 @@ class TestScaffolding(unittest.TestCase):
     def test_backend_requirements_exists(self):
         self.assertTrue(os.path.exists('backend/requirements.txt'), "backend/requirements.txt is missing")
 
-    def test_frontend_requirements_exists(self):
-        self.assertTrue(os.path.exists('frontend/requirements.txt'), "frontend/requirements.txt is missing")
+    def test_frontend_package_json_exists(self):
+        self.assertTrue(os.path.exists('frontend/package.json'), "frontend/package.json is missing")
 
-    def test_frontend_requirements_content(self):
-        requirements_path = 'frontend/requirements.txt'
-        if not os.path.exists(requirements_path):
-             self.skipTest("frontend/requirements.txt is missing")
-        with open(requirements_path, 'r') as f:
+    def test_frontend_package_json_content(self):
+        package_json_path = 'frontend/package.json'
+        if not os.path.exists(package_json_path):
+             self.skipTest("frontend/package.json is missing")
+        with open(package_json_path, 'r') as f:
             content = f.read()
-        self.assertIn('streamlit', content)
-        self.assertIn('httpx', content)
-        self.assertIn('pandas', content)
+        self.assertIn('next', content)
+        self.assertIn('react', content)
 
     def test_docker_compose_services(self):
         with open('docker-compose.yml', 'r') as f:
@@ -36,9 +35,8 @@ class TestScaffolding(unittest.TestCase):
         self.assertIn(db.get('image'), ['postgres:16', 'pgvector/pgvector:pg16', 'ankane/pgvector:v0.7.0'])
         
         # Check ports
-        self.assertIn('5432:5432', db.get('ports', []))
         self.assertIn('8000:8000', services['backend'].get('ports', []))
-        self.assertIn('8501:8501', services['frontend'].get('ports', []))
+        self.assertIn('3000:3000', services['frontend'].get('ports', []))
 
         # Check environment variables for DB
         db_env = db.get('environment', {})

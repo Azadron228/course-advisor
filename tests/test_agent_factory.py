@@ -10,7 +10,7 @@ class TestAgentFactory(unittest.TestCase):
     def test_get_model_auto_uses_openai(self):
         model = get_model(ModelProvider.AUTO)
         self.assertIsInstance(model, OpenAI)
-        self.assertEqual(model.model, 'gpt-4o-mini')
+        self.assertEqual(model.model, 'gpt-5.4-nano')
 
     @patch.dict(os.environ, {}, clear=True)
     def test_get_model_auto_fallback_to_openai_dummy(self):

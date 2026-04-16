@@ -123,6 +123,29 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
         system_prompt=system_prompt
     )
 
+def get_advisor_agent(llm: LLM, transcript_summary: str = "No transcript provided.", current_skills: str = "No skills provided.") -> ReActAgent:
+    tools = [
+        FunctionTool.from_defaults(async_fn=search_external_resources)
+    ]
+    
+    system_prompt = (
+        "You are a professional university academic advisor. "
+        "Your goal is to help students with course selection, career advice, and learning strategies. "
+        "Use your knowledge and available tools to provide high-quality, personalized guidance.\n\n"
+        f"Student Academic Context:\n"
+        f"- Completed/Current Courses: {transcript_summary}\n"
+        f"- Current Skills: {current_skills}\n\n"
+        "When giving advice, consider the student's background. If you need to suggest external resources, "
+        "use the 'search_external_resources' tool. Be professional, supportive, and concise."
+    )
+    
+    return ReActAgent(
+        tools=tools,
+        llm=llm,
+        verbose=True,
+        system_prompt=system_prompt
+    )
+
 def is_capable_model(llm: LLM) -> bool:
     model_name = getattr(llm, 'model', getattr(llm, 'model_name', ""))
     capable_prefixes = ('gpt-4o', 'claude')

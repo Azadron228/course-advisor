@@ -1,16 +1,79 @@
+import logging
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from arq.jobs import Job, JobStatus
+
 from ...schemas.course import Student, UserPreference
-from ...schemas.recommendation import RecommendationResponse
+from ...schemas.recommendation import (
+    RecommendationResponse,
+    ChatRequest,
+    ChatResponse,
+    ChatMessage
+)
 from ...schemas.internal import ModelProvider
 from ...schemas.user import UserBase as User
 from ...crud import get_all_courses
 from ...scoring.orchestrator import HybridScorer
+from ...core.redis_chat import RedisChatHistory
+from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
+from ...agent import get_advisor_agent, get_model
 from ..deps import get_db, get_current_active_user, get_arq_pool
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 scorer = HybridScorer()
+chat_history = RedisChatHistory()
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat_with_advisor(
+    request: ChatRequest,
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        # Get history from Redis
+        history_dicts = await chat_history.get_history(current_user.email)
+        
+        # Convert to LlamaIndex ChatMessage format
+        chat_messages = []
+        for m in history_dicts:
+            role = MessageRole.USER if m["role"] == "user" else MessageRole.ASSISTANT
+            chat_messages.append(LLMChatMessage(role=role, content=m["content"]))
+        
+        # Get the agent
+        llm = get_model(ModelProvider.AUTO)
+        # For now, we use defaults for transcript/skills or we could fetch from DB if available
+        # Assuming for this task we use placeholders or what we have.
+        # In a real scenario, we'd fetch the student record.
+        agent = get_advisor_agent(llm)
+        
+        # Chat with agent
+        logger.info(f"Chat request from user {current_user.email}: {request.message[:50]}...")
+        response = await agent.run(user_msg=request.message, chat_history=chat_messages)
+        response_content = str(response)
+        
+        # Store new messages
+        await chat_history.add_message(current_user.email, "user", request.message)
+        await chat_history.add_message(current_user.email, "assistant", response_content)
+        
+        # Return updated history
+        updated_history_dicts = await chat_history.get_history(current_user.email)
+        history = [ChatMessage(**m) for m in updated_history_dicts]
+        
+        return ChatResponse(response=response_content, history=history)
+    except Exception as e:
+        logger.error(f"Error in chat_with_advisor for user {current_user.email}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error during chat processing")
+
+
+@router.get("/chat/history", response_model=List[ChatMessage])
+async def get_chat_history_endpoint(
+    current_user: User = Depends(get_current_active_user)
+):
+    history_dicts = await chat_history.get_history(current_user.email)
+    return [ChatMessage(**m) for m in history_dicts]
+
 
 @router.post("/recommend", response_model=RecommendationResponse)
 async def get_recommendations(

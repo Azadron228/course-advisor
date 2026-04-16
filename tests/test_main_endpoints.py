@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from backend.app.main import app
-from backend.app.db import get_db, Base
+from backend.app.api.deps import get_db
+from backend.app.db import Base
 from backend.app.models import UserORM
 
 # Setup test database
@@ -27,13 +28,16 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_db():
+    app.dependency_overrides = {}
+    app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides = {}
 
 def test_register_user():
     response = client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     assert response.status_code == 200
@@ -44,11 +48,11 @@ def test_register_user():
 
 def test_register_duplicate_user():
     client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     response = client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     assert response.status_code == 400
@@ -56,12 +60,12 @@ def test_register_duplicate_user():
 
 def test_login_for_access_token():
     client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     response = client.post(
-        "/token",
-        data={"email": "test@example.com", "password": "password123"},
+        "/api/v1/auth/token",
+        data={"username": "test@example.com", "password": "password123"},
     )
     assert response.status_code == 200
     data = response.json()
@@ -70,19 +74,19 @@ def test_login_for_access_token():
 
 def test_login_invalid_credentials():
     client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     response = client.post(
-        "/token",
-        data={"email": "test@example.com", "password": "wrongpassword"},
+        "/api/v1/auth/token",
+        data={"username": "test@example.com", "password": "wrongpassword"},
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
 
 def test_get_recommendations_unauthorized():
     response = client.post(
-        "/recommend",
+        "/api/v1/recommendations/recommend",
         json={
             "student": {
                 "id": "s1", "name": "S1", "transcript": [], "current_skills": []
@@ -97,22 +101,22 @@ def test_get_recommendations_unauthorized():
 def test_get_recommendations_authorized():
     # Register and login
     client.post(
-        "/register",
+        "/api/v1/auth/register",
         json={"email": "test@example.com", "password": "password123", "full_name": "Test User"},
     )
     login_response = client.post(
-        "/token",
-        data={"email": "test@example.com", "password": "password123"},
+        "/api/v1/auth/token",
+        data={"username": "test@example.com", "password": "password123"},
     )
     token = login_response.json()["access_token"]
 
     # Mock scorer to avoid external dependencies
     from unittest.mock import patch
-    with patch("backend.app.main.scorer.recommend") as mock_recommend:
+    with patch("backend.app.api.v1.recommendations.scorer.recommend") as mock_recommend:
         mock_recommend.return_value = {"results": []}
         
         response = client.post(
-            "/recommend",
+            "/api/v1/recommendations/recommend",
             json={
                 "student": {
                     "id": "s1", "name": "S1", "transcript": [], "current_skills": []
