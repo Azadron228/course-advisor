@@ -2,31 +2,32 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from ...schemas.user import UserBase as User, UserCreate, UserPublic
-from ...schemas.token import Token
+from .schemas.auth import UserCreate, UserPublic, Token
 from ...core.config import settings
 from ...core.security import get_password_hash, create_access_token, verify_password
-from ...crud import get_user_by_email, create_user
+from ...repositories.user import UserRepository
 from ..deps import get_db, get_current_active_user
 
 router = APIRouter()
 
 def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email)
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_email(email)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):
         return False
     return user
 
-@router.post("/register", response_model=User)
+@router.post("/register", response_model=UserPublic)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = get_user_by_email(db, user.email)
+    user_repo = UserRepository(db)
+    db_user = user_repo.get_by_email(user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed_password = get_password_hash(user.password)
-    create_user(db, user.email, hashed_password, user.full_name)
-    return User(email=user.email, full_name=user.full_name)
+    created_user = user_repo.create(user.email, hashed_password, user.full_name)
+    return created_user
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
@@ -44,5 +45,5 @@ async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserPublic)
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
+async def read_users_me(current_user: UserPublic = Depends(get_current_active_user)):
     return current_user

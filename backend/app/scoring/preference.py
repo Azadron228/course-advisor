@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from ..schemas.course import Student, Course, UserPreference
+from ..api.v1.schemas.recommendations import Student, UserPreference
+from ..dtos.course import CourseDTO as Course
 
 class PreferenceScorer:
     def score(self, db: Session, student: Student, course: Course, preference: UserPreference) -> float:

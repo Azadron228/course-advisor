@@ -2,9 +2,8 @@ import logging
 import asyncio
 import os
 from sqlalchemy.orm import Session
-from ..schemas.internal import ModelProvider
-from ..schemas.course import Student, Course
-from ..schemas.recommendation import RecommendationResult # Not actually used here but for reference
+from ..api.v1.schemas.recommendations import ModelProvider, Student
+from ..dtos.course import CourseDTO as Course
 from ..agent import AgentRecommendation
 from arq import create_pool
 from arq.connections import RedisSettings

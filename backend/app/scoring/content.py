@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
-from ..schemas.course import Student
+from ..api.v1.schemas.recommendations import Student
 from ..models import CourseORM
 from ..embeddings import get_embedding
 

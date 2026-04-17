@@ -85,17 +85,6 @@ export const RoadmapView: React.FC<RoadmapViewProps> = ({ results, difficulty })
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card className="bg-blue-600 text-white border-0">
-            <CardContent className="p-8 space-y-2">
-              <Zap size={32} className="text-blue-200 mb-4" />
-              <h2 className="text-2xl font-bold">Smart Recommendation</h2>
-              <p className="text-blue-100 text-sm opacity-80 leading-relaxed">
-                We prioritize courses that fill your critical skill gaps while maintaining your target {difficulty > 0.5 ? 'challenge' : 'workload'}.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
 
       {/* Learning Path */}

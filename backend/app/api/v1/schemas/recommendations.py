@@ -1,6 +1,22 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 
+class TranscriptEntry(BaseModel):
+    subject_name: str
+    credits: float
+    mark: float = Field(ge=0, le=100)
+
+class Student(BaseModel):
+    id: str
+    name: str
+    transcript: List[TranscriptEntry]
+    current_skills: List[str]
+
+class UserPreference(BaseModel):
+    interest_tags: List[str]
+    target_difficulty: float
+    max_workload: float
+
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -46,7 +62,7 @@ class LearningPathStep(BaseModel):
     order: int
     title: str
     description: str
-    resource_id: Optional[str] = None # Internal course ID or external URL
+    resource_id: Optional[str] = None
     is_external: bool = False
     model_config = ConfigDict(from_attributes=True)
 

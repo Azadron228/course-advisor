@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from ...crud import get_all_courses
+from ...repositories.course import CourseRepository
 from ..deps import get_db, get_current_admin_user
 from ...models import CourseORM
-from ...schemas.course import CoursePublic, CourseCreate
+from .schemas.course import CoursePublic, CourseCreate
 from ...embeddings import get_embedding
 import io
 try:
@@ -19,7 +19,8 @@ async def read_courses(
     db: Session = Depends(get_db),
     admin_user = Depends(get_current_admin_user)
 ):
-    return get_all_courses(db)
+    course_repo = CourseRepository(db)
+    return course_repo.get_all()
 
 @router.put("/courses/{course_id}", response_model=CoursePublic)
 async def update_course(
@@ -28,7 +29,8 @@ async def update_course(
     db: Session = Depends(get_db),
     admin_user = Depends(get_current_admin_user)
 ):
-    course = db.scalar(select(CourseORM).where(CourseORM.id == course_id))
+    course_repo = CourseRepository(db)
+    course = course_repo.get_orm_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     
@@ -40,9 +42,7 @@ async def update_course(
     if "description" in update_data:
         course.embedding = get_embedding(course.description)
         
-    db.add(course)
-    db.commit()
-    db.refresh(course)
+    course_repo.save(course)
     return course
 
 @router.post("/courses/{course_id}/materials", response_model=CoursePublic)
@@ -52,7 +52,8 @@ async def upload_course_materials(
     db: Session = Depends(get_db),
     admin_user = Depends(get_current_admin_user)
 ):
-    course = db.scalar(select(CourseORM).where(CourseORM.id == course_id))
+    course_repo = CourseRepository(db)
+    course = course_repo.get_orm_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     
@@ -85,9 +86,7 @@ async def upload_course_materials(
     combined_text = f"{course.description}\n\n{content[:5000]}" # Limit to first 5000 chars for embedding to avoid too large input
     course.embedding = get_embedding(combined_text)
     
-    db.add(course)
-    db.commit()
-    db.refresh(course)
+    course_repo.save(course)
     return course
 
 @router.delete("/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -96,10 +95,10 @@ async def delete_course(
     db: Session = Depends(get_db),
     admin_user = Depends(get_current_admin_user)
 ):
-    course = db.scalar(select(CourseORM).where(CourseORM.id == course_id))
+    course_repo = CourseRepository(db)
+    course = course_repo.get_orm_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
     
-    db.delete(course)
-    db.commit()
+    course_repo.delete(course)
     return None

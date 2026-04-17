@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from .schemas.course import Student, CoursePublic as Course
-from .schemas.internal import ModelProvider
+from .api.v1.schemas.recommendations import Student, ModelProvider
+from .dtos.course import CourseDTO as Course
 from .agent import get_recommendation_agent, get_model, parse_agent_recommendation, AgentRecommendation
 
 logger = logging.getLogger(__name__)

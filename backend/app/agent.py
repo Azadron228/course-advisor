@@ -11,8 +11,8 @@ from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 
-from .schemas.internal import ModelProvider
-from .schemas.course import Student, CoursePublic as Course
+from .api.v1.schemas.recommendations import ModelProvider, Student
+from .dtos.course import CourseDTO as Course
 from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)

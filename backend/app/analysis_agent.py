@@ -8,9 +8,8 @@ from pydantic import BaseModel, Field
 from llama_index.core.agent import ReActAgent
 from llama_index.core.llms import LLM
 
-from .schemas.course import Student, CoursePublic as Course
-from .schemas.recommendation import SkillGapAnalysis, LearningPathStep
-from .schemas.internal import ModelProvider
+from .api.v1.schemas.recommendations import Student, SkillGapAnalysis, LearningPathStep, ModelProvider
+from .dtos.course import CourseDTO as Course
 from .agent import get_model, is_capable_model
 
 logger = logging.getLogger(__name__)

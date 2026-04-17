@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from ...schemas.course import TranscriptEntry
-from ...schemas.user import UserBase as User
+from .schemas.recommendations import TranscriptEntry
+from .schemas.auth import UserPublic as User
 from ...parser import parse_transcript_html
 from ..deps import get_current_active_user
 

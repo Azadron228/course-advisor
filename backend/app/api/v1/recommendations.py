@@ -4,16 +4,16 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from arq.jobs import Job, JobStatus
 
-from ...schemas.course import Student, UserPreference
-from ...schemas.recommendation import (
+from .schemas.recommendations import (
+    Student, UserPreference,
     RecommendationResponse,
     ChatRequest,
     ChatResponse,
-    ChatMessage
+    ChatMessage,
+    ModelProvider
 )
-from ...schemas.internal import ModelProvider
-from ...schemas.user import UserBase as User
-from ...crud import get_all_courses
+from .schemas.auth import UserPublic as User
+from ...repositories.course import CourseRepository
 from ...scoring.orchestrator import HybridScorer
 from ...core.redis_chat import RedisChatHistory
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
@@ -82,7 +82,8 @@ async def get_recommendations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    courses = get_all_courses(db)
+    course_repo = CourseRepository(db)
+    courses = course_repo.get_all()
     if not courses:
          return RecommendationResponse(results=[])
     return await scorer.recommend(db, student, courses, preference, provider=ModelProvider.AUTO)
@@ -96,10 +97,12 @@ async def enqueue_recommendation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
+    course_repo = CourseRepository(db)
+    courses = course_repo.get_all()
     job = await arq_pool.enqueue_job(
         'run_hybrid_recommendation',
         student.model_dump(),
-        [c.model_dump() for c in get_all_courses(db)],
+        [c.__dict__ for c in courses],
         preference.model_dump()
     )
     if job is None:

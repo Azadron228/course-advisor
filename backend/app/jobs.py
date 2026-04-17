@@ -1,5 +1,6 @@
 import logging
-from .schemas.course import Student, Course, UserPreference
+from .api.v1.schemas.recommendations import Student, UserPreference
+from .dtos.course import CourseDTO as Course
 from .scoring.orchestrator import HybridScorer
 from .db import SessionLocal
 
