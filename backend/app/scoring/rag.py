@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import os
+from dataclasses import asdict
 from sqlalchemy.orm import Session
 from ..api.v1.schemas.recommendations import ModelProvider, Student
 from ..dtos.course import CourseDTO as Course
@@ -20,7 +21,7 @@ class RAGScorer:
         job = await pool.enqueue_job(
             'run_agent_task',
             student.model_dump(),
-            course.model_dump(),
+            asdict(course),
             provider.value
         )
         if job is None:

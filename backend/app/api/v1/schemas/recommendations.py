@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
+from enum import Enum
 
 class TranscriptEntry(BaseModel):
     subject_name: str
@@ -71,3 +72,7 @@ class RecommendationResponse(BaseModel):
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
     learning_path: List[LearningPathStep] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
+
+class ModelProvider(str, Enum):
+    OPENAI = "openai"
+    AUTO = "auto"
