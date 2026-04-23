@@ -49,8 +49,6 @@ class AdvisorService:
             skill_gap = self.scoring_service.calculate_skill_gap(student, course)
             pref_score = self.scoring_service.calculate_preference_score(course, preference)
 
-            # TODO: Refactor RAGScorer to be an infrastructure service
-            # For now, we use a mock-like or temporary call
             rag_result = await self.rag_scorer.score(self.course_repo.db, student, course, provider)
 
             total_score = self.scoring_service.combine_scores(
@@ -88,8 +86,6 @@ class AdvisorService:
 
         try:
             llm = get_model(provider)
-            # Adapt domain courses back to what analysis_agent expects if needed,
-            # or refactor analysis_agent to take domain entities.
             agent = get_analysis_agent(llm, student, courses)
 
             response = await agent.run(user_msg="Perform global analysis and output JSON.")

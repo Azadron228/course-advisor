@@ -116,14 +116,14 @@ async def enqueue_recommendation(
     student: StudentSchema,
     preference: UserPreferenceSchema,
     arq_pool=Depends(get_arq_pool),
-    advisor_service: AdvisorService = Depends(get_advisor_service),
     current_user: User = Depends(get_current_active_user),
 ):
-    # We still have old task name in infrastructure, but we might want to update it
-    
-    # arq task 'run_hybrid_recommendation' is now outdated, we should probably
-    # use a more modern one or keep it for compatibility if we refactor it too.
-    # For now, let's just show the pattern.
-
-    # job = await arq_pool.enqueue_job(...)
-    return {"message": "Enqueued (pattern demonstration)"}
+    job = await arq_pool.enqueue_job(
+        "run_hybrid_recommendation",
+        student.model_dump(),
+        preference.model_dump(),
+        "auto",
+    )
+    if job is None:
+        raise HTTPException(status_code=500, detail="Failed to enqueue job")
+    return {"job_id": job.job_id}

@@ -32,3 +32,39 @@ async def run_agent_task(
     except Exception as e:
         logger.error(f"Error in run_agent_task: {e}", exc_info=True)
         return {"error": str(e), "error_type": type(e).__name__, "status": "failed"}
+
+
+async def run_hybrid_recommendation(
+    ctx: dict, student_dict: dict, preference_dict: dict, provider_name: str = "auto"
+) -> dict:
+    from app.core.container import get_container
+    from app.services.advisor_service import AdvisorService
+    from app.domain.recommendation.entities import UserPreference, TranscriptEntry
+    from app.api.v1.schemas.recommendations import RecommendationResponse
+
+    try:
+        transcript = [
+            TranscriptEntry(**entry) for entry in student_dict.get("transcript", [])
+        ]
+        student = Student(
+            id=student_dict["id"],
+            name=student_dict["name"],
+            transcript=transcript,
+            current_skills=student_dict["current_skills"],
+        )
+        preference = UserPreference(**preference_dict)
+        provider = ModelProvider(provider_name)
+
+        container = get_container()
+        advisor_service = container.resolve(AdvisorService)
+        courses = advisor_service.course_repo.get_all()
+
+        domain_response = await advisor_service.recommend(
+            student, courses, preference, provider=provider
+        )
+
+        schema_response = RecommendationResponse.model_validate(domain_response)
+        return schema_response.model_dump()
+    except Exception as e:
+        logger.error(f"Error in run_hybrid_recommendation task: {e}", exc_info=True)
+        return {"error": str(e), "error_type": type(e).__name__, "status": "failed"}
