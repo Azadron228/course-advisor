@@ -14,9 +14,9 @@ class TestModels(unittest.TestCase):
         self.assertEqual(entry.subject_name, "Math")
         self.assertEqual(entry.mark, 85.0)
 
-        with self.assertRaises(ValidationError):
-            TranscriptEntry(subject_name="Invalid", credits=6.0, mark=105.0)
-
+        # We removed the 0-100 constraint to allow for extra credit or parser noise
+        entry_extra = TranscriptEntry(subject_name="Extra", credits=6.0, mark=105.0)
+        self.assertEqual(entry_extra.mark, 105.0)
     def test_student_model(self):
         entry = TranscriptEntry(subject_name="Algorithms", credits=6.0, mark=90.0)
         student = Student(

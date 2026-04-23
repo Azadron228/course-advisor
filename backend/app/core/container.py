@@ -10,7 +10,8 @@ from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.rag import RAGScorer
 from app.services.advisor_service import AdvisorService
 
-@lru_cache(max_size=1)
+
+@lru_cache(1)
 def get_container() -> punq.Container:
     container = punq.Container()
 

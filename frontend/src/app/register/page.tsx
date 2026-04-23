@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui-base';
 import Link from 'next/link';
 import { GraduationCap, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { formatError } from '@/lib/utils';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,7 @@ export default function RegisterPage() {
       router.push('/login?registered=true');
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Registration failed.');
+      setError(formatError(err));
     } finally {
       setIsLoading(false);
     }

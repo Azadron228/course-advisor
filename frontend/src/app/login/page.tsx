@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { Card, CardContent, CardHeader } from '@/components/ui-base';
 import Link from 'next/link';
 import { GraduationCap, Loader2 } from 'lucide-react';
+import { formatError } from '@/lib/utils';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,7 +33,7 @@ export default function LoginPage() {
       await login(resp.data.access_token);
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      setError(formatError(err));
     } finally {
       setIsLoading(false);
     }

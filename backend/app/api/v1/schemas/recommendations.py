@@ -6,7 +6,7 @@ from enum import Enum
 class TranscriptEntry(BaseModel):
     subject_name: str
     credits: float
-    mark: float = Field(ge=0, le=100)
+    mark: float
 
 
 class Student(BaseModel):

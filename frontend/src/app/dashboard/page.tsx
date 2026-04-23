@@ -17,6 +17,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChatSidebar } from './ChatSidebar';
 import { WelcomeCard } from './WelcomeCard';
 import { RoadmapView } from './RoadmapView';
+import { formatError } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -82,12 +83,7 @@ export default function DashboardPage() {
 
       setResults(recResp.data);
     } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err) {
-        const anyErr = err as any;
-        setError(anyErr.response?.data?.detail || 'An error occurred during generation.');
-      } else {
-        setError('An unexpected error occurred.');
-      }
+      setError(formatError(err));
     } finally {
       setIsLoading(false);
     }

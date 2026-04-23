@@ -79,23 +79,23 @@ async def get_chat_history_endpoint(
 
 @router.post("/recommend", response_model=RecommendationResponseSchema)
 async def get_recommendations(
-    student_schema: StudentSchema,
-    preference_schema: UserPreferenceSchema,
+    student: StudentSchema,
+    preference: UserPreferenceSchema,
     advisor_service: AdvisorService = Depends(get_advisor_service),
     current_user: User = Depends(get_current_active_user),
 ):
     # Convert Schemas to Domain Entities
-    transcript = [TranscriptEntry(**entry.model_dump()) for entry in student_schema.transcript]
-    student = Student(
-        id=student_schema.id,
-        name=student_schema.name,
+    transcript = [TranscriptEntry(**entry.model_dump()) for entry in student.transcript]
+    student_domain = Student(
+        id=student.id,
+        name=student.name,
         transcript=transcript,
-        current_skills=student_schema.current_skills,
+        current_skills=student.current_skills,
     )
-    preference = UserPreference(
-        interest_tags=preference_schema.interest_tags,
-        target_difficulty=preference_schema.target_difficulty,
-        max_workload=preference_schema.max_workload,
+    preference_domain = UserPreference(
+        interest_tags=preference.interest_tags,
+        target_difficulty=preference.target_difficulty,
+        max_workload=preference.max_workload,
     )
 
     # We still need all courses for recommendation
@@ -104,7 +104,7 @@ async def get_recommendations(
         return RecommendationResponseSchema(results=[])
 
     domain_response = await advisor_service.recommend(
-        student, courses, preference, provider=DomainModelProvider.AUTO
+        student_domain, courses, preference_domain, provider=DomainModelProvider.AUTO
     )
 
     # Return domain response (FastAPI will convert dataclass to schema)
