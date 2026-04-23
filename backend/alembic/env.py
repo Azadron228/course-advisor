@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 sys.path.append(os.getcwd())
-from app.infrastructure.db.models import Base
+from app.infrastructure.db.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 

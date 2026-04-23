@@ -3,13 +3,12 @@ import json
 import re
 import logging
 from dataclasses import dataclass
-from typing import Any, Union, Type, List, Optional
+from typing import List
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
-from llama_index.core.base.llms.types import ChatMessage, MessageRole
 
 from app.domain.recommendation.entities import ModelProvider, Student
 from app.domain.catalog.entities import Course

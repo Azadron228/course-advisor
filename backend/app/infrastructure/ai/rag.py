@@ -1,6 +1,5 @@
 import logging
 import asyncio
-import os
 from dataclasses import asdict
 from sqlalchemy.orm import Session
 from app.domain.recommendation.entities import ModelProvider, Student

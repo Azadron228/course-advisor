@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Union, Any
+from typing import Optional
 from pwdlib import PasswordHash
 from .config import settings
 

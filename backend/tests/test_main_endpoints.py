@@ -9,7 +9,6 @@ from sqlalchemy.orm import sessionmaker
 from backend.app.main import app
 from backend.app.api.deps import get_db
 from backend.app.db import Base
-from backend.app.models import UserORM
 
 # Setup test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"

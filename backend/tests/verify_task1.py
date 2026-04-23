@@ -17,7 +17,7 @@ def verify_task1():
 
     token = create_access_token(data={"sub": "test@example.com"})
     assert isinstance(token, str)
-    print(f"JWT token generation: OK")
+    print("JWT token generation: OK")
 
     print("\nTask 1 Verification: SUCCESS")
 

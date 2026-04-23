@@ -44,8 +44,8 @@ class TestSkillGapScorer(unittest.TestCase):
         self.assertEqual(score, 0.0)
 
 
-from backend.app.scoring.content import ContentScorer
-from backend.app.schemas.course import TranscriptEntry
+from backend.app.scoring.content import ContentScorer  # noqa: E402
+from backend.app.schemas.course import TranscriptEntry  # noqa: E402
 
 
 class TestContentScorer(unittest.TestCase):
@@ -74,8 +74,8 @@ class TestContentScorer(unittest.TestCase):
             self.assertEqual(score, 0.85)
 
 
-from backend.app.scoring.preference import PreferenceScorer
-from backend.app.schemas.course import UserPreference
+from backend.app.scoring.preference import PreferenceScorer  # noqa: E402
+from backend.app.schemas.course import UserPreference  # noqa: E402
 
 
 class TestPreferenceScorer(unittest.TestCase):

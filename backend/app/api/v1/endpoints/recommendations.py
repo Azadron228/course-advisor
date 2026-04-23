@@ -1,8 +1,6 @@
 import logging
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
-from arq.jobs import Job, JobStatus
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.v1.schemas.recommendations import (
     Student as StudentSchema,
@@ -11,7 +9,6 @@ from app.api.v1.schemas.recommendations import (
     ChatRequest,
     ChatResponse,
     ChatMessage,
-    ModelProvider,
 )
 from app.domain.recommendation.entities import (
     Student,
@@ -20,13 +17,11 @@ from app.domain.recommendation.entities import (
     ModelProvider as DomainModelProvider,
 )
 from app.api.v1.schemas.auth import UserPublic as User
-from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
 from app.infrastructure.ai.agent import get_advisor_agent, get_model
 from app.api.deps import (
-    get_db,
     get_current_active_user,
     get_arq_pool,
     get_advisor_service,
@@ -125,8 +120,7 @@ async def enqueue_recommendation(
     current_user: User = Depends(get_current_active_user),
 ):
     # We still have old task name in infrastructure, but we might want to update it
-    courses = advisor_service.course_repo.get_all()
-
+    
     # arq task 'run_hybrid_recommendation' is now outdated, we should probably
     # use a more modern one or keep it for compatibility if we refactor it too.
     # For now, let's just show the pattern.

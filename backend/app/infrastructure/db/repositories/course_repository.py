@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models import CourseORM
 from app.domain.catalog.entities import Course

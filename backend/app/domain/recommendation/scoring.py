@@ -1,5 +1,4 @@
-from typing import List, Set
-from app.domain.recommendation.entities import Student, ScoreBreakdown, UserPreference
+from app.domain.recommendation.entities import Student, UserPreference
 from app.domain.catalog.entities import Course
 
 

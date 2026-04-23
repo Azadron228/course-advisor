@@ -1,10 +1,9 @@
-import os
 import json
 import re
 import logging
 from dataclasses import dataclass
-from typing import Any, List, Optional
-from pydantic import BaseModel, Field
+from typing import List
+from pydantic import BaseModel
 from llama_index.core.agent import ReActAgent
 from llama_index.core.llms import LLM
 
@@ -12,10 +11,8 @@ from app.domain.recommendation.entities import (
     Student,
     SkillGapAnalysis,
     LearningPathStep,
-    ModelProvider,
 )
 from app.domain.catalog.entities import Course
-from app.infrastructure.ai.agent import get_model, is_capable_model
 
 logger = logging.getLogger(__name__)
 

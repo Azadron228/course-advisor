@@ -6,7 +6,6 @@ from app.api.deps import get_db, get_current_admin_user
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.api.v1.schemas.course import CoursePublic, CourseCreate
 from app.infrastructure.ai.embeddings import get_embedding
-from app.domain.catalog.entities import Course
 
 try:
     import PyPDF2

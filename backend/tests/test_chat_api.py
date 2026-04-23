@@ -2,7 +2,6 @@ import os
 
 os.environ["TESTING"] = "1"
 
-import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
 from backend.app.api.deps import get_current_active_user

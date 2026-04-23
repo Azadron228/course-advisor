@@ -1,13 +1,10 @@
-import asyncio
 import logging
-from dataclasses import asdict
 from app.domain.recommendation.entities import Student, ModelProvider
 from app.domain.catalog.entities import Course
 from app.infrastructure.ai.agent import (
     get_recommendation_agent,
     get_model,
     parse_agent_recommendation,
-    AgentRecommendation,
 )
 
 logger = logging.getLogger(__name__)
