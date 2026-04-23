@@ -18,3 +18,4 @@ pwdlib[argon2]
 tavily-python
 PyPDF2
 python-multipart
+punq

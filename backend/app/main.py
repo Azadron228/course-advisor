@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from arq import create_pool
 from arq.connections import RedisSettings
 
-from .core.config import settings
-from .api.routes import api_router
+from app.core.config import settings
+from app.api.router import api_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

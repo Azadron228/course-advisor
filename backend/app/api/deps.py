@@ -1,15 +1,29 @@
 import jwt
+import punq
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
-from ..repositories.user import UserRepository
-from ..models import UserORM
-from .v1.schemas.auth import TokenData
-from ..core.config import settings
+
+from app.infrastructure.db.session import SessionLocal
+from app.infrastructure.db.repositories.user_repository import UserRepository
+from app.domain.identity.entities import User
+from app.api.v1.schemas.auth import TokenData
+from app.core.config import settings
+from app.core.container import get_container
+from app.services.advisor_service import AdvisorService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
+# --- DI Helpers ---
+def get_service(service_type: type):
+    def _get_service(container: punq.Container = Depends(get_container)):
+        return container.resolve(service_type)
+    return _get_service
+
+def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorService))):
+    return service
+
+# --- Existing Deps ---
 def get_db():
     db = SessionLocal()
     try:
@@ -40,12 +54,12 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         raise credentials_exception
     return user
 
-async def get_current_active_user(current_user: UserORM = Depends(get_current_user)):
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-async def get_current_admin_user(current_user: UserORM = Depends(get_current_active_user)):
+async def get_current_admin_user(current_user: User = Depends(get_current_active_user)):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
     return current_user

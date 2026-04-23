@@ -1,8 +1,8 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.models import Base, CourseORM, UserORM
-from app.embeddings import get_embedding
+from app.infrastructure.db.models import Base, CourseORM, UserORM
+from app.infrastructure.ai.embeddings import get_embedding
 from app.core.config import settings
 from app.core.security import get_password_hash
 import json
