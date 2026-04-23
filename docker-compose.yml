@@ -47,7 +47,7 @@ services:
     build: ./backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: arq app.core.worker.WorkerSettings
+    command: arq app.worker.Worker
     env_file:
       - .env
     environment:

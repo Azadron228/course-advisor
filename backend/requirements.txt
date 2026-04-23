@@ -19,3 +19,4 @@ tavily-python
 PyPDF2
 python-multipart
 punq
+ruff

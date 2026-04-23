@@ -22,17 +22,17 @@ from app.services.advisor_service import AdvisorService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
 from app.infrastructure.ai.agent import get_advisor_agent, get_model
-from app.api.deps import get_db, get_current_active_user, get_arq_pool, get_advisor_service
+from app.api.deps import get_db, get_current_active_user, get_arq_pool, get_advisor_service, get_chat_history_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-chat_history = RedisChatHistory()
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_advisor(
     request: ChatRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    chat_history: RedisChatHistory = Depends(get_chat_history_service)
 ):
     try:
         history_dicts = await chat_history.get_history(current_user.email)
@@ -63,7 +63,8 @@ async def chat_with_advisor(
 
 @router.get("/chat/history", response_model=List[ChatMessage])
 async def get_chat_history_endpoint(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    chat_history: RedisChatHistory = Depends(get_chat_history_service)
 ):
     history_dicts = await chat_history.get_history(current_user.email)
     return [ChatMessage(**m) for m in history_dicts]

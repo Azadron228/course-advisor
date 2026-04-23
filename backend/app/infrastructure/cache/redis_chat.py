@@ -1,10 +1,10 @@
 import json
 import logging
-from typing import List, Dict, Optional
-from redis.asyncio import Redis
-from ..core.config import settings
+from typing import List, Dict
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class RedisChatHistory:
     def __init__(self, redis_url: str = settings.REDIS_URL):
@@ -17,7 +17,7 @@ class RedisChatHistory:
         if not user_id:
             logger.error("Attempted to add message with empty user_id")
             return
-        
+
         try:
             key = f"{self.prefix}{user_id}"
             message = json.dumps({"role": role, "content": content})
@@ -30,7 +30,7 @@ class RedisChatHistory:
     async def get_history(self, user_id: str) -> List[Dict[str, str]]:
         if not user_id:
             return []
-            
+
         try:
             key = f"{self.prefix}{user_id}"
             messages = await self.redis.lrange(key, 0, -1)
@@ -48,7 +48,7 @@ class RedisChatHistory:
     async def clear_history(self, user_id: str):
         if not user_id:
             return
-            
+
         try:
             key = f"{self.prefix}{user_id}"
             await self.redis.delete(key)

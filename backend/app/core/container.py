@@ -5,10 +5,12 @@ from app.infrastructure.db.session import SessionLocal
 
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.infrastructure.db.repositories.user_repository import UserRepository
+from app.infrastructure.cache.redis_chat import RedisChatHistory
 from app.domain.recommendation.scoring import ScoringService
 from app.services.advisor_service import AdvisorService
 
-@lru_cache(max_size=1)
+
+@lru_cache(1)
 def get_container() -> punq.Container:
     container = punq.Container()
 
@@ -16,9 +18,10 @@ def get_container() -> punq.Container:
     # Note: We'll handle the Session injection via FastAPI Depends or a specific scope
     # For punq, we can register a provider that calls SessionLocal()
     container.register(Session, factory=lambda: SessionLocal())
-    
+
     container.register(CourseRepository)
     container.register(UserRepository)
+    container.register(RedisChatHistory)
 
     # Domain
     container.register(ScoringService)
