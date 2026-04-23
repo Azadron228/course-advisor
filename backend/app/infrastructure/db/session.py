@@ -28,7 +28,9 @@ if not settings.TESTING:
             if i == MAX_RETRIES - 1:
                 logger.error(f"Could not connect to database after {MAX_RETRIES} attempts")
                 raise e
-            logger.warning(f"Database connection attempt {i+1} failed. Retrying in {RETRY_DELAY} seconds...")
+            logger.warning(
+                f"Database connection attempt {i + 1} failed. Retrying in {RETRY_DELAY} seconds..."
+            )
             time.sleep(RETRY_DELAY)
 else:
     # Use in-memory SQLite for tests if testing

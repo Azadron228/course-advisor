@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.db.models import UserORM
 from app.domain.identity.entities import User
 
+
 class UserRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -17,7 +18,7 @@ class UserRepository:
             full_name=o.full_name,
             disabled=o.disabled,
             is_admin=o.is_admin,
-            hashed_password=o.hashed_password
+            hashed_password=o.hashed_password,
         )
 
     def create(self, user: User) -> User:
@@ -26,10 +27,59 @@ class UserRepository:
             hashed_password=user.hashed_password,
             full_name=user.full_name,
             is_admin=user.is_admin,
-            disabled=user.disabled
+            disabled=user.disabled,
         )
         self.db.add(db_user)
         self.db.commit()
         self.db.refresh(db_user)
         user.id = db_user.id
         return user
+
+    def get_all(self) -> list[User]:
+        orms = self.db.scalars(select(UserORM)).all()
+        return [
+            User(
+                id=o.id,
+                email=o.email,
+                full_name=o.full_name,
+                disabled=o.disabled,
+                is_admin=o.is_admin,
+                hashed_password=o.hashed_password,
+            )
+            for o in orms
+        ]
+
+    def get_by_id(self, user_id: int) -> User | None:
+        o = self.db.scalar(select(UserORM).where(UserORM.id == user_id))
+        if not o:
+            return None
+        return User(
+            id=o.id,
+            email=o.email,
+            full_name=o.full_name,
+            disabled=o.disabled,
+            is_admin=o.is_admin,
+            hashed_password=o.hashed_password,
+        )
+
+    def update(self, user: User) -> User:
+        o = self.db.scalar(select(UserORM).where(UserORM.id == user.id))
+        if not o:
+            raise Exception("User not found")
+
+        o.email = user.email
+        o.full_name = user.full_name
+        o.is_admin = user.is_admin
+        o.disabled = user.disabled
+        if user.hashed_password:
+            o.hashed_password = user.hashed_password
+
+        self.db.commit()
+        self.db.refresh(o)
+        return user
+
+    def delete(self, user_id: int) -> None:
+        o = self.db.scalar(select(UserORM).where(UserORM.id == user_id))
+        if o:
+            self.db.delete(o)
+            self.db.commit()

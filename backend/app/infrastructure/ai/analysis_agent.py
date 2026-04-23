@@ -8,26 +8,36 @@ from pydantic import BaseModel, Field
 from llama_index.core.agent import ReActAgent
 from llama_index.core.llms import LLM
 
-from app.domain.recommendation.entities import Student, SkillGapAnalysis, LearningPathStep, ModelProvider
+from app.domain.recommendation.entities import (
+    Student,
+    SkillGapAnalysis,
+    LearningPathStep,
+    ModelProvider,
+)
 from app.domain.catalog.entities import Course
 from app.infrastructure.ai.agent import get_model, is_capable_model
 
 logger = logging.getLogger(__name__)
 
+
 class GlobalAnalysis(BaseModel):
     skill_gap_analysis: SkillGapAnalysis
     learning_path: List[LearningPathStep]
+
 
 @dataclass
 class AnalysisDeps:
     student: Student
     courses: List[Course]
 
+
 def get_analysis_agent(llm: LLM, student: Student, courses: List[Course]) -> ReActAgent:
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)
-    available_courses = "\n".join([f"- {c.subject_name} (ID: {c.id}): {c.description}" for c in courses])
-    
+    available_courses = "\n".join(
+        [f"- {c.subject_name} (ID: {c.id}): {c.description}" for c in courses]
+    )
+
     system_prompt = (
         "You are a senior academic strategist. Your goal is to provide a comprehensive "
         "skill gap analysis and a structured learning path for a student based on their "
@@ -41,21 +51,22 @@ def get_analysis_agent(llm: LLM, student: Student, courses: List[Course]) -> ReA
         f"Available Internal Courses:\n{available_courses}\n\n"
         "Output MUST be ONLY a valid JSON object matching the GlobalAnalysis schema with fields: skill_gap_analysis, learning_path."
     )
-    
+
     return ReActAgent(
-        tools=[], # No tools for this agent currently
+        tools=[],  # No tools for this agent currently
         llm=llm,
         verbose=True,
-        system_prompt=system_prompt
+        system_prompt=system_prompt,
     )
+
 
 def parse_global_analysis(text: str) -> GlobalAnalysis:
     try:
-        match = re.search(r'\{.*\}', text, re.DOTALL)
+        match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
-             data = json.loads(match.group())
+            data = json.loads(match.group())
         else:
-             data = json.loads(text)
+            data = json.loads(text)
         return GlobalAnalysis(**data)
     except Exception as e:
         raise ValueError(f"Could not parse GlobalAnalysis: {text}") from e

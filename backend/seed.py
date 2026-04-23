@@ -15,7 +15,7 @@ COURSES = [
         "description": "Comprehensive introduction to AI, including machine learning, neural networks, and search algorithms.",
         "skills_taught": ["Python", "Machine Learning", "AI", "Algorithms"],
         "difficulty": 0.8,
-        "workload": 0.7
+        "workload": 0.7,
     },
     {
         "id": "CS402",
@@ -24,7 +24,7 @@ COURSES = [
         "description": "Deep dive into AWS, Azure, and Google Cloud. Focus on distributed systems and serverless architecture.",
         "skills_taught": ["AWS", "Docker", "Kubernetes", "Cloud Arch"],
         "difficulty": 0.6,
-        "workload": 0.6
+        "workload": 0.6,
     },
     {
         "id": "CS403",
@@ -33,7 +33,7 @@ COURSES = [
         "description": "Learn about network security, cryptography, and defensive programming techniques.",
         "skills_taught": ["Security", "Cryptography", "Linux", "Networking"],
         "difficulty": 0.7,
-        "workload": 0.5
+        "workload": 0.5,
     },
     {
         "id": "CS404",
@@ -42,9 +42,10 @@ COURSES = [
         "description": "Master React, Next.js, and modern frontend performance optimization.",
         "skills_taught": ["React", "JavaScript", "TypeScript", "Web Performance"],
         "difficulty": 0.5,
-        "workload": 0.8
-    }
+        "workload": 0.8,
+    },
 ]
+
 
 def seed():
     print("Starting database seeding...")
@@ -56,7 +57,7 @@ def seed():
     for c in COURSES:
         print(f"Seeding course: {c['subject_name']}")
         emb = get_embedding(c["description"])
-        
+
         # Check if course exists
         course = session.query(CourseORM).filter(CourseORM.id == c["id"]).first()
         if not course:
@@ -68,7 +69,7 @@ def seed():
                 skills_taught=c["skills_taught"],
                 difficulty=c["difficulty"],
                 workload=c["workload"],
-                embedding=emb
+                embedding=emb,
             )
             session.add(course)
         else:
@@ -76,7 +77,7 @@ def seed():
             course.description = c["description"]
             course.skills_taught = c["skills_taught"]
             course.embedding = emb
-    
+
     # Seed Admin User
     print("Seeding admin user...")
     admin_email = "admin@example.com"
@@ -86,15 +87,16 @@ def seed():
             email=admin_email,
             hashed_password=get_password_hash("admin"),
             full_name="System Administrator",
-            is_admin=True
+            is_admin=True,
         )
         session.add(admin_user)
     else:
         admin_user.is_admin = True
-    
+
     session.commit()
     session.close()
     print("Seeding complete.")
+
 
 if __name__ == "__main__":
     seed()

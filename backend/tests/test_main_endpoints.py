@@ -1,4 +1,5 @@
 import os
+
 os.environ["TESTING"] = "1"
 
 import pytest
@@ -15,6 +16,7 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def override_get_db():
     try:
         db = TestingSessionLocal()
@@ -22,9 +24,11 @@ def override_get_db():
     finally:
         db.close()
 
+
 app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
+
 
 @pytest.fixture(autouse=True)
 def setup_db():
@@ -34,6 +38,7 @@ def setup_db():
     yield
     Base.metadata.drop_all(bind=engine)
     app.dependency_overrides = {}
+
 
 def test_register_user():
     response = client.post(
@@ -46,6 +51,7 @@ def test_register_user():
     assert data["full_name"] == "Test User"
     assert "password" not in data
 
+
 def test_register_duplicate_user():
     client.post(
         "/api/v1/auth/register",
@@ -57,6 +63,7 @@ def test_register_duplicate_user():
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "Email already registered"
+
 
 def test_login_for_access_token():
     client.post(
@@ -72,6 +79,7 @@ def test_login_for_access_token():
     assert "access_token" in data
     assert data["token_type"] == "bearer"
 
+
 def test_login_invalid_credentials():
     client.post(
         "/api/v1/auth/register",
@@ -84,19 +92,17 @@ def test_login_invalid_credentials():
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect email or password"
 
+
 def test_get_recommendations_unauthorized():
     response = client.post(
         "/api/v1/recommendations/recommend",
         json={
-            "student": {
-                "id": "s1", "name": "S1", "transcript": [], "current_skills": []
-            },
-            "preference": {
-                "interest_tags": [], "target_difficulty": 0.5, "max_workload": 0.5
-            }
+            "student": {"id": "s1", "name": "S1", "transcript": [], "current_skills": []},
+            "preference": {"interest_tags": [], "target_difficulty": 0.5, "max_workload": 0.5},
         },
     )
     assert response.status_code == 401
+
 
 def test_get_recommendations_authorized():
     # Register and login
@@ -112,20 +118,17 @@ def test_get_recommendations_authorized():
 
     # Mock scorer to avoid external dependencies
     from unittest.mock import patch
+
     with patch("backend.app.api.v1.recommendations.scorer.recommend") as mock_recommend:
         mock_recommend.return_value = {"results": []}
-        
+
         response = client.post(
             "/api/v1/recommendations/recommend",
             json={
-                "student": {
-                    "id": "s1", "name": "S1", "transcript": [], "current_skills": []
-                },
-                "preference": {
-                    "interest_tags": [], "target_difficulty": 0.5, "max_workload": 0.5
-                }
+                "student": {"id": "s1", "name": "S1", "transcript": [], "current_skills": []},
+                "preference": {"interest_tags": [], "target_difficulty": 0.5, "max_workload": 0.5},
             },
-            headers={"Authorization": f"Bearer {token}"}
+            headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200
         assert "results" in response.json()

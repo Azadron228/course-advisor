@@ -1,6 +1,7 @@
 import unittest
 from app.infrastructure.ai.parser import parse_transcript_html
 
+
 class TestParser(unittest.TestCase):
     def test_parse_simple_html(self):
         html = """
@@ -18,5 +19,6 @@ class TestParser(unittest.TestCase):
         entries = parse_transcript_html("<html><body>No data</body></html>")
         self.assertEqual(len(entries), 0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

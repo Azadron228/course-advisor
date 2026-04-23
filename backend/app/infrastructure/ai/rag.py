@@ -13,21 +13,25 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 class RAGScorer:
-    async def score(self, db: Session, student: Student, course: Course, provider: ModelProvider = ModelProvider.AUTO) -> AgentRecommendation:
+    async def score(
+        self,
+        db: Session,
+        student: Student,
+        course: Course,
+        provider: ModelProvider = ModelProvider.AUTO,
+    ) -> AgentRecommendation:
         # Requirement: Wrap all agent.run() calls in ARQ jobs
         pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
-        
+
         job = await pool.enqueue_job(
-            'run_agent_task',
-            asdict(student),
-            asdict(course),
-            provider.value
+            "run_agent_task", asdict(student), asdict(course), provider.value
         )
         if job is None:
             await pool.close()
             raise Exception("Failed to enqueue agent job.")
-            
+
         # Poll for completion
         while True:
             status = await job.status()
@@ -38,12 +42,14 @@ class RAGScorer:
                 await pool.close()
                 raise Exception(f"Agent job {job.job_id} failed.")
             await asyncio.sleep(0.5)
-            
+
         result = await job.result()
         await pool.close()
-        
+
         if isinstance(result, dict) and "error" in result:
-             logger.error(f"Agent job failed with {result.get('error_type', 'Exception')}: {result['error']}")
-             raise Exception(f"Agent recommendation failed: {result['error']}")
-             
+            logger.error(
+                f"Agent job failed with {result.get('error_type', 'Exception')}: {result['error']}"
+            )
+            raise Exception(f"Agent recommendation failed: {result['error']}")
+
         return AgentRecommendation(**result)

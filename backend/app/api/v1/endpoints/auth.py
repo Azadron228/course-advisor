@@ -12,6 +12,7 @@ from app.domain.identity.entities import User
 
 router = APIRouter()
 
+
 def authenticate_user(db: Session, email: str, password: str):
     user_repo = UserRepository(db)
     user = user_repo.get_by_email(email)
@@ -21,25 +22,26 @@ def authenticate_user(db: Session, email: str, password: str):
         return False
     return user
 
+
 @router.post("/register", response_model=UserPublic)
 async def register(user_in: UserCreate, db: Session = Depends(get_db)):
     user_repo = UserRepository(db)
     user_exists = user_repo.get_by_email(user_in.email)
     if user_exists:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+
     hashed_password = get_password_hash(user_in.password)
     new_user = User(
-        id=None,
-        email=user_in.email,
-        full_name=user_in.full_name,
-        hashed_password=hashed_password
+        id=None, email=user_in.email, full_name=user_in.full_name, hashed_password=hashed_password
     )
     created_user = user_repo.create(new_user)
     return created_user
 
+
 @router.post("/token", response_model=Token)
-async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_access_token(
+    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
+):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -48,10 +50,9 @@ async def login_for_access_token(db: Session = Depends(get_db), form_data: OAuth
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 @router.get("/me", response_model=UserPublic)
 async def read_users_me(current_user: User = Depends(get_current_active_user)):

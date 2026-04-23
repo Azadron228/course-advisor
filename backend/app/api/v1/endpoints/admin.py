@@ -17,56 +17,59 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 @router.get("/courses", response_model=list[CoursePublic])
-async def read_courses(
-    db: Session = Depends(get_db),
-    admin_user = Depends(get_current_admin_user)
-):
+async def read_courses(db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)):
     course_repo = CourseRepository(db)
     return course_repo.get_all()
+
 
 @router.put("/courses/{course_id}", response_model=CoursePublic)
 async def update_course(
     course_id: str,
     course_in: CourseCreate,
     db: Session = Depends(get_db),
-    admin_user = Depends(get_current_admin_user)
+    admin_user=Depends(get_current_admin_user),
 ):
     course_repo = CourseRepository(db)
     course = course_repo.get_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
+
     update_data = course_in.model_dump(exclude_unset=True)
-    
+
     # Create new course object with updated values
     # In a real app we might have a cleaner way to update dataclasses
     from dataclasses import replace
+
     updated_course = replace(course, **update_data)
-    
+
     # Recalculate embedding if description changed
     if "description" in update_data:
-        updated_course = replace(updated_course, embedding=get_embedding(updated_course.description))
-        
+        updated_course = replace(
+            updated_course, embedding=get_embedding(updated_course.description)
+        )
+
     course_repo.save(updated_course)
     return updated_course
+
 
 @router.post("/courses/{course_id}/materials", response_model=CoursePublic)
 async def upload_course_materials(
     course_id: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    admin_user = Depends(get_current_admin_user)
+    admin_user=Depends(get_current_admin_user),
 ):
     course_repo = CourseRepository(db)
     course = course_repo.get_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
+
     content = ""
     filename = file.filename.lower()
     file_bytes = await file.read()
-    
+
     if filename.endswith(".pdf"):
         if PyPDF2:
             try:
@@ -83,30 +86,30 @@ async def upload_course_materials(
             content = file_bytes.decode("utf-8")
         except UnicodeDecodeError:
             content = file_bytes.decode("latin-1")
-            
+
     if not content.strip():
         raise HTTPException(status_code=400, detail="Uploaded file is empty or could not be read")
-        
+
     from dataclasses import replace
+
     # Update embedding based on both description and materials for better retrieval
     combined_text = f"{course.description}\n\n{content[:5000]}"
     new_embedding = get_embedding(combined_text)
-    
+
     updated_course = replace(course, materials_content=content, embedding=new_embedding)
-    
+
     course_repo.save(updated_course)
     return updated_course
 
+
 @router.delete("/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_course(
-    course_id: str,
-    db: Session = Depends(get_db),
-    admin_user = Depends(get_current_admin_user)
+    course_id: str, db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)
 ):
     course_repo = CourseRepository(db)
     course = course_repo.get_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    
+
     course_repo.delete(course_id)
     return None

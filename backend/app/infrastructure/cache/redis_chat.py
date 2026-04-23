@@ -2,6 +2,7 @@ import json
 import logging
 from typing import List, Dict
 from app.core.config import settings
+from redis.asyncio import Redis
 
 logger = logging.getLogger(__name__)
 

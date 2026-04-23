@@ -2,10 +2,12 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from enum import Enum
 
+
 class TranscriptEntry(BaseModel):
     subject_name: str
     credits: float
     mark: float = Field(ge=0, le=100)
+
 
 class Student(BaseModel):
     id: str
@@ -13,21 +15,26 @@ class Student(BaseModel):
     transcript: List[TranscriptEntry]
     current_skills: List[str]
 
+
 class UserPreference(BaseModel):
     interest_tags: List[str]
     target_difficulty: float
     max_workload: float
 
+
 class ChatMessage(BaseModel):
     role: str
     content: str
 
+
 class ChatRequest(BaseModel):
     message: str
+
 
 class ChatResponse(BaseModel):
     response: str
     history: List[ChatMessage]
+
 
 class ScoreBreakdown(BaseModel):
     skill_gap: float = 0.0
@@ -36,6 +43,7 @@ class ScoreBreakdown(BaseModel):
     rag_reasoning: float = 0.0
     difficulty: float = 0.0
     load: float = 0.0
+
 
 class RecommendationResult(BaseModel):
     course_id: str
@@ -48,16 +56,19 @@ class RecommendationResult(BaseModel):
     url: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 class DomainGap(BaseModel):
     domain: str
     gap_score: float = Field(ge=0, le=1)
     missing_skills: List[str]
+
 
 class SkillGapAnalysis(BaseModel):
     overall_gap_score: float
     domain_breakdown: List[DomainGap]
     critical_skills: List[str]
     model_config = ConfigDict(from_attributes=True)
+
 
 class LearningPathStep(BaseModel):
     order: int
@@ -67,11 +78,13 @@ class LearningPathStep(BaseModel):
     is_external: bool = False
     model_config = ConfigDict(from_attributes=True)
 
+
 class RecommendationResponse(BaseModel):
     results: List[RecommendationResult] = Field(default_factory=list)
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
     learning_path: List[LearningPathStep] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
+
 
 class ModelProvider(str, Enum):
     OPENAI = "openai"

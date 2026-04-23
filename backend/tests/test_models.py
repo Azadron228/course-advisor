@@ -3,6 +3,7 @@ from app.api.v1.schemas.recommendations import TranscriptEntry, Student, ModelPr
 from app.api.v1.schemas.course import CoursePublic as Course
 from pydantic import ValidationError
 
+
 class TestModels(unittest.TestCase):
     def test_model_provider_enum(self):
         self.assertEqual(ModelProvider.OPENAI, "openai")
@@ -12,17 +13,14 @@ class TestModels(unittest.TestCase):
         entry = TranscriptEntry(subject_name="Math", credits=6.0, mark=85.0)
         self.assertEqual(entry.subject_name, "Math")
         self.assertEqual(entry.mark, 85.0)
-        
+
         with self.assertRaises(ValidationError):
             TranscriptEntry(subject_name="Invalid", credits=6.0, mark=105.0)
 
     def test_student_model(self):
         entry = TranscriptEntry(subject_name="Algorithms", credits=6.0, mark=90.0)
         student = Student(
-            id="S123",
-            name="Alice",
-            transcript=[entry],
-            current_skills=["Python", "SQL"]
+            id="S123", name="Alice", transcript=[entry], current_skills=["Python", "SQL"]
         )
         self.assertEqual(student.name, "Alice")
         self.assertEqual(len(student.transcript), 1)
@@ -35,20 +33,21 @@ class TestModels(unittest.TestCase):
             description="Basics of programming",
             skills_taught=["Programming"],
             difficulty=0.2,
-            workload=0.3
+            workload=0.3,
         )
         self.assertEqual(course.id, "CS101")
-        
+
         with self.assertRaises(ValidationError):
-             Course(
+            Course(
                 id="CS102",
                 subject_name="Advanced CS",
                 credits=6.0,
                 description="Complex stuff",
                 skills_taught=["Algorithms"],
-                difficulty=1.5, # Invalid
-                workload=0.5
+                difficulty=1.5,  # Invalid
+                workload=0.5,
             )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

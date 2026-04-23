@@ -15,17 +15,22 @@ from app.infrastructure.cache.redis_chat import RedisChatHistory
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
+
 # --- DI Helpers ---
 def get_service(service_type: type):
     def _get_service(container: punq.Container = Depends(get_container)):
         return container.resolve(service_type)
+
     return _get_service
+
 
 def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorService))):
     return service
 
+
 def get_chat_history_service(service: RedisChatHistory = Depends(get_service(RedisChatHistory))):
     return service
+
 
 # --- Existing Deps ---
 def get_db():
@@ -35,8 +40,10 @@ def get_db():
     finally:
         db.close()
 
+
 async def get_arq_pool(request: Request):
     return request.app.state.arq_pool
+
 
 async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -58,10 +65,12 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         raise credentials_exception
     return user
 
+
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
 
 async def get_current_admin_user(current_user: User = Depends(get_current_active_user)):
     if not current_user.is_admin:
