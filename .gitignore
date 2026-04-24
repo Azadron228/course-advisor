@@ -4,4 +4,4 @@ __pycache__/
 .env
 .worktrees/
 *.log
-*.logs
+*.logs.worktrees/
