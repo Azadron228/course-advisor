@@ -1,23 +1,11 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/lib/auth-context";
+import './globals.css';
+import React from 'react';
+import { AuthProvider } from '@/lib/auth-context';
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "AI Course Advisor",
-  description: "Personalized academic roadmaps powered by AI",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="min-h-screen bg-[var(--background)] text-[var(--text-main)] font-sans antialiased">
         <AuthProvider>
           {children}
         </AuthProvider>
