@@ -2,6 +2,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .env
+.venv/
 .worktrees/
 *.log
 *.logs.worktrees/
