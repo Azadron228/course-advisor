@@ -29,7 +29,7 @@ export function useChat() {
     },
   });
 
-  const mutation = useMutation<ChatResponse, Error, string>({
+  const mutation = useMutation<ChatResponse, Error, string, { previousMessages: Message[] | undefined }>({
     mutationFn: (message: string) =>
       apiClient.post<ChatResponse>('/recommendations/chat', { message }),
     onMutate: async (newMessage) => {
