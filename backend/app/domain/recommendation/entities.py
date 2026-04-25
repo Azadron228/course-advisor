@@ -71,6 +71,21 @@ class LearningPathStep:
 
 
 @dataclass(frozen=True)
+class UserSkill:
+    skill_name: str
+    mastery_level: int
+    category: str
+
+
+@dataclass(frozen=True)
+class LearningPlan:
+    id: Optional[int]
+    goal: str
+    steps: List[LearningPathStep]
+    is_active: bool = True
+
+
+@dataclass(frozen=True)
 class RecommendationResponse:
     results: List[RecommendationResult]
     skill_gap_analysis: Optional[SkillGapAnalysis] = None

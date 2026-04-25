@@ -10,3 +10,5 @@ class User:
     disabled: bool = False
     is_admin: bool = False
     hashed_password: Optional[str] = None
+    career_goal: Optional[str] = None
+    onboarding_completed: bool = False
