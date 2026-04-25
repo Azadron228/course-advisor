@@ -13,7 +13,7 @@ class PlanRepository:
         o = self.db.scalar(
             select(LearningPlanORM)
             .where(LearningPlanORM.user_id == user_id)
-            .where(LearningPlanORM.is_active == True)
+            .where(LearningPlanORM.is_active == True)  # noqa: E712
         )
         if not o:
             return None

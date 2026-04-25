@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_admin_user
+from app.api.deps import get_db, get_current_admin_user, get_current_active_user
 from app.infrastructure.db.repositories.user_repository import UserRepository
 from app.api.v1.schemas.auth import UserPublic, UserUpdate
 from app.core.security import get_password_hash
