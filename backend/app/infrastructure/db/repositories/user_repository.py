@@ -19,6 +19,8 @@ class UserRepository:
             disabled=o.disabled,
             is_admin=o.is_admin,
             hashed_password=o.hashed_password,
+            career_goal=o.career_goal,
+            onboarding_completed=o.onboarding_completed,
         )
 
     def create(self, user: User) -> User:
@@ -28,6 +30,8 @@ class UserRepository:
             full_name=user.full_name,
             is_admin=user.is_admin,
             disabled=user.disabled,
+            career_goal=user.career_goal,
+            onboarding_completed=user.onboarding_completed,
         )
         self.db.add(db_user)
         self.db.commit()
@@ -45,6 +49,8 @@ class UserRepository:
                 disabled=o.disabled,
                 is_admin=o.is_admin,
                 hashed_password=o.hashed_password,
+                career_goal=o.career_goal,
+                onboarding_completed=o.onboarding_completed,
             )
             for o in orms
         ]
@@ -60,6 +66,8 @@ class UserRepository:
             disabled=o.disabled,
             is_admin=o.is_admin,
             hashed_password=o.hashed_password,
+            career_goal=o.career_goal,
+            onboarding_completed=o.onboarding_completed,
         )
 
     def update(self, user: User) -> User:
@@ -71,6 +79,8 @@ class UserRepository:
         o.full_name = user.full_name
         o.is_admin = user.is_admin
         o.disabled = user.disabled
+        o.career_goal = user.career_goal
+        o.onboarding_completed = user.onboarding_completed
         if user.hashed_password:
             o.hashed_password = user.hashed_password
 
