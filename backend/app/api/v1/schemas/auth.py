@@ -14,6 +14,9 @@ class UserPublic(BaseModel):
     full_name: Optional[str] = None
     is_admin: bool
     disabled: Optional[bool] = None
+    career_goal: Optional[str] = None
+    onboarding_completed: bool = False
+    is_active: bool = True
     model_config = ConfigDict(from_attributes=True)
 
 
