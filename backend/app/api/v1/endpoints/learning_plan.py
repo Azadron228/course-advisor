@@ -36,21 +36,27 @@ async def update_learning_plan_step(
     if not plan:
         raise HTTPException(status_code=404, detail="No active learning plan found")
     
-    # Update the specific step status in the steps list (stored as JSON in DB)
-    updated = False
+    new_status = status_update.get("status")
+    if not new_status:
+        raise HTTPException(status_code=400, detail="Status is required")
+
+    # Update the specific step status
+    updated_steps = []
+    found = False
     for step in plan.steps:
         if step.order == step_order:
-            # We assume the domain entity/DB model supports adding 'status' to the step JSON
-            # In a real app we'd have a more structured update
-            step_dict = step.__dict__.copy() if hasattr(step, '__dict__') else step
-            # Note: This is a hack for the prototype persistence
-            updated = True
-            break
+            # Create updated step
+            from dataclasses import replace
+            updated_step = replace(step, status=new_status)
+            updated_steps.append(updated_step)
+            found = True
+        else:
+            updated_steps.append(step)
             
-    if not updated:
+    if not found:
         raise HTTPException(status_code=404, detail="Step not found")
         
-    # Re-save plan (since steps list modified)
-    # This logic depends on the repository's ability to overwrite.
-    # For now, we'll just return the plan as if it worked to keep the frontend flow.
-    return plan
+    from dataclasses import replace
+    updated_plan = replace(plan, steps=updated_steps)
+    
+    return plan_repo.update_plan(current_user.id, updated_plan)

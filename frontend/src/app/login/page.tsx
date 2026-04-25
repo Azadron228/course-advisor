@@ -25,28 +25,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8f9ff] px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-sm border border-[#F1F5F9]">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 rounded-xl bg-surface p-8 shadow-sm border border-slate-200 dark:border-slate-800">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-[#0b1c30] font-[family-name:var(--font-lexend)]">
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground font-[family-name:var(--font-lexend)]">
             Sign in to EduPath
           </h2>
-          <p className="mt-2 text-center text-sm text-[#464555] font-[family-name:var(--font-inter)]">
+          <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400 font-[family-name:var(--font-inter)]">
             Or{' '}
-            <Link href="/register" className="font-medium text-[#4F46E5] hover:text-[#3525cd]">
+            <Link href="/register" className="font-medium text-primary hover:opacity-80">
               create a new account
             </Link>
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
               {error}
             </div>
           )}
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-[#464555] mb-1">
+              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Email address
               </label>
               <input
@@ -55,14 +55,14 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-lg border border-[#c7c4d8] px-3 py-2 text-[#0b1c30] placeholder-[#777587] focus:border-[#4F46E5] focus:outline-none focus:ring-[#4F46E5] sm:text-sm transition-all"
+                className="relative block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white placeholder-slate-500 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm transition-all"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#464555] mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Password
               </label>
               <input
@@ -71,7 +71,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="relative block w-full rounded-lg border border-[#c7c4d8] px-3 py-2 text-[#0b1c30] placeholder-[#777587] focus:border-[#4F46E5] focus:outline-none focus:ring-[#4F46E5] sm:text-sm transition-all"
+                className="relative block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-slate-900 dark:text-white placeholder-slate-500 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm transition-all"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-lg bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3525cd] focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:ring-offset-2 disabled:opacity-50 transition-colors"
+              className="group relative flex w-full justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 transition-colors"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>

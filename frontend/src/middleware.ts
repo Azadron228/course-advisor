@@ -8,14 +8,18 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
+    return NextResponse.next();
+  }
+
   // Check if the route is protected
   const isProtectedRoute = protectedRoutes.some((route) => 
-    pathname.startsWith(route)
+    pathname === route || pathname.startsWith(`${route}/`)
   );
   
   // Check if the route is an auth route (login/register)
   const isAuthRoute = authRoutes.some((route) => 
-    pathname.startsWith(route)
+    pathname === route || pathname.startsWith(`${route}/`)
   );
 
   if (isProtectedRoute && !token) {

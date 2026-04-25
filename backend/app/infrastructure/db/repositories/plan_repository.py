@@ -55,6 +55,36 @@ class PlanRepository:
             is_active=db_plan.is_active,
         )
 
+    def update_plan(self, user_id: int, plan: LearningPlan) -> LearningPlan:
+        o = self.db.scalar(
+            select(LearningPlanORM)
+            .where(LearningPlanORM.id == plan.id)
+            .where(LearningPlanORM.user_id == user_id)
+        )
+        if not o:
+            raise Exception("Learning plan not found")
+
+        # Map steps to dict for JSON storage
+        steps_data = [
+            {
+                "order": s.order,
+                "title": s.title,
+                "description": s.description,
+                "resource_id": s.resource_id,
+                "is_external": s.is_external,
+                "status": getattr(s, 'status', 'upcoming')
+            }
+            for s in plan.steps
+        ]
+
+        o.goal = plan.goal
+        o.steps = steps_data
+        o.is_active = plan.is_active
+
+        self.db.commit()
+        self.db.refresh(o)
+        return plan
+
     def deactivate_all_plans(self, user_id: int):
         self.db.execute(
             update(LearningPlanORM)
