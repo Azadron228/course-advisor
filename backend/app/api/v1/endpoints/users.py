@@ -11,6 +11,29 @@ from dataclasses import replace
 router = APIRouter()
 
 
+@router.get("/me", response_model=UserPublic)
+async def read_user_me(
+    current_user: User = Depends(get_current_active_user),
+):
+    return current_user
+
+
+@router.patch("/me", response_model=UserPublic)
+async def update_user_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    user_repo = UserRepository(db)
+    update_data = user_in.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+
+    updated_user = replace(current_user, **update_data)
+    user_repo.update(updated_user)
+    return updated_user
+
+
 @router.get("/", response_model=List[UserPublic])
 async def read_users(
     db: Session = Depends(get_db), admin_user: User = Depends(get_current_admin_user)

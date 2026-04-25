@@ -79,6 +79,14 @@ class LearningPathStep(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LearningPlan(BaseModel):
+    id: Optional[int]
+    goal: str
+    steps: List[LearningPathStep]
+    is_active: bool = True
+    model_config = ConfigDict(from_attributes=True)
+
+
 class RecommendationResponse(BaseModel):
     results: List[RecommendationResult] = Field(default_factory=list)
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
