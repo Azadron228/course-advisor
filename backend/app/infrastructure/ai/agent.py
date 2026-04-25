@@ -10,8 +10,9 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
 
-from app.domain.recommendation.entities import ModelProvider, Student
+from app.domain.recommendation.entities import ModelProvider, Student, LearningPlan
 from app.domain.catalog.entities import Course
+from app.domain.identity.entities import User
 from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)
@@ -132,17 +133,35 @@ def get_advisor_agent(
     llm: LLM,
     transcript_summary: str = "No transcript provided.",
     current_skills: str = "No skills provided.",
+    user: Optional[User] = None,
+    learning_plan: Optional[LearningPlan] = None,
 ) -> ReActAgent:
     tools = [FunctionTool.from_defaults(async_fn=search_external_resources)]
+
+    user_context = ""
+    if user:
+        user_context += f"- User: {user.full_name or user.email}\n"
+        if user.career_goal:
+            user_context += f"- Career Goal: {user.career_goal}\n"
+
+    plan_context = ""
+    if learning_plan:
+        plan_context += f"- Current Learning Plan Goal: {learning_plan.goal}\n"
+        steps_str = "\n".join(
+            [f"  {s.order}. {s.title}: {s.description}" for s in learning_plan.steps]
+        )
+        plan_context += f"- Plan Steps:\n{steps_str}\n"
 
     system_prompt = (
         "You are a professional university academic advisor. "
         "Your goal is to help students with course selection, career advice, and learning strategies. "
         "Use your knowledge and available tools to provide high-quality, personalized guidance.\n\n"
-        f"Student Academic Context:\n"
+        "Student Academic Context:\n"
+        f"{user_context}"
         f"- Completed/Current Courses: {transcript_summary}\n"
-        f"- Current Skills: {current_skills}\n\n"
-        "When giving advice, consider the student's background. If you need to suggest external resources, "
+        f"- Current Skills: {current_skills}\n"
+        f"{plan_context}\n"
+        "When giving advice, consider the student's background and goals. If you need to suggest external resources, "
         "use the 'search_external_resources' tool. Be professional, supportive, and concise."
     )
 

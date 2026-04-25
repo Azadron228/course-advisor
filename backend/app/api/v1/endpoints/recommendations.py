@@ -21,11 +21,15 @@ from app.services.advisor_service import AdvisorService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
 from app.infrastructure.ai.agent import get_advisor_agent, get_model
+from app.infrastructure.db.repositories.plan_repository import PlanRepository
+from app.infrastructure.db.repositories.profile_repository import ProfileRepository
+from sqlalchemy.orm import Session
 from app.api.deps import (
     get_current_active_user,
     get_arq_pool,
     get_advisor_service,
     get_chat_history_service,
+    get_db,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,8 +42,29 @@ async def chat_with_advisor(
     request: ChatRequest,
     current_user: User = Depends(get_current_active_user),
     chat_history: RedisChatHistory = Depends(get_chat_history_service),
+    db: Session = Depends(get_db),
 ):
     try:
+        # Retrieve user profile context
+        profile_repo = ProfileRepository(db)
+        plan_repo = PlanRepository(db)
+
+        skills = profile_repo.get_skills(current_user.id)
+        transcript = profile_repo.get_transcript(current_user.id)
+        active_plan = plan_repo.get_active_plan(current_user.id)
+
+        # Format context strings
+        transcript_summary = (
+            ", ".join([f"{e.subject_name} (Credits: {e.credits}, Mark: {e.mark})" for e in transcript])
+            if transcript
+            else "No transcript available."
+        )
+        current_skills = (
+            ", ".join([f"{s.skill_name} ({s.mastery_level}%)" for s in skills])
+            if skills
+            else "No skills listed."
+        )
+
         history_dicts = await chat_history.get_history(current_user.email)
 
         chat_messages = []
@@ -48,7 +73,13 @@ async def chat_with_advisor(
             chat_messages.append(LLMChatMessage(role=role, content=m["content"]))
 
         llm = get_model(DomainModelProvider.AUTO)
-        agent = get_advisor_agent(llm)
+        agent = get_advisor_agent(
+            llm,
+            transcript_summary=transcript_summary,
+            current_skills=current_skills,
+            user=current_user,
+            learning_plan=active_plan,
+        )
 
         logger.info(f"Chat request from user {current_user.email}: {request.message[:50]}...")
         response = await agent.run(user_msg=request.message, chat_history=chat_messages)
