@@ -86,6 +86,19 @@ class LearningPlan:
 
 
 @dataclass(frozen=True)
+class SkillNode:
+    id: str
+    label: str
+    mastery_level: int
+    category: str
+
+
+@dataclass(frozen=True)
+class SkillMapResponse:
+    nodes: List[SkillNode]
+
+
+@dataclass(frozen=True)
 class RecommendationResponse:
     results: List[RecommendationResult]
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
