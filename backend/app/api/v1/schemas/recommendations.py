@@ -76,6 +76,7 @@ class LearningPathStep(BaseModel):
     description: str
     resource_id: Optional[str] = None
     is_external: bool = False
+    status: str = "upcoming"
     model_config = ConfigDict(from_attributes=True)
 
 
