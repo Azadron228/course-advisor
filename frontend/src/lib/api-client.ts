@@ -1,0 +1,116 @@
+import Cookies from 'js-cookie';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+export type ApiError = {
+  message: string;
+  status: number;
+};
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    if (response.status === 401) {
+      // Clear token and redirect to login if unauthorized
+      Cookies.remove('token');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    
+    let errorMessage = 'An error occurred';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (e) {
+      // Fallback to status text
+      errorMessage = response.statusText || errorMessage;
+    }
+    
+    throw { message: errorMessage, status: response.status } as ApiError;
+  }
+  
+  if (response.status === 204) {
+    return {} as T;
+  }
+  
+  return response.json();
+}
+
+export const apiClient = {
+  async get<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = Cookies.get('token');
+    const headers = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...options.headers,
+    };
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+    
+    return handleResponse<T>(response);
+  },
+  
+  async post<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+    const token = Cookies.get('token');
+    const isFormData = body instanceof FormData;
+    
+    const headers: Record<string, string> = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+    
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      ...options,
+      headers,
+      body: isFormData ? body : JSON.stringify(body),
+    });
+    
+    return handleResponse<T>(response);
+  },
+  
+  async put<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+    const token = Cookies.get('token');
+    const isFormData = body instanceof FormData;
+    
+    const headers: Record<string, string> = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+    
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      ...options,
+      headers,
+      body: isFormData ? body : JSON.stringify(body),
+    });
+    
+    return handleResponse<T>(response);
+  },
+  
+  async delete<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = Cookies.get('token');
+    const headers = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...options.headers,
+    };
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      ...options,
+      headers,
+    });
+    
+    return handleResponse<T>(response);
+  },
+};
