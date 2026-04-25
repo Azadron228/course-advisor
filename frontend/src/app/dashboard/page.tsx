@@ -11,6 +11,7 @@ import {
   Zap
 } from 'lucide-react';
 import { DashboardSummary } from '@/components/features/dashboard-summary';
+import { API_BASE_URL } from '@/lib/config';
 
 interface DashboardResponse {
   active_plan_title: string | null;
@@ -23,8 +24,6 @@ async function getDashboardData(): Promise<DashboardResponse> {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
-  
   try {
     const response = await fetch(`${API_BASE_URL}/dashboard/`, {
       headers: {

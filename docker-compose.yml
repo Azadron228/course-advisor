@@ -24,7 +24,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "8000:8000"
+      - "2828:8000"
     env_file:
       - .env
     environment:
@@ -69,9 +69,10 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "2929:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:2828/api/v1
+      - API_URL=http://backend:8000/api/v1
     depends_on:
       - backend
     develop:

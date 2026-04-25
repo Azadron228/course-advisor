@@ -1,8 +1,7 @@
 import { cookies } from 'next/headers';
 import { PlanStepper, LearningPlan } from '@/components/features/plan-stepper';
 import { redirect } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+import { API_BASE_URL } from '@/lib/config';
 
 async function getLearningPlan(): Promise<LearningPlan | null> {
   const cookieStore = await cookies();
