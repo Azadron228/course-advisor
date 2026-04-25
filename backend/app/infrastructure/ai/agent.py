@@ -1,4 +1,3 @@
-import os
 import json
 import re
 import logging
@@ -13,12 +12,13 @@ from llama_index.core.tools import FunctionTool
 from app.domain.recommendation.entities import ModelProvider, Student, LearningPlan
 from app.domain.catalog.entities import Course
 from app.domain.identity.entities import User
+from app.core.config import settings
 from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)
 
 # Initialize Tavily client
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+TAVILY_API_KEY = settings.TAVILY_API_KEY
 
 
 class AgentRecommendation(BaseModel):
@@ -62,12 +62,12 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
         provider = ModelProvider.OPENAI
 
     if provider == ModelProvider.OPENAI:
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key or api_key == "sk-placeholder-key":
-            return OpenAI(model="gpt-5.4-nano", api_key="sk-dummy")
-        return OpenAI(model="gpt-5.4-nano")
+        api_key = settings.OPENAI_API_KEY
+        if not api_key or api_key == "sk-placeholder-key" or api_key == "sk-dummy":
+            raise ValueError("OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key.")
+        return OpenAI(model="gpt-5.4-nano", api_key=api_key)
 
-    return OpenAI(model="gpt-5.4-nano", api_key=os.getenv("OPENAI_API_KEY", "sk-dummy"))
+    raise ValueError(f"Unsupported model provider: {provider}")
 
 
 async def search_external_resources(query: str) -> str:
