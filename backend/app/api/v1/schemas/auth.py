@@ -23,6 +23,9 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     is_admin: Optional[bool] = None
     disabled: Optional[bool] = None
+    career_goal: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
+    interests: Optional[List[str]] = None
 
 
 class Token(BaseModel):

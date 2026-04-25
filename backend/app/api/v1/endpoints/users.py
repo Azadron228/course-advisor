@@ -25,12 +25,33 @@ async def update_user_me(
     current_user: User = Depends(get_current_active_user),
 ):
     user_repo = UserRepository(db)
+    
+    # Extract special fields before model_dump
+    interests = user_in.interests
+    
     update_data = user_in.model_dump(exclude_unset=True)
     if "password" in update_data:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
+    
+    # Remove interests from update_data as it's not on the User entity directly
+    if "interests" in update_data:
+        update_data.pop("interests")
 
     updated_user = replace(current_user, **update_data)
     user_repo.update(updated_user)
+    
+    # If interests were provided, map them to UserSkills
+    if interests is not None:
+        from app.infrastructure.db.repositories.profile_repository import ProfileRepository
+        from app.domain.recommendation.entities import UserSkill
+        
+        profile_repo = ProfileRepository(db)
+        skills = [
+            UserSkill(skill_name=interest, mastery_level=0, category="General")
+            for interest in interests
+        ]
+        profile_repo.set_skills(current_user.id, skills)
+        
     return updated_user
 
 
