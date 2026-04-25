@@ -3,7 +3,7 @@ import json
 import re
 import logging
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.openai import OpenAI
