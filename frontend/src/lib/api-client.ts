@@ -98,6 +98,29 @@ export const apiClient = {
     return handleResponse<T>(response);
   },
   
+  async patch<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+    const token = Cookies.get('token');
+    const isFormData = body instanceof FormData;
+    
+    const headers: Record<string, string> = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+    
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PATCH',
+      ...options,
+      headers,
+      body: isFormData ? body : JSON.stringify(body),
+    });
+    
+    return handleResponse<T>(response);
+  },
+  
   async delete<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const headers = {

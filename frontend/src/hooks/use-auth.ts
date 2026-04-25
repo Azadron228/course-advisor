@@ -9,6 +9,9 @@ export interface User {
   id: string;
   email: string;
   full_name?: string;
+  career_goal?: string;
+  interests?: string[];
+  onboarding_completed?: boolean;
   is_active: boolean;
   is_superuser: boolean;
 }
@@ -74,6 +77,7 @@ export function useAuth() {
     isLoading,
     login,
     logout,
+    fetchUser,
     isAuthenticated: !!user,
   };
 }

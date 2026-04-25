@@ -4,17 +4,22 @@ import { usePathname } from 'next/navigation';
 import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { MobileDrawer } from './mobile-drawer';
+import { useAuth } from '@/hooks/use-auth';
+import { OnboardingWizard } from '@/components/features/onboarding-wizard';
 
 const PUBLIC_ROUTES = ['/login', '/register', '/'];
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
   if (isPublicRoute) {
     return <>{children}</>;
   }
+
+  const showOnboarding = isAuthenticated && !isLoading && user && !user.onboarding_completed;
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
@@ -28,6 +33,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <MobileDrawer />
+      {showOnboarding && <OnboardingWizard />}
     </div>
   );
 }
