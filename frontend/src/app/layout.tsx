@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
 import { MainLayout } from "@/components/shared/main-layout";
+import { Providers } from "@/components/shared/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,7 +32,9 @@ export default function RootLayout({
       className={`${inter.variable} ${lexend.variable} h-full antialiased`}
     >
       <body className="h-full">
-        <MainLayout>{children}</MainLayout>
+        <Providers>
+          <MainLayout>{children}</MainLayout>
+        </Providers>
       </body>
     </html>
   );
