@@ -61,7 +61,7 @@ export function OnboardingWizard() {
         onboarding_completed: true,
       };
       await apiClient.patch('/users/me', data);
-      await fetchUser(); // Refresh user data to hide wizard
+      await fetchUser(); // Refresh user data
       window.location.reload(); // Force a full reload to ensure all Server Components are updated
     } catch (error) {
       console.error('Onboarding failed:', error);
@@ -95,7 +95,7 @@ export function OnboardingWizard() {
                   <label className="block text-sm font-medium text-slate-700">Full Name</label>
                   <input
                     {...register('full_name')}
-                    className={`block w-full px-4 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`block w-full px-4 py-2 bg-white text-slate-900 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                       errors.full_name ? 'border-red-300' : 'border-slate-300'
                     }`}
                     placeholder="Enter your full name"
@@ -108,7 +108,7 @@ export function OnboardingWizard() {
                   <textarea
                     {...register('career_goal')}
                     rows={3}
-                    className={`block w-full px-4 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
+                    className={`block w-full px-4 py-2 bg-white text-slate-900 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none ${
                       errors.career_goal ? 'border-red-300' : 'border-slate-300'
                     }`}
                     placeholder="What are you hoping to achieve? (e.g., Become a Data Scientist)"
@@ -136,7 +136,7 @@ export function OnboardingWizard() {
 
               <div className="space-y-4">
                 <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     value={currentTag}
                     onChange={(e) => setCurrentTag(e.target.value)}
@@ -148,7 +148,7 @@ export function OnboardingWizard() {
 
                 <div className="flex flex-wrap gap-2 min-h-[100px] p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   {interests.length === 0 ? (
-                    <p className="text-sm text-slate-400 italic">No interests added yet...</p>
+                    <p className="text-sm text-gray-400 italic">No interests added yet...</p>
                   ) : (
                     interests.map((tag) => (
                       <span
@@ -226,20 +226,17 @@ export function OnboardingWizard() {
                   disabled={isSubmitting}
                   onClick={handleFinalize}
                   className="flex-[2] flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-green-200 disabled:opacity-50"
-                {isSubmitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  'Get Started!'
-                )}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    'Get Started!'
+                  )}
                 </button>
-                </div>
-                </div>
-                )}
-                </div>
-                </div>
-                </div>
-                );
-                }
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
