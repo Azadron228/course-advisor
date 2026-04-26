@@ -14,6 +14,16 @@ COURSES = [
         "skills_taught": ["Python", "Machine Learning", "AI", "Algorithms"],
         "difficulty": 0.8,
         "workload": 0.7,
+        "materials_content": """
+# Introduction to Artificial Intelligence
+Welcome to CS401. This course covers:
+- **Search Algorithms**: A*, BFS, DFS.
+- **Machine Learning**: Linear Regression to Neural Nets.
+- **Ethics**: The impact of AI on society.
+
+## Recommended Reading
+Check out the official documentation for [Scikit-Learn](https://scikit-learn.org).
+        """
     },
     {
         "id": "CS402",
@@ -23,6 +33,13 @@ COURSES = [
         "skills_taught": ["AWS", "Docker", "Kubernetes", "Cloud Arch"],
         "difficulty": 0.6,
         "workload": 0.6,
+        "materials_content": """
+# Cloud Computing Architecture
+Master the cloud with CS402:
+- **Virtualization**: How VMs work.
+- **Containers**: Docker and Kubernetes orchestration.
+- **Serverless**: Lambda and Cloud Functions.
+        """
     },
     {
         "id": "CS403",
@@ -32,6 +49,13 @@ COURSES = [
         "skills_taught": ["Security", "Cryptography", "Linux", "Networking"],
         "difficulty": 0.7,
         "workload": 0.5,
+        "materials_content": """
+# Cybersecurity Fundamentals
+Protecting systems in CS403:
+- **Encryption**: RSA, AES, and public key infra.
+- **Penetration Testing**: Ethical hacking basics.
+- **Network Defense**: Firewalls and IDS.
+        """
     },
     {
         "id": "CS404",
@@ -41,6 +65,13 @@ COURSES = [
         "skills_taught": ["React", "JavaScript", "TypeScript", "Web Performance"],
         "difficulty": 0.5,
         "workload": 0.8,
+        "materials_content": """
+# Advanced Web Development
+Building modern apps in CS404:
+- **Frameworks**: React and Next.js (App Router).
+- **Type Safety**: TypeScript at scale.
+- **Optimization**: Core Web Vitals and SSR.
+        """
     },
 ]
 
@@ -68,6 +99,7 @@ def seed():
                 difficulty=c["difficulty"],
                 workload=c["workload"],
                 embedding=emb,
+                materials_content=c.get("materials_content"),
             )
             session.add(course)
         else:
@@ -75,6 +107,7 @@ def seed():
             course.description = c["description"]
             course.skills_taught = c["skills_taught"]
             course.embedding = emb
+            course.materials_content = c.get("materials_content")
 
     # Seed Admin User
     print("Seeding admin user...")
