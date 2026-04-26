@@ -34,8 +34,17 @@ export function Sidebar() {
         isCollapsed ? "w-20" : "w-64"
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200">
-        <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+      <div className={cn(
+        "flex items-center h-16 border-b border-slate-200 transition-all duration-300",
+        isCollapsed ? "justify-center px-2" : "justify-between px-4"
+      )}>
+        <Link 
+          href="/dashboard" 
+          className={cn(
+            "flex items-center gap-3 overflow-hidden",
+            isCollapsed && "justify-center"
+          )}
+        >
           <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
             <GraduationCap size={20} />
           </div>
@@ -45,12 +54,14 @@ export function Sidebar() {
             </span>
           )}
         </Link>
-        <button
-          onClick={toggleSidebar}
-          className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
+        {!isCollapsed && (
+          <button
+            onClick={toggleSidebar}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -92,8 +103,15 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-slate-200">
-        {/* Footer info or help link could go here */}
-        {!isCollapsed && (
+        {isCollapsed ? (
+          <button
+            onClick={toggleSidebar}
+            className="flex items-center justify-center w-full h-10 rounded-lg text-slate-500 hover:bg-slate-100"
+            title="Expand Sidebar"
+          >
+            <ChevronRight size={20} />
+          </button>
+        ) : (
           <div className="p-3 rounded-lg bg-slate-50">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
               Need help?
