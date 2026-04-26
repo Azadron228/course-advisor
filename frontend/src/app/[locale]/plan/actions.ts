@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
 
-export async function updateStepStatus(order: number, status: string) {
+export async function updateStepStatus(planId: number, order: number, status: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
@@ -13,7 +13,7 @@ export async function updateStepStatus(order: number, status: string) {
     throw new Error('Authentication required');
   }
 
-  const response = await fetch(`${API_BASE_URL}/learning-plan/steps/${order}`, {
+  const response = await fetch(`${API_BASE_URL}/learning-plan/${planId}/steps/${order}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -39,6 +39,7 @@ export async function generatePlanAction(formData: FormData) {
 
   // 1. If file, call parser
   const file = formData.get('transcript') as File | null;
+  let parsedTranscript = null;
   if (file && file.size > 0) {
     const parserFormData = new FormData();
     parserFormData.append('file', file);
@@ -49,7 +50,9 @@ export async function generatePlanAction(formData: FormData) {
         body: parserFormData
       });
       
-      if (!parseResponse.ok) {
+      if (parseResponse.ok) {
+        parsedTranscript = await parseResponse.json();
+      } else {
         console.warn('Transcript parsing failed, continuing without it');
       }
     } catch (e) {
@@ -75,7 +78,8 @@ export async function generatePlanAction(formData: FormData) {
       skill_level,
       learning_style,
       study_time,
-      interests
+      interests,
+      transcript: parsedTranscript
     })
   });
 

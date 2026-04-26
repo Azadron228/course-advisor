@@ -21,6 +21,7 @@ class UserORM(Base):
     default_skill_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     default_learning_style: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     default_study_time: Mapped[Optional[int]] = mapped_column(default=10)
+    interests: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
 
 
 class UserSkillORM(Base):
@@ -51,7 +52,7 @@ class LearningPlanORM(Base):
     skill_level: Mapped[str] = mapped_column(String, nullable=False, default="Beginner")
     learning_style: Mapped[str] = mapped_column(String, nullable=False, default="Practical")
     study_time: Mapped[int] = mapped_column(default=10)
-    interests: Mapped[dict] = mapped_column(JSON, nullable=False, default=list)
+    interests: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
 
 
 class CourseORM(Base):

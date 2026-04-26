@@ -17,6 +17,10 @@ class UserPublic(BaseModel):
     career_goal: Optional[str] = None
     onboarding_completed: bool = False
     is_active: bool = True
+    interests: Optional[List[str]] = None
+    default_skill_level: Optional[str] = None
+    default_learning_style: Optional[str] = None
+    default_study_time: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 

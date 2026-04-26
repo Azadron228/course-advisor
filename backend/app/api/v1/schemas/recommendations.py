@@ -112,3 +112,12 @@ class SkillNode(BaseModel):
 
 class SkillMapResponse(BaseModel):
     nodes: List[SkillNode]
+
+
+class PlanGenerateRequest(BaseModel):
+    goal: str
+    skill_level: str
+    learning_style: str
+    study_time: int
+    interests: List[str]
+    transcript: Optional[List[TranscriptEntry]] = None

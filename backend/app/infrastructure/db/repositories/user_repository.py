@@ -21,6 +21,10 @@ class UserRepository:
             hashed_password=o.hashed_password,
             career_goal=o.career_goal,
             onboarding_completed=o.onboarding_completed,
+            interests=o.interests,
+            default_skill_level=o.default_skill_level,
+            default_learning_style=o.default_learning_style,
+            default_study_time=o.default_study_time,
         )
 
     def create(self, user: User) -> User:
@@ -32,6 +36,10 @@ class UserRepository:
             disabled=user.disabled,
             career_goal=user.career_goal,
             onboarding_completed=user.onboarding_completed,
+            interests=user.interests,
+            default_skill_level=user.default_skill_level,
+            default_learning_style=user.default_learning_style,
+            default_study_time=user.default_study_time,
         )
         self.db.add(db_user)
         self.db.commit()
@@ -68,6 +76,10 @@ class UserRepository:
             hashed_password=o.hashed_password,
             career_goal=o.career_goal,
             onboarding_completed=o.onboarding_completed,
+            interests=o.interests,
+            default_skill_level=o.default_skill_level,
+            default_learning_style=o.default_learning_style,
+            default_study_time=o.default_study_time,
         )
 
     def update(self, user: User) -> User:
@@ -81,6 +93,10 @@ class UserRepository:
         o.disabled = user.disabled
         o.career_goal = user.career_goal
         o.onboarding_completed = user.onboarding_completed
+        o.interests = user.interests
+        o.default_skill_level = user.default_skill_level
+        o.default_learning_style = user.default_learning_style
+        o.default_study_time = user.default_study_time
         if user.hashed_password:
             o.hashed_password = user.hashed_password
 

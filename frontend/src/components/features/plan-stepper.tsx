@@ -34,10 +34,11 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleMarkComplete = async (order: number) => {
+    if (!plan.id) return;
     setError(null);
     startTransition(async () => {
       try {
-        await updateStepStatus(order, 'completed');
+        await updateStepStatus(plan.id!, order, 'completed');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       }

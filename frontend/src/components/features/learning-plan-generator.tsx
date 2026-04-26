@@ -12,7 +12,7 @@ const formSchema = z.object({
   goal: z.string().min(5, 'Goal must be at least 5 characters'),
   skill_level: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   learning_style: z.enum(['Visual', 'Practical', 'Theoretical']),
-  study_time: z.coerce.number().min(1).max(100),
+  study_time: z.number().min(1).max(100),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -142,7 +142,7 @@ export function LearningPlanGenerator() {
               </label>
               <input
                 type="number"
-                {...register('study_time')}
+                {...register('study_time', { valueAsNumber: true })}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
               />
               {errors.study_time && <p className="text-xs text-red-500 font-medium">{errors.study_time.message}</p>}

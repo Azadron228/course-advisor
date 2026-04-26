@@ -42,14 +42,19 @@ class AdvisorService:
         self.scoring_service = scoring_service
         self.rag_scorer = rag_scorer
 
-    async def generate_learning_plan(self, user: User) -> LearningPlan:
+    async def generate_learning_plan(self, user: User, request: Optional[any] = None) -> LearningPlan:
         """
         Generate a learning plan for a user using AI analysis of their profile and available courses.
         Saves the plan to the database and returns it.
         """
         # 1. Gather profile data from repositories
         skills = self.profile_repo.get_skills(user.id)
-        transcript = self.profile_repo.get_transcript(user.id)
+        
+        # Use transcript from request if provided, otherwise from DB
+        if request and hasattr(request, 'transcript') and request.transcript:
+            transcript = request.transcript
+        else:
+            transcript = self.profile_repo.get_transcript(user.id)
 
         student = Student(
             id=str(user.id),
@@ -65,7 +70,18 @@ class AdvisorService:
         llm = get_model(ModelProvider.AUTO)
         agent = get_analysis_agent(llm, student, courses)
 
-        goal_msg = f"Generate a structured learning path for career goal: {user.career_goal or 'General Growth'}. Output JSON."
+        goal = request.goal if request else (user.career_goal or "General Growth")
+        skill_level = request.skill_level if request else "Beginner"
+        learning_style = request.learning_style if request else "Practical"
+        study_time = request.study_time if request else 10
+        interests = request.interests if request else []
+
+        goal_msg = (
+            f"Generate a structured learning path for goal: {goal}. "
+            f"Skill level: {skill_level}. Learning style: {learning_style}. "
+            f"Study time: {study_time} hours/week. Interests: {', '.join(interests)}. "
+            f"Output JSON."
+        )
         handler = agent.run(user_msg=goal_msg)
         response = await handler
         
@@ -77,9 +93,13 @@ class AdvisorService:
         # 4. Persist the new plan
         new_plan = LearningPlan(
             id=None,
-            goal=user.career_goal or "General Growth",
+            goal=goal,
             steps=parsed.learning_path,
             is_active=True,
+            skill_level=skill_level,
+            learning_style=learning_style,
+            study_time=study_time,
+            interests=interests,
         )
 
         self.plan_repo.deactivate_all_plans(user.id)
