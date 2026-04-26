@@ -54,6 +54,9 @@ export const apiClient = {
   async post<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const isFormData = body instanceof FormData;
+    const url = `${API_BASE_URL}${endpoint}`;
+    
+    console.log(`apiClient: Calling POST ${url}`);
     
     const headers: Record<string, string> = {
       'Authorization': token ? `Bearer ${token}` : '',
@@ -64,14 +67,20 @@ export const apiClient = {
       headers['Content-Type'] = 'application/json';
     }
     
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      ...options,
-      headers,
-      body: isFormData ? body : JSON.stringify(body),
-    });
-    
-    return handleResponse<T>(response);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        ...options,
+        headers,
+        body: isFormData ? body : JSON.stringify(body),
+      });
+      
+      console.log(`apiClient: Received response ${response.status} ${response.statusText}`);
+      return handleResponse<T>(response);
+    } catch (error) {
+      console.error('apiClient: Fetch error:', error);
+      throw error;
+    }
   },
   
   async put<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {

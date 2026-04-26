@@ -51,17 +51,22 @@ export function useAuth() {
   }, [fetchUser]);
 
   const login = async (username: string, password: string) => {
+    console.log('Attempting login for:', username);
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
 
     try {
+      console.log('Sending request to /auth/token...');
       const data = await apiClient.post<TokenResponse>('/auth/token', formData);
+      console.log('Login successful, token received');
       Cookies.set('token', data.access_token, { expires: 7 }); // Set cookie for 7 days
+      console.log('Fetching user data...');
       await fetchUser();
+      console.log('User data fetched, navigating to dashboard');
       router.push('/dashboard');
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Login failed in useAuth:', error);
       throw error;
     }
   };
