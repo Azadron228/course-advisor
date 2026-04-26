@@ -1,0 +1,13 @@
+{
+  "Common": {
+    "title": "EduPath AI",
+    "searchPlaceholder": "Поиск курсов, навыков...",
+    "logout": "Выйти",
+    "profile": "Мой профиль",
+    "settings": "Настройки"
+  },
+  "Auth": {
+    "login": "Вход",
+    "register": "Регистрация"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "Common": {
+    "title": "EduPath AI",
+    "searchPlaceholder": "Search courses, skills...",
+    "logout": "Logout",
+    "profile": "My Profile",
+    "settings": "Settings"
+  },
+  "Auth": {
+    "login": "Login",
+    "register": "Register"
+  }
+}
