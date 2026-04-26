@@ -52,6 +52,7 @@ export async function generatePlanAction(data: {
     body: JSON.stringify({
       full_name: data.full_name,
       career_goal: data.career_goal,
+      interests: data.interests,
       onboarding_completed: true,
     }),
   });
