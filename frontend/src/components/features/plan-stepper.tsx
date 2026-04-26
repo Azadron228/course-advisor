@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { CheckCircle, Circle, Play, ExternalLink, Loader2 } from 'lucide-react';
-import { updateStepStatus } from '@/app/plan/actions';
+import { updateStepStatus } from '@/app/[locale]/plan/actions';
 import { cn } from '@/lib/utils';
 
 export interface LearningPathStep {
