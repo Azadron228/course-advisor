@@ -1,69 +1,43 @@
 import { cookies } from 'next/headers';
 import { PlanStepper, LearningPlan } from '@/components/features/plan-stepper';
-import { CreatePlanForm } from '@/components/features/create-plan-form';
+import { PlanList } from '@/components/features/plan-list';
+import { LearningPlanGenerator } from '@/components/features/learning-plan-generator';
 import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
 
-async function getLearningPlan(): Promise<LearningPlan | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-
-  if (!token) {
-    redirect('/login');
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/learning-plan/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Cache-Control': 'no-cache',
-      },
-    });
-
-    if (response.status === 401) {
-      redirect('/login');
-    }
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error('Failed to fetch learning plan');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching learning plan:', error);
-    return null;
-  }
+async function getLearningPlans(token: string): Promise<LearningPlan[]> {
+  const response = await fetch(`${API_BASE_URL}/learning-plan/`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    next: { revalidate: 0 }
+  });
+  if (!response.ok) return [];
+  return response.json();
 }
 
-async function getUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-
-  if (!token) return null;
-
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+async function getLearningPlanById(token: string, id: string): Promise<LearningPlan | null> {
+  const response = await fetch(`${API_BASE_URL}/learning-plan/${id}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+    next: { revalidate: 0 }
   });
-
   if (!response.ok) return null;
   return response.json();
 }
 
-export default async function PlanPage() {
-  const [plan, user] = await Promise.all([getLearningPlan(), getUser()]);
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ id?: string, view?: string }> }) {
+  const { id, view } = await searchParams;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
 
-  return (
-    <div className="py-4">
-      {plan ? (
-        <PlanStepper plan={plan} />
-      ) : (
-        <CreatePlanForm initialName={user?.full_name} />
-      )}
-    </div>
-  );
+  if (!token) redirect('/login');
+
+  if (view === 'new') return <LearningPlanGenerator />;
+
+  if (id) {
+    const plan = await getLearningPlanById(token, id);
+    if (!plan) redirect('/plan');
+    return <PlanStepper plan={plan} />;
+  }
+
+  const plans = await getLearningPlans(token);
+  return <PlanList plans={plans} />;
 }
