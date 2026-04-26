@@ -19,6 +19,10 @@ export interface LearningPlan {
   goal: string;
   steps: LearningPathStep[];
   is_active: boolean;
+  skill_level: string;
+  learning_style: string;
+  study_time: number;
+  interests: string[];
 }
 
 interface PlanStepperProps {
