@@ -81,18 +81,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {!data.onboarding_completed && (
-        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex items-center gap-4 text-amber-800">
-          <Zap className="h-5 w-5 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="font-semibold text-sm">Finish your profile setup!</p>
-            <p className="text-xs opacity-90">Complete your onboarding to get personalized course recommendations.</p>
-          </div>
-          <Link href="/onboarding" className="text-xs font-bold underline underline-offset-4 hover:opacity-80">
-            Complete Setup
-          </Link>
-        </div>
-      )}
       <DashboardSummary 
         welcomeMessage={data.welcome_message}
         activePlanTitle={data.active_plan_title}
