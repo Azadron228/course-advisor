@@ -20,11 +20,15 @@ services:
       - advisor-net
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "2828:8000"
+    volumes:
+      - ./backend/alembic/versions:/app/alembic/versions
     env_file:
       - .env
     environment:
@@ -44,10 +48,14 @@ services:
       - advisor-net
 
   arq-worker:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: uv run arq app.worker.Worker
+    volumes:
+      - ./backend/alembic/versions:/app/alembic/versions
     env_file:
       - .env
     environment:
@@ -67,7 +75,9 @@ services:
       - advisor-net
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: dev
     ports:
       - "2929:3000"
     environment:
