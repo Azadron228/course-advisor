@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
 
 export async function updateStepStatus(order: number, status: string) {
@@ -30,50 +31,64 @@ export async function updateStepStatus(order: number, status: string) {
   return { success: true };
 }
 
-export async function generatePlanAction(data: {
-  full_name: string;
-  career_goal: string;
-  interests: string[];
-}) {
+export async function generatePlanAction(formData: FormData) {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
-  if (!token) {
-    throw new Error('Authentication required');
+  if (!token) throw new Error('Authentication required');
+
+  // 1. If file, call parser
+  const file = formData.get('transcript') as File | null;
+  if (file && file.size > 0) {
+    const parserFormData = new FormData();
+    parserFormData.append('file', file);
+    try {
+      const parseResponse = await fetch(`${API_BASE_URL}/parser/parse-transcript`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: parserFormData
+      });
+      
+      if (!parseResponse.ok) {
+        console.warn('Transcript parsing failed, continuing without it');
+      }
+    } catch (e) {
+      console.error('Transcript parsing error:', e);
+    }
   }
 
-  // 1. Update user profile
-  const profileResponse = await fetch(`${API_BASE_URL}/users/me`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
+  // 2. Generate learning plan with specific params
+  const goal = formData.get('goal') as string;
+  const skill_level = formData.get('skill_level') as string;
+  const learning_style = formData.get('learning_style') as string;
+  const study_time = Number(formData.get('study_time'));
+  const interests = JSON.parse(formData.get('interests') as string);
+
+  const generateResponse = await fetch(`${API_BASE_URL}/learning-plan/generate`, {
+    method: 'POST',
+    headers: { 
       'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json' 
     },
     body: JSON.stringify({
-      full_name: data.full_name,
-      career_goal: data.career_goal,
-      interests: data.interests,
-      onboarding_completed: true,
-    }),
+      goal,
+      skill_level,
+      learning_style,
+      study_time,
+      interests
+    })
   });
 
-  if (!profileResponse.ok) {
-    throw new Error('Failed to update profile');
+  if (!generateResponse.ok) {
+    const error = await generateResponse.json().catch(() => ({}));
+    throw new Error(error.detail || 'Failed to generate plan');
   }
 
-  // 2. Generate learning plan
-  const planResponse = await fetch(`${API_BASE_URL}/learning-plan/generate`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!planResponse.ok) {
-    throw new Error('Failed to generate learning plan');
-  }
-
+  const newPlan = await generateResponse.json();
+  
   revalidatePath('/plan');
   revalidatePath('/dashboard');
-  return { success: true };
+  
+  // Redirect to the new plan view
+  redirect(`/plan?id=${newPlan.id}`);
 }
