@@ -85,7 +85,7 @@ export function ChatWindow() {
                   onClick={() => sendMessage(suggestion)}
                   className="px-4 py-3 text-xs font-medium text-indigo-600 bg-white border border-indigo-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-sm transition-all text-left"
                 >
-                  "{suggestion}"
+                  &quot;{suggestion}&quot;
                 </button>
               ))}
             </div>

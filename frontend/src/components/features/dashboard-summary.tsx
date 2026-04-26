@@ -1,6 +1,5 @@
 import React from 'react';
 import { BookOpen, Trophy } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface DashboardSummaryProps {
   welcomeMessage: string;

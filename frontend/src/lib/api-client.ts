@@ -20,7 +20,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     try {
       const errorData = await response.json();
       errorMessage = errorData.detail || errorData.message || errorMessage;
-    } catch (e) {
+    } catch {
       // Fallback to status text
       errorMessage = response.statusText || errorMessage;
     }
@@ -51,7 +51,7 @@ export const apiClient = {
     return handleResponse<T>(response);
   },
   
-  async post<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+  async post<T>(endpoint: string, body: unknown, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const isFormData = body instanceof FormData;
     const url = `${API_BASE_URL}${endpoint}`;
@@ -83,7 +83,7 @@ export const apiClient = {
     }
   },
   
-  async put<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+  async put<T>(endpoint: string, body: unknown, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const isFormData = body instanceof FormData;
     
@@ -106,7 +106,7 @@ export const apiClient = {
     return handleResponse<T>(response);
   },
   
-  async patch<T>(endpoint: string, body: any, options: RequestInit = {}): Promise<T> {
+  async patch<T>(endpoint: string, body: unknown, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const isFormData = body instanceof FormData;
     
@@ -144,7 +144,7 @@ export const apiClient = {
     return handleResponse<T>(response);
   },
 
-  async stream(endpoint: string, body: any, onChunk: (chunk: string) => void, options: RequestInit = {}): Promise<void> {
+  async stream(endpoint: string, body: unknown, onChunk: (chunk: string) => void, options: RequestInit = {}): Promise<void> {
     const token = Cookies.get('token');
     const url = `${API_BASE_URL}${endpoint}`;
 
@@ -158,7 +158,7 @@ export const apiClient = {
       method: 'POST',
       ...options,
       headers,
-      body: JSON.stringify({ ...body, stream: true }),
+      body: JSON.stringify({ ...(body as Record<string, unknown>), stream: true }),
     });
 
     if (!response.ok) {
