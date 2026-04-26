@@ -71,9 +71,10 @@ export function useChat() {
       // 4. On finish, clear local state and invalidate query to fetch official history
       queryClient.invalidateQueries({ queryKey: ['chat-history'] });
       setLocalMessages([]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Chat error:', err);
-      setError(err instanceof Error ? err : new Error(err.message || 'Failed to send message'));
+      const errorMessage = err instanceof Error ? err.message : (err as { message?: string })?.message || 'Failed to send message';
+      setError(err instanceof Error ? err : new Error(errorMessage));
     } finally {
       setIsSending(false);
     }

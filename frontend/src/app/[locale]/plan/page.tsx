@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { PlanStepper, LearningPlan } from '@/components/features/plan-stepper';
 import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
+import { Link } from '@/i18n/routing';
 
 async function getLearningPlan(): Promise<LearningPlan | null> {
   const cookieStore = await cookies();
@@ -50,12 +51,12 @@ export default async function PlanPage() {
           <p className="text-slate-600 mb-6">
             You haven&apos;t generated a learning plan yet. Tell us what you want to learn to get started.
           </p>
-          <a
+          <Link
             href="/dashboard"
             className="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Go to Dashboard
-          </a>
+          </Link>
         </div>
       )}
     </div>

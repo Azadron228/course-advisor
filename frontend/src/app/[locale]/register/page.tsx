@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient } from '@/lib/api-client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -13,7 +12,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +29,9 @@ export default function RegisterPage() {
       // 2. Automatically log them in
       await login(email, password);
       
-      // router.push('/dashboard') is handled by login() in useAuth
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const message = (err as { message?: string })?.message || 'Registration failed. Please try again.';
+      setError(message);
       setIsLoading(false);
     }
   };

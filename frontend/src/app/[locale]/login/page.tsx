@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-    } catch (err) {
+    } catch {
       setError('Invalid email or password. Please try again.');
       setIsLoading(false);
     }
@@ -91,7 +91,7 @@ export default function LoginPage() {
             </button>
 
             <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/register" className="font-semibold text-primary hover:underline">
                 Sign Up
               </Link>

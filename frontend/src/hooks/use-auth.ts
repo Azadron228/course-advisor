@@ -27,6 +27,9 @@ export function useAuth() {
   const router = useRouter();
 
   const fetchUser = useCallback(async () => {
+    // Ensure state updates happen after the first render to avoid cascading renders
+    await Promise.resolve();
+    
     const token = Cookies.get('token');
     if (!token) {
       setUser(null);
@@ -47,7 +50,10 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    fetchUser();
+    const timer = setTimeout(() => {
+      fetchUser();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchUser]);
 
   const login = async (username: string, password: string) => {

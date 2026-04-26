@@ -42,7 +42,7 @@ export default function ProfilePage() {
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
     } catch (error: unknown) {
       console.error('Failed to update profile:', error);
-      const errorMessage = error instanceof Error ? error.message : (error as any)?.message || 'Failed to update profile. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : (error as { message?: string })?.message || 'Failed to update profile. Please try again.';
       setMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsSaving(false);
