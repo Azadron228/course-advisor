@@ -170,7 +170,7 @@ def get_advisor_agent(
 
 def is_capable_model(llm: LLM) -> bool:
     model_name = getattr(llm, "model", getattr(llm, "model_name", ""))
-    capable_prefixes = ("gpt-4o", "claude")
+    capable_prefixes = ("gpt-5.4", "claude")
     return any(p in model_name.lower() for p in capable_prefixes)
 
 

@@ -19,7 +19,7 @@ from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.embeddings import get_embedding
 from app.infrastructure.ai.agent import get_model
-from app.infrastructure.ai.analysis_agent import get_analysis_agent, parse_global_analysis
+from app.infrastructure.ai.analysis_agent import generate_global_analysis, parse_global_analysis
 
 # We might want to move RAG scoring logic to a domain-friendly infrastructure service
 from app.infrastructure.ai.rag import RAGScorer
@@ -68,8 +68,7 @@ class AdvisorService:
 
         # 3. AI Generation via Analysis Agent
         llm = get_model(ModelProvider.AUTO)
-        agent = get_analysis_agent(llm, student, courses)
-
+        
         goal = request.goal if request else (user.career_goal or "General Growth")
         skill_level = request.skill_level if request else "Beginner"
         learning_style = request.learning_style if request else "Practical"
@@ -77,35 +76,39 @@ class AdvisorService:
         interests = request.interests if request else []
 
         goal_msg = (
-            f"Generate a structured learning path for goal: {goal}. "
+            f"Goal: {goal}. "
             f"Skill level: {skill_level}. Learning style: {learning_style}. "
-            f"Study time: {study_time} hours/week. Interests: {', '.join(interests)}. "
-            f"Output JSON."
+            f"Study time: {study_time} hours/week. Interests: {', '.join(interests)}."
         )
-        handler = agent.run(user_msg=goal_msg)
-        response = await handler
         
-        from llama_index.core.agent.workflow.workflow_events import AgentOutput
-        response_content = str(response.response) if isinstance(response, AgentOutput) else str(response)
-        
-        parsed = parse_global_analysis(response_content)
+        logger.info(f"Generating learning plan for goal: {goal}")
+        try:
+            parsed = await generate_global_analysis(llm, student, courses, goal_msg)
+            logger.info(f"Successfully generated analysis for {goal}")
+        except Exception as gen_err:
+            logger.error(f"AI Generation failed: {gen_err}")
+            raise
 
         # 4. Persist the new plan
-        new_plan = LearningPlan(
-            id=None,
-            goal=goal,
-            steps=parsed.learning_path,
-            is_active=True,
-            skill_level=skill_level,
-            learning_style=learning_style,
-            study_time=study_time,
-            interests=interests,
-        )
+        try:
+            new_plan = LearningPlan(
+                id=None,
+                goal=goal,
+                steps=parsed.learning_path,
+                is_active=True,
+                skill_level=skill_level,
+                learning_style=learning_style,
+                study_time=study_time,
+                interests=interests,
+            )
 
-        self.plan_repo.deactivate_all_plans(user.id)
-        saved_plan = self.plan_repo.create_plan(user.id, new_plan)
-
-        return saved_plan
+            self.plan_repo.deactivate_all_plans(user.id)
+            saved_plan = self.plan_repo.create_plan(user.id, new_plan)
+            logger.info(f"Successfully saved learning plan {saved_plan.id}")
+            return saved_plan
+        except Exception as db_err:
+            logger.error(f"Failed to persist learning plan: {db_err}")
+            raise
 
     def get_skill_map(self, user_id: int) -> SkillMapResponse:
         """

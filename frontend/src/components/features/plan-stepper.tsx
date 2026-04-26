@@ -193,12 +193,13 @@ export function PlanStepper({ plan }: PlanStepperProps) {
           })}
         </div>
       </div>
+    </div>
 
-      <CourseDrawer 
-        courseId={selectedCourseId} 
-        isOpen={isDrawerOpen} 
-        onClose={() => setIsDrawerOpen(false)} 
-      />
-    </>
-  );
+    <CourseDrawer 
+      courseId={selectedCourseId} 
+      isOpen={isDrawerOpen} 
+      onClose={() => setIsDrawerOpen(false)} 
+    />
+  </>
+);
 }
