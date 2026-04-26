@@ -91,19 +91,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-200">
-        {/* Footer info or help link could go here */}
-        {!isCollapsed && (
-          <div className="p-3 rounded-lg bg-slate-50">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">
-              Need help?
-            </p>
-            <p className="text-xs text-slate-400">
-              Check out our documentation or contact support.
-            </p>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }
