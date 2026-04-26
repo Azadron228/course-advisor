@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { CheckCircle, Circle, Play, ExternalLink, Loader2 } from 'lucide-react';
 import { updateStepStatus } from '@/app/[locale]/plan/actions';
 import { cn } from '@/lib/utils';
+import { CourseDrawer } from '@/components/shared/course-drawer';
 
 export interface LearningPathStep {
   order: number;
@@ -32,6 +33,8 @@ interface PlanStepperProps {
 export function PlanStepper({ plan }: PlanStepperProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleMarkComplete = async (order: number) => {
     if (!plan.id) return;
@@ -43,6 +46,15 @@ export function PlanStepper({ plan }: PlanStepperProps) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       }
     });
+  };
+
+  const handleViewResource = (step: LearningPathStep) => {
+    if (step.is_external && step.resource_id) {
+       window.open(step.resource_id, '_blank');
+    } else if (step.resource_id) {
+       setSelectedCourseId(step.resource_id);
+       setIsDrawerOpen(true);
+    }
   };
 
   if (!plan || !plan.steps || plan.steps.length === 0) {
@@ -57,7 +69,8 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   const sortedSteps = [...plan.steps].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900 mb-2">My Learning Plan</h1>
         <p className="text-slate-600">Goal: {plan.goal}</p>
@@ -161,12 +174,13 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                   
                   {step.resource_id && (
                     <div className="mt-4 flex items-center gap-2">
-                      <a 
-                        href={`#resource-${step.resource_id}`}
-                        className="text-xs font-medium text-indigo-600 hover:text-indigo-500 hover:underline inline-flex items-center gap-1"
+                      <button 
+                        onClick={() => handleViewResource(step)}
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-500 hover:underline inline-flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
                       >
-                        View Resource <ExternalLink className="w-3 h-3" />
-                      </a>
+                        {step.is_external ? 'Open External Resource' : 'View Materials'} 
+                        <ExternalLink className="w-3 h-3 ml-1" />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -175,6 +189,12 @@ export function PlanStepper({ plan }: PlanStepperProps) {
           })}
         </div>
       </div>
-    </div>
+
+      <CourseDrawer 
+        courseId={selectedCourseId} 
+        isOpen={isDrawerOpen} 
+        onClose={() => setIsDrawerOpen(false)} 
+      />
+    </>
   );
 }
