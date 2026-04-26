@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CheckCircle, Circle, Play, ExternalLink, Loader2 } from 'lucide-react';
+import { CheckCircle, Circle, Play, ExternalLink, Loader2, BookOpen } from 'lucide-react';
 import { updateStepStatus } from '@/app/[locale]/plan/actions';
 import { cn } from '@/lib/utils';
 import { CourseDrawer } from '@/components/shared/course-drawer';
@@ -149,7 +149,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                       <button
                         onClick={() => handleMarkComplete(step.order)}
                         disabled={isPending}
-                        className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       >
                         {isPending ? (
                           <>
@@ -176,10 +176,14 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                     <div className="mt-4 flex items-center gap-2">
                       <button 
                         onClick={() => handleViewResource(step)}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-500 hover:underline inline-flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-500 hover:underline inline-flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         {step.is_external ? 'Open External Resource' : 'View Materials'} 
-                        <ExternalLink className="w-3 h-3 ml-1" />
+                        {step.is_external ? (
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        ) : (
+                          <BookOpen className="w-3 h-3 ml-1" />
+                        )}
                       </button>
                     </div>
                   )}
