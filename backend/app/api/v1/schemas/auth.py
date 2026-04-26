@@ -29,6 +29,9 @@ class UserUpdate(BaseModel):
     career_goal: Optional[str] = None
     onboarding_completed: Optional[bool] = None
     interests: Optional[List[str]] = None
+    default_skill_level: Optional[str] = None
+    default_learning_style: Optional[str] = None
+    default_study_time: Optional[int] = None
 
 
 class Token(BaseModel):

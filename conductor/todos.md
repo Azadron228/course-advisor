@@ -1,8 +1,8 @@
-# Todos: Learning Plan Creation
+# Todos: Advanced Learning Plan Generator
 
-- [x] Task 1: Add generatePlanAction to Server Actions
-- [x] Task 2: Create CreatePlanForm Component
-- [x] Task 3: Update PlanPage to Render CreatePlanForm
-- [x] Task 4: Remove OnboardingWizard Integration
-- [x] Task 5: Remove Onboarding Nudge from Dashboard
-- [x] Task 6: Final Verification
+- [x] Task 1: Backend Database & Schema Updates
+- [ ] Task 2: Repository & API Updates for Multi-Plan Support
+- [ ] Task 3: Create PlanList Component
+- [ ] Task 4: Advanced LearningPlanGenerator with File Upload
+- [ ] Task 5: Page Orchestration in PlanPage
+- [ ] Task 6: Final Verification & Build

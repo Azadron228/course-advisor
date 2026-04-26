@@ -86,6 +86,10 @@ class LearningPlan(BaseModel):
     goal: str
     steps: List[LearningPathStep]
     is_active: bool = True
+    skill_level: str = "Beginner"
+    learning_style: str = "Practical"
+    study_time: int = 10
+    interests: List[str] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 
