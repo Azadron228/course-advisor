@@ -29,6 +29,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
+    stream: bool = False
 
 
 class ChatResponse(BaseModel):

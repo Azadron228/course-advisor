@@ -128,20 +128,53 @@ export const apiClient = {
     
     return handleResponse<T>(response);
   },
-  
   async delete<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = Cookies.get('token');
     const headers = {
       'Authorization': token ? `Bearer ${token}` : '',
       ...options.headers,
     };
-    
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       ...options,
       headers,
     });
-    
+
     return handleResponse<T>(response);
   },
-};
+
+  async stream(endpoint: string, body: any, onChunk: (chunk: string) => void, options: RequestInit = {}): Promise<void> {
+    const token = Cookies.get('token');
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    const headers: Record<string, string> = {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      ...options,
+      headers,
+      body: JSON.stringify({ ...body, stream: true }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw { message: errorData.detail || 'Streaming failed', status: response.status } as ApiError;
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('Response body is not readable');
+
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      onChunk(chunk);
+    }
+  },
+  };

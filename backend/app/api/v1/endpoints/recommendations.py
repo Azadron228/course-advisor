@@ -1,6 +1,7 @@
 import logging
-from typing import List
+from typing import List, Any
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 
 from app.api.v1.schemas.recommendations import (
     Student as StudentSchema,
@@ -82,7 +83,22 @@ async def chat_with_advisor(
         )
 
         logger.info(f"Chat request from user {current_user.email}: {request.message[:50]}...")
-        response = await agent.run(user_msg=request.message, chat_history=chat_messages)
+
+        if request.stream:
+            async def stream_generator():
+                response_gen = await agent.astream_chat(request.message, chat_history=chat_messages)
+                full_response = ""
+                async for chunk in response_gen.async_response_gen():
+                    full_response += chunk
+                    yield chunk
+                
+                # After streaming finishes, save history
+                await chat_history.add_message(current_user.email, "user", request.message)
+                await chat_history.add_message(current_user.email, "assistant", full_response)
+
+            return StreamingResponse(stream_generator(), media_type="text/event-stream")
+
+        response = await agent.achat(request.message, chat_history=chat_messages)
         response_content = str(response)
 
         await chat_history.add_message(current_user.email, "user", request.message)
