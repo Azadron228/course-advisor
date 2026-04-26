@@ -66,8 +66,13 @@ class AdvisorService:
         agent = get_analysis_agent(llm, student, courses)
 
         goal_msg = f"Generate a structured learning path for career goal: {user.career_goal or 'General Growth'}. Output JSON."
-        response = await agent.run(user_msg=goal_msg)
-        parsed = parse_global_analysis(str(response))
+        handler = agent.run(user_msg=goal_msg)
+        response = await handler
+        
+        from llama_index.core.agent.workflow.workflow_events import AgentOutput
+        response_content = str(response.response) if isinstance(response, AgentOutput) else str(response)
+        
+        parsed = parse_global_analysis(response_content)
 
         # 4. Persist the new plan
         new_plan = LearningPlan(
@@ -175,8 +180,13 @@ class AdvisorService:
             llm = get_model(provider)
             agent = get_analysis_agent(llm, student, courses)
 
-            response = await agent.run(user_msg="Perform global analysis and output JSON.")
-            parsed = parse_global_analysis(str(response))
+            handler = agent.run(user_msg="Perform global analysis and output JSON.")
+            response = await handler
+            
+            from llama_index.core.agent.workflow.workflow_events import AgentOutput
+            response_content = str(response.response) if isinstance(response, AgentOutput) else str(response)
+
+            parsed = parse_global_analysis(response_content)
             analysis_data = parsed.skill_gap_analysis
             learning_path = parsed.learning_path
         except Exception as e:

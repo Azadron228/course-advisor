@@ -1,5 +1,5 @@
 import logging
-from typing import List, Any
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
@@ -21,6 +21,7 @@ from app.api.v1.schemas.auth import UserPublic as User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
+from llama_index.core.agent.workflow.workflow_events import AgentStream, AgentOutput
 from app.infrastructure.ai.agent import get_advisor_agent, get_model
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
@@ -84,13 +85,16 @@ async def chat_with_advisor(
 
         logger.info(f"Chat request from user {current_user.email}: {request.message[:50]}...")
 
+        handler = agent.run(user_msg=request.message, chat_history=chat_messages)
+
         if request.stream:
             async def stream_generator():
-                response_gen = await agent.astream_chat(request.message, chat_history=chat_messages)
                 full_response = ""
-                async for chunk in response_gen.async_response_gen():
-                    full_response += chunk
-                    yield chunk
+                async for event in handler.stream_events():
+                    if isinstance(event, AgentStream):
+                        delta = event.delta
+                        full_response += delta
+                        yield delta
                 
                 # After streaming finishes, save history
                 await chat_history.add_message(current_user.email, "user", request.message)
@@ -98,8 +102,12 @@ async def chat_with_advisor(
 
             return StreamingResponse(stream_generator(), media_type="text/event-stream")
 
-        response = await agent.achat(request.message, chat_history=chat_messages)
-        response_content = str(response)
+        result = await handler
+        response_content = ""
+        if isinstance(result, AgentOutput):
+            response_content = str(result.response)
+        else:
+            response_content = str(result)
 
         await chat_history.add_message(current_user.email, "user", request.message)
         await chat_history.add_message(current_user.email, "assistant", response_content)

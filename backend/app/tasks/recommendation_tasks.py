@@ -22,11 +22,15 @@ async def run_agent_task(
         llm = get_model(provider)
         agent = get_recommendation_agent(llm, student, course)
 
-        response = await agent.run(
+        handler = agent.run(
             user_msg="Evaluate how well this course fits the student and provide your recommendation in JSON format."
         )
+        response = await handler
+        
+        from llama_index.core.agent.workflow.workflow_events import AgentOutput
+        response_content = str(response.response) if isinstance(response, AgentOutput) else str(response)
 
-        result = parse_agent_recommendation(str(response))
+        result = parse_agent_recommendation(response_content)
         # Return as dict for serialization
         return {"score": result.score, "reasoning": result.reasoning, "tags": result.tags}
     except Exception as e:

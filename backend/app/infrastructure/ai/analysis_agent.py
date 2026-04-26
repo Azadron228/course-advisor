@@ -49,7 +49,7 @@ def get_analysis_agent(llm: LLM, student: Student, courses: List[Course]) -> ReA
         "Output MUST be ONLY a valid JSON object matching the GlobalAnalysis schema with fields: skill_gap_analysis, learning_path."
     )
 
-    return ReActAgent.from_tools(
+    return ReActAgent(
         tools=[],  # No tools for this agent currently
         llm=llm,
         verbose=True,
