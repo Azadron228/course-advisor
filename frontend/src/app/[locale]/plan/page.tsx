@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { PlanStepper, LearningPlan } from '@/components/features/plan-stepper';
+import { CreatePlanForm } from '@/components/features/create-plan-form';
 import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
-import { Link } from '@/i18n/routing';
 
 async function getLearningPlan(): Promise<LearningPlan | null> {
   const cookieStore = await cookies();
@@ -38,26 +38,31 @@ async function getLearningPlan(): Promise<LearningPlan | null> {
   }
 }
 
+async function getUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (!token) return null;
+
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) return null;
+  return response.json();
+}
+
 export default async function PlanPage() {
-  const plan = await getLearningPlan();
+  const [plan, user] = await Promise.all([getLearningPlan(), getUser()]);
 
   return (
     <div className="py-4">
       {plan ? (
         <PlanStepper plan={plan} />
       ) : (
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm text-center">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">No Active Learning Plan</h2>
-          <p className="text-slate-600 mb-6">
-            You haven&apos;t generated a learning plan yet. Tell us what you want to learn to get started.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
+        <CreatePlanForm initialName={user?.full_name} />
       )}
     </div>
   );
