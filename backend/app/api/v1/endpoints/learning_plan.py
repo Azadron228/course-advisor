@@ -4,18 +4,26 @@ from app.domain.identity.entities import User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.api.v1.schemas.recommendations import LearningPlan
-from typing import Dict
+from typing import Dict, List, Optional
 
 router = APIRouter()
 
-@router.get("/", response_model=LearningPlan)
-async def get_learning_plan(
+@router.get("/", response_model=List[LearningPlan])
+async def list_learning_plans(
     current_user: User = Depends(get_current_active_user),
     plan_repo: PlanRepository = Depends(get_service(PlanRepository))
 ):
-    plan = plan_repo.get_active_plan(current_user.id)
+    return plan_repo.get_all_plans(current_user.id)
+
+@router.get("/{plan_id}", response_model=LearningPlan)
+async def get_plan_by_id(
+    plan_id: int,
+    current_user: User = Depends(get_current_active_user),
+    plan_repo: PlanRepository = Depends(get_service(PlanRepository))
+):
+    plan = plan_repo.get_by_id(current_user.id, plan_id)
     if not plan:
-        raise HTTPException(status_code=404, detail="No active learning plan found")
+        raise HTTPException(status_code=404, detail="Plan not found")
     return plan
 
 @router.post("/generate", response_model=LearningPlan)

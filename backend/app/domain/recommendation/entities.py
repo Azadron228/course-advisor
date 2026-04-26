@@ -68,6 +68,7 @@ class LearningPathStep:
     description: str
     resource_id: Optional[str] = None
     is_external: bool = False
+    status: str = "upcoming"
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,10 @@ class LearningPlan:
     goal: str
     steps: List[LearningPathStep]
     is_active: bool = True
+    skill_level: str = "Beginner"
+    learning_style: str = "Practical"
+    study_time: int = 10
+    interests: List[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
