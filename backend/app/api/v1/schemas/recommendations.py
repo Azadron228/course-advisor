@@ -71,6 +71,14 @@ class SkillGapAnalysis(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LearningMaterial(BaseModel):
+    title: str
+    description: str
+    url: Optional[str] = None
+    type: str = "article"
+    model_config = ConfigDict(from_attributes=True)
+
+
 class LearningPathStep(BaseModel):
     order: int
     title: str
@@ -78,6 +86,7 @@ class LearningPathStep(BaseModel):
     resource_id: Optional[str] = None
     is_external: bool = False
     status: str = "upcoming"
+    materials: List[LearningMaterial] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 
