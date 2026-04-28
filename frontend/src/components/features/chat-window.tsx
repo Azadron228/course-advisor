@@ -4,8 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { useChat } from '@/hooks/use-chat';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export function ChatWindow() {
+  const tChat = useTranslations('Chat');
+  const tCommon = useTranslations('Common');
   const { messages, isSending, sendMessage } = useChat();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -44,15 +47,15 @@ export function ChatWindow() {
           </div>
           <div>
             <h2 className="font-bold text-gray-900 tracking-tight flex items-center gap-2">
-              EduPath AI Advisor
-              <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-700 font-bold uppercase tracking-wider">Beta</span>
+              {tCommon('title')} {tChat('title')}
+              <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-700 font-bold uppercase tracking-wider">{tCommon('beta')}</span>
             </h2>
-            <p className="text-xs text-indigo-600/70 font-medium">Your personalized learning companion</p>
+            <p className="text-xs text-indigo-600/70 font-medium">{tChat('companion')}</p>
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-indigo-100 text-[11px] font-semibold text-indigo-600 shadow-sm">
           <Sparkles size={12} className="text-indigo-500" />
-          AI Powered
+          {tCommon('aiPowered')}
         </div>
       </div>
 
@@ -67,17 +70,17 @@ export function ChatWindow() {
               <Bot size={40} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-bold text-gray-900">How can I help you today?</h3>
+              <h3 className="text-lg font-bold text-gray-900">{tChat('howCanIHelp')}</h3>
               <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                Ask me about course recommendations, skill development, or how to reach your career goals.
+                {tChat('intro')}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 w-full max-w-md mx-auto">
               {[
-                'Recommend Python courses', 
-                'What skills for Web Dev?', 
-                'Explain my learning plan', 
-                'How to start in Data Science?'
+                tChat('suggestPython'),
+                tChat('suggestWebDev'),
+                tChat('suggestPlan'),
+                tChat('suggestDataScience')
               ].map((suggestion) => (
                 <button
                   key={suggestion}
@@ -141,7 +144,7 @@ export function ChatWindow() {
                   <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                   <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                 </div>
-                <span className="text-xs font-medium animate-pulse">Advisor is thinking...</span>
+                <span className="text-xs font-medium animate-pulse">{tCommon('thinking')}</span>
               </div>
             </div>
           </div>
@@ -156,7 +159,7 @@ export function ChatWindow() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask your advisor anything..."
+              placeholder={tChat('placeholder')}
               className="flex-1 px-5 py-4 bg-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400"
             />
             <div className="flex items-center gap-2 pr-3">
@@ -176,7 +179,7 @@ export function ChatWindow() {
           </div>
         </form>
         <p className="mt-3 text-[10px] text-center text-gray-400 font-medium">
-          AI-powered suggestions based on your profile and goals.
+          {tChat('aiPoweredNote')}
         </p>
       </div>
     </div>
