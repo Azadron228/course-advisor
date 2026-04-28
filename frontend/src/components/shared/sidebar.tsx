@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -14,16 +15,18 @@ import {
 import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/hooks/use-layout-store';
 
-const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Learning Plan', href: '/plan', icon: BookOpen },
-  { name: 'AI Advisor', href: '/chat', icon: MessageSquare },
-  { name: 'Profile', href: '/profile', icon: User },
-];
-
 export function Sidebar() {
+  const t = useTranslations('Navigation');
+  const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useLayoutStore();
+
+  const navItems = [
+    { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
+    { name: t('learningPlan'), href: '/plan', icon: BookOpen },
+    { name: t('aiAdvisor'), href: '/chat', icon: MessageSquare },
+    { name: t('profile'), href: '/profile', icon: User },
+  ];
 
   return (
     <aside
@@ -39,7 +42,7 @@ export function Sidebar() {
           </div>
           {!isCollapsed && (
             <span className="font-lexend font-bold text-slate-900 truncate">
-              EduPath AI
+              {tCommon('title')}
             </span>
           )}
         </Link>
