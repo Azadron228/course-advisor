@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
+  const t = useTranslations('Auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch {
-      setError('Invalid email or password. Please try again.');
+      setError(t('loginError'));
       setIsLoading(false);
     }
   };
@@ -29,10 +31,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-sm border border-slate-200 dark:border-slate-800 transition-all">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground font-[family-name:var(--font-lexend)]">
-            Welcome Back
+            {t('welcomeBack')}
           </h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-[family-name:var(--font-inter)]">
-            Continue your learning journey
+            {t('continueJourney')}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -44,7 +46,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Email Address
+                {t('emailAddress')}
               </label>
               <input
                 id="email-address"
@@ -61,10 +63,10 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" title="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Password
+                  {t('password')}
                 </label>
                 <Link href="#" className="text-xs font-medium text-primary hover:underline">
-                  Forgot password?
+                  {t('forgotPassword')}
                 </Link>
               </div>
               <input
@@ -87,13 +89,13 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group relative flex w-full justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? t('signingIn') : t('signIn')}
             </button>
 
             <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-              Don&apos;t have an account?{' '}
+              {t('dontHaveAccount')}{' '}
               <Link href="/register" className="font-semibold text-primary hover:underline">
-                Sign Up
+                {t('signUp')}
               </Link>
             </p>
           </div>

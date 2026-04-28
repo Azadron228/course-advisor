@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient } from '@/lib/api-client';
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
+  const t = useTranslations('Auth');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
@@ -30,7 +32,7 @@ export default function RegisterPage() {
       await login(email, password);
       
     } catch (err: unknown) {
-      const message = (err as { message?: string })?.message || 'Registration failed. Please try again.';
+      const message = (err as { message?: string })?.message || t('loginError');
       setError(message);
       setIsLoading(false);
     }
@@ -41,10 +43,10 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-sm border border-slate-200 dark:border-slate-800 transition-all">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground font-[family-name:var(--font-lexend)]">
-            Create Account
+            {t('createAccount')}
           </h2>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-[family-name:var(--font-inter)]">
-            Begin your journey with personalized AI learning paths
+            {t('registerSubtitle')}
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -56,7 +58,7 @@ export default function RegisterPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="full-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Full Name
+                {t('fullName')}
               </label>
               <input
                 id="full-name"
@@ -71,7 +73,7 @@ export default function RegisterPage() {
             </div>
             <div>
               <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Email Address
+                {t('emailAddress')}
               </label>
               <input
                 id="email-address"
@@ -87,7 +89,7 @@ export default function RegisterPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                Password
+                {t('password')}
               </label>
               <input
                 id="password"
@@ -109,13 +111,13 @@ export default function RegisterPage() {
               disabled={isLoading}
               className="group relative flex w-full justify-center rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-secondary/20 hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-[0.98]"
             >
-              {isLoading ? 'Creating account...' : 'Create Account'}
+              {isLoading ? t('creatingAccount') : t('createAccount')}
             </button>
 
             <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-              Already have an account?{' '}
+              {t('alreadyHaveAccount')}{' '}
               <Link href="/login" className="font-semibold text-primary hover:underline">
-                Sign In
+                {t('signIn')}
               </Link>
             </p>
           </div>

@@ -1,25 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient } from '@/lib/api-client';
 import { Loader2, Save, User as UserIcon } from 'lucide-react';
-
-const profileSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  career_goal: z.string().min(5, 'Career goal must be at least 5 characters'),
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
+import { useTranslations } from 'next-intl';
 
 export default function ProfilePage() {
+  const t = useTranslations('Auth');
+  const tCommon = useTranslations('Common');
   const { user, isLoading: isUserLoading } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const profileSchema = useMemo(() => z.object({
+    full_name: z.string().min(2, t('nameMinLength')),
+    email: z.string().email(t('invalidEmail')),
+    career_goal: z.string().min(5, t('goalMinLength')),
+  }), [t]);
+
+  type ProfileFormValues = z.infer<typeof profileSchema>;
 
   const {
     register,
@@ -39,10 +42,10 @@ export default function ProfilePage() {
     setMessage(null);
     try {
       await apiClient.patch('/users/me', data);
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      setMessage({ type: 'success', text: t('profileUpdated') });
     } catch (error: unknown) {
       console.error('Failed to update profile:', error);
-      const errorMessage = error instanceof Error ? error.message : (error as { message?: string })?.message || 'Failed to update profile. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : (error as { message?: string })?.message || t('profileUpdateError');
       setMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsSaving(false);
@@ -64,8 +67,8 @@ export default function ProfilePage() {
           <UserIcon className="w-8 h-8 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Profile</h1>
-          <p className="text-gray-500">Manage your personal information and career goals</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('userProfile')}</h1>
+          <p className="text-gray-500">{t('manageProfile')}</p>
         </div>
       </div>
 
@@ -79,7 +82,7 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
-              Full Name
+              {t('fullName')}
             </label>
             <input
               id="full_name"
@@ -96,7 +99,7 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
+              {t('emailAddress')}
             </label>
             <input
               id="email"
@@ -114,7 +117,7 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <label htmlFor="career_goal" className="block text-sm font-medium text-gray-700">
-              Career Goal
+              {t('careerGoal')}
             </label>
             <textarea
               id="career_goal"
@@ -123,7 +126,7 @@ export default function ProfilePage() {
               className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
                 errors.career_goal ? 'border-red-300' : 'border-gray-300'
               }`}
-              placeholder="e.g., Become a Senior Frontend Engineer specialized in React"
+              placeholder={t('careerGoalPlaceholder')}
             />
             {errors.career_goal && (
               <p className="text-sm text-red-600">{errors.career_goal.message}</p>
@@ -139,12 +142,12 @@ export default function ProfilePage() {
               {isSaving ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Saving Changes...
+                  {tCommon('savingChanges')}
                 </>
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  Save Changes
+                  {tCommon('saveChanges')}
                 </>
               )}
             </button>
