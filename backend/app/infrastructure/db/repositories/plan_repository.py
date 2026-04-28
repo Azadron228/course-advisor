@@ -1,30 +1,38 @@
 from typing import Optional, List
+from dataclasses import asdict
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models import LearningPlanORM
-from app.domain.recommendation.entities import LearningPlan, LearningPathStep
+from app.domain.recommendation.entities import LearningPlan, LearningPathStep, LearningMaterial
 
 
 class PlanRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def _to_domain(self, o: LearningPlanORM) -> LearningPlan:
+        return LearningPlan(
+            id=o.id,
+            goal=o.goal,
+            steps=[
+                LearningPathStep(
+                    **{k: v for k, v in step.items() if k != "materials"},
+                    materials=[LearningMaterial(**m) for m in step.get("materials", [])]
+                ) 
+                for step in o.steps
+            ],
+            is_active=o.is_active,
+            skill_level=o.skill_level,
+            learning_style=o.learning_style,
+            study_time=o.study_time,
+            interests=o.interests,
+        )
+
     def get_all_plans(self, user_id: int) -> List[LearningPlan]:
         objs = self.db.scalars(
             select(LearningPlanORM).where(LearningPlanORM.user_id == user_id)
         ).all()
-        return [
-            LearningPlan(
-                id=o.id,
-                goal=o.goal,
-                steps=[LearningPathStep(**step) for step in o.steps],
-                is_active=o.is_active,
-                skill_level=o.skill_level,
-                learning_style=o.learning_style,
-                study_time=o.study_time,
-                interests=o.interests
-            ) for o in objs
-        ]
+        return [self._to_domain(o) for o in objs]
 
     def get_by_id(self, user_id: int, plan_id: int) -> Optional[LearningPlan]:
         o = self.db.scalar(
@@ -33,16 +41,7 @@ class PlanRepository:
             .where(LearningPlanORM.user_id == user_id)
         )
         if not o: return None
-        return LearningPlan(
-            id=o.id,
-            goal=o.goal,
-            steps=[LearningPathStep(**step) for step in o.steps],
-            is_active=o.is_active,
-            skill_level=o.skill_level,
-            learning_style=o.learning_style,
-            study_time=o.study_time,
-            interests=o.interests
-        )
+        return self._to_domain(o)
 
     def get_active_plan(self, user_id: int) -> Optional[LearningPlan]:
         o = self.db.scalar(
@@ -53,19 +52,7 @@ class PlanRepository:
         if not o:
             return None
 
-        # steps is stored as JSON, need to map to LearningPathStep
-        steps = [LearningPathStep(**step) for step in o.steps]
-
-        return LearningPlan(
-            id=o.id,
-            goal=o.goal,
-            steps=steps,
-            is_active=o.is_active,
-            skill_level=o.skill_level,
-            learning_style=o.learning_style,
-            study_time=o.study_time,
-            interests=o.interests
-        )
+        return self._to_domain(o)
 
     def create_plan(self, user_id: int, plan: LearningPlan) -> LearningPlan:
         # Map steps to dict for JSON storage
@@ -77,6 +64,7 @@ class PlanRepository:
                 "resource_id": s.resource_id,
                 "is_external": s.is_external,
                 "status": s.status,
+                "materials": [asdict(m) for m in s.materials]
             }
             for s in plan.steps
         ]
@@ -123,7 +111,8 @@ class PlanRepository:
                 "description": s.description,
                 "resource_id": s.resource_id,
                 "is_external": s.is_external,
-                "status": s.status
+                "status": s.status,
+                "materials": [asdict(m) for m in s.materials]
             }
             for s in plan.steps
         ]
