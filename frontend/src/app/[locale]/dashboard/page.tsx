@@ -1,6 +1,7 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { 
   ClipboardList, 
   MessageSquare, 
@@ -50,19 +51,22 @@ async function getDashboardData(): Promise<DashboardResponse> {
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
+  const t = await getTranslations('Dashboard');
+  const tNav = await getTranslations('Navigation');
+  const tCommon = await getTranslations('Common');
 
   const navCards = [
     {
-      title: "Learning Plan",
-      description: "Continue your structured learning path and track daily goals.",
+      title: tNav('learningPlan'),
+      description: t('learningPlanDesc'),
       href: "/plan",
       icon: ClipboardList,
       color: "bg-blue-50 text-blue-600",
       borderColor: "border-blue-100"
     },
     {
-      title: "AI Advisor",
-      description: "Chat with your personal assistant for guidance and help.",
+      title: tNav('aiAdvisor'),
+      description: t('aiAdvisorDesc'),
       href: "/chat",
       icon: MessageSquare,
       color: "bg-purple-50 text-purple-600",
@@ -79,7 +83,7 @@ export default async function DashboardPage() {
       />
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900">Navigation Hub</h2>
+        <h2 className="text-xl font-bold text-slate-900">{tCommon('navHub')}</h2>
         <div className="grid gap-6 md:grid-cols-2">
           {navCards.map((card) => (
             <Link 
@@ -97,7 +101,7 @@ export default async function DashboardPage() {
                 {card.description}
               </p>
               <div className="flex items-center text-sm font-semibold text-indigo-600">
-                Go to {card.title}
+                {t('goTo')} {card.title}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
             </Link>
@@ -109,18 +113,18 @@ export default async function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
           <TrendingUp className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">Skill Insights coming soon</h4>
-          <p className="text-sm text-slate-500">Advanced analytics for your learning journey.</p>
+          <h4 className="font-medium text-slate-900">{t('insightsSoon')}</h4>
+          <p className="text-sm text-slate-500">{t('insightsDesc')}</p>
         </div>
         <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
           <Award className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">Leaderboards</h4>
-          <p className="text-sm text-slate-500">Compete with other learners in your field.</p>
+          <h4 className="font-medium text-slate-900">{t('leaderboards')}</h4>
+          <p className="text-sm text-slate-500">{t('leaderboardsDesc')}</p>
         </div>
         <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
           <Zap className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">Quick Actions</h4>
-          <p className="text-sm text-slate-500">Resume your last lesson with one click.</p>
+          <h4 className="font-medium text-slate-900">{t('quickActions')}</h4>
+          <p className="text-sm text-slate-500">{t('quickActionsDesc')}</p>
         </div>
       </div>
     </div>
