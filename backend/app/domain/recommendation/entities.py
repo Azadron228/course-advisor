@@ -62,6 +62,14 @@ class SkillGapAnalysis:
 
 
 @dataclass(frozen=True)
+class LearningMaterial:
+    title: str
+    description: str
+    url: Optional[str] = None
+    type: str = "article"  # e.g., video, article, course, documentation
+
+
+@dataclass(frozen=True)
 class LearningPathStep:
     order: int
     title: str
@@ -69,6 +77,7 @@ class LearningPathStep:
     resource_id: Optional[str] = None
     is_external: bool = False
     status: str = "upcoming"
+    materials: List[LearningMaterial] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
