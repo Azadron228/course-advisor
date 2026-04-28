@@ -5,7 +5,7 @@ import {routing} from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
-const protectedRoutes = ['/dashboard', '/plan', '/map', '/chat'];
+const protectedRoutes = ['/dashboard', '/plan', '/chat'];
 const authRoutes = ['/login', '/register'];
 
 export default function middleware(request: NextRequest) {
@@ -27,7 +27,10 @@ export default function middleware(request: NextRequest) {
     pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(`${route}/`)
   );
 
-  const currentLocale = pathname.split('/')[1] || routing.defaultLocale;
+  const segments = pathname.split('/');
+  const firstSegment = segments[1];
+  const locales = routing.locales;
+  const currentLocale = locales.includes(firstSegment as any) ? firstSegment : routing.defaultLocale;
 
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL(`/${currentLocale}/login`, request.url));

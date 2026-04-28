@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { apiClient } from '@/lib/api-client';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 export interface User {
   id: string;

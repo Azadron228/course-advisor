@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   BookOpen, 
-  Map, 
   MessageSquare, 
   User,
   ChevronLeft,
@@ -18,7 +17,6 @@ import { useLayoutStore } from '@/hooks/use-layout-store';
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Learning Plan', href: '/plan', icon: BookOpen },
-  { name: 'Roadmap', href: '/map', icon: Map },
   { name: 'AI Advisor', href: '/chat', icon: MessageSquare },
   { name: 'Profile', href: '/profile', icon: User },
 ];

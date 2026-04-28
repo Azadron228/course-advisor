@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

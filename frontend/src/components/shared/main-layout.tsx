@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { MobileDrawer } from './mobile-drawer';
@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = ['/login', '/register', '/'];
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
+  // pathname from @/i18n/routing doesn't include the locale prefix
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
   if (isPublicRoute) {

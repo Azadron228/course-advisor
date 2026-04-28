@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { 
   ClipboardList, 
-  Map, 
   MessageSquare, 
   ArrowRight,
   TrendingUp,
@@ -62,14 +61,6 @@ export default async function DashboardPage() {
       borderColor: "border-blue-100"
     },
     {
-      title: "Skill Map",
-      description: "Visualize your skill progress and discover new learning nodes.",
-      href: "/map",
-      icon: Map,
-      color: "bg-emerald-50 text-emerald-600",
-      borderColor: "border-emerald-100"
-    },
-    {
       title: "AI Advisor",
       description: "Chat with your personal assistant for guidance and help.",
       href: "/chat",
@@ -89,7 +80,7 @@ export default async function DashboardPage() {
 
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-900">Navigation Hub</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {navCards.map((card) => (
             <Link 
               key={card.title} 

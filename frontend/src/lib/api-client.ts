@@ -12,7 +12,12 @@ async function handleResponse<T>(response: Response): Promise<T> {
       // Clear token and redirect to login if unauthorized
       Cookies.remove('token');
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        const pathname = window.location.pathname;
+        const segments = pathname.split('/');
+        const firstSegment = segments[1];
+        const locales = ['en', 'ru']; // Should ideally come from a config
+        const localePrefix = locales.includes(firstSegment) ? `/${firstSegment}` : '';
+        window.location.href = `${localePrefix}/login`;
       }
     }
     

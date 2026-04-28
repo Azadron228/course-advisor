@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient } from '@/lib/api-client';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
