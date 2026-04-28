@@ -7,6 +7,13 @@ import { cn } from '@/lib/utils';
 import { CourseDrawer } from '@/components/shared/course-drawer';
 import { useTranslations } from 'next-intl';
 
+export interface LearningMaterial {
+  title: string;
+  description: string;
+  url?: string;
+  type: string;
+}
+
 export interface LearningPathStep {
   order: number;
   title: string;
@@ -14,6 +21,7 @@ export interface LearningPathStep {
   resource_id: string | null;
   is_external: boolean;
   status: 'completed' | 'current' | 'upcoming';
+  materials: LearningMaterial[];
 }
 
 export interface LearningPlan {
@@ -174,6 +182,25 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                   )}>
                     {step.description}
                   </p>
+
+                  {step.materials && step.materials.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('materials')}</h4>
+                      {step.materials.map((mat, midx) => (
+                        <div key={midx} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-bold text-slate-800">{mat.title}</span>
+                            {mat.url && (
+                              <a href={mat.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">{mat.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   
                   {step.resource_id && (
                     <div className="mt-4 flex items-center gap-2">
