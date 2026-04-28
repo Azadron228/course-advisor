@@ -4,6 +4,7 @@ import { X, Loader2, BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { apiClient } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
 interface Course {
   subject_name: string;
@@ -18,6 +19,7 @@ interface CourseDrawerProps {
 }
 
 export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
+  const t = useTranslations('Plan');
   const { data: course, isLoading, isError } = useQuery({
     queryKey: ['courses', courseId],
     queryFn: () => apiClient.get<Course>(`/courses/${courseId}`),
@@ -39,7 +41,7 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
                 <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
                   <BookOpen className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-900">Course Materials</h2>
+                <h2 className="text-xl font-bold text-slate-900">{t('materials')}</h2>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
                 <X className="w-6 h-6" />
@@ -51,11 +53,11 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
               {isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                   <Loader2 className="w-8 h-8 animate-spin" />
-                  <p className="font-medium">Loading materials...</p>
+                  <p className="font-medium">{t('loadingMaterials')}</p>
                 </div>
               ) : isError ? (
                 <div className="p-4 bg-red-50 text-red-700 rounded-xl border border-red-100">
-                  Failed to load course materials
+                  {t('loadError')}
                 </div>
               ) : course && (
                 <div className="space-y-8">
@@ -68,7 +70,7 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
                     {course.materials_content ? (
                       <ReactMarkdown>{course.materials_content}</ReactMarkdown>
                     ) : (
-                      <p className="italic text-slate-400">No specific materials provided for this course yet.</p>
+                      <p className="italic text-slate-400">{t('noMaterials')}</p>
                     )}
                   </div>
                 </div>

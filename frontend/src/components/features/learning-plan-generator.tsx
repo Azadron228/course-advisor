@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslations } from 'next-intl';
 import { generatePlanAction } from '@/app/[locale]/plan/actions';
 import { Loader2, ArrowRight, Tag, X, Sparkles, Upload, FileText, Check, Clock, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function LearningPlanGenerator() {
+  const t = useTranslations('Plan');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
@@ -64,8 +66,8 @@ export function LearningPlanGenerator() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold text-slate-900">Create New Path</h1>
-        <p className="text-slate-500 text-lg">Define your goals and learning preferences.</p>
+        <h1 className="text-3xl font-extrabold text-slate-900">{t('createNew')}</h1>
+        <p className="text-slate-500 text-lg">{t('defineGoals')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-white p-8 rounded-3xl border border-slate-200 shadow-xl shadow-slate-100/50">
@@ -73,18 +75,18 @@ export function LearningPlanGenerator() {
           {/* Goal & Interests Section */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">What is your goal?</label>
+              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('goalLabel')}</label>
               <textarea
                 {...register('goal')}
                 rows={3}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 resize-none"
-                placeholder="e.g. Become a Senior Frontend Engineer focusing on React and AI."
+                placeholder={t('goalPlaceholder')}
               />
               {errors.goal && <p className="text-xs text-red-500 font-medium">{errors.goal.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">Interests & Specific Topics</label>
+              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('interestsLabel')}</label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input
@@ -92,7 +94,7 @@ export function LearningPlanGenerator() {
                   onChange={(e) => setCurrentTag(e.target.value)}
                   onKeyDown={handleAddInterest}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
-                  placeholder="Type and press Enter"
+                  placeholder={t('typeAndPressEnter')}
                 />
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -111,34 +113,34 @@ export function LearningPlanGenerator() {
           {/* Preferences Section */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">Current Skill Level</label>
+              <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">{t('skillLevelLabel')}</label>
               <select
                 {...register('skill_level')}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 appearance-none"
               >
-                <option value="Beginner">Beginner - Just starting out</option>
-                <option value="Intermediate">Intermediate - Some experience</option>
-                <option value="Advanced">Advanced - Looking for depth</option>
+                <option value="Beginner">{t('beginner')}</option>
+                <option value="Intermediate">{t('intermediate')}</option>
+                <option value="Advanced">{t('advanced')}</option>
               </select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                <Brain className="w-4 h-4 text-indigo-500" /> Learning Style
+                <Brain className="w-4 h-4 text-indigo-500" /> {t('learningStyle')}
               </label>
               <select
                 {...register('learning_style')}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 appearance-none"
               >
-                <option value="Visual">Visual - Videos and Diagrams</option>
-                <option value="Practical">Practical - Labs and Projects</option>
-                <option value="Theoretical">Theoretical - Books and Docs</option>
+                <option value="Visual">{t('visual')}</option>
+                <option value="Practical">{t('practical')}</option>
+                <option value="Theoretical">{t('theoretical')}</option>
               </select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-500" /> Study Time (Hours/Week)
+                <Clock className="w-4 h-4 text-indigo-500" /> {t('studyTime')}
               </label>
               <input
                 type="number"
@@ -154,9 +156,9 @@ export function LearningPlanGenerator() {
         <div className="pt-6 border-t border-slate-100">
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-500" /> Academic Transcript (Optional)
+              <FileText className="w-4 h-4 text-indigo-500" /> {t('academicTranscript')}
             </label>
-            <p className="text-xs text-slate-500 mb-3">Upload your transcript (.html) to help the AI skip courses you&apos;ve already completed.</p>
+            <p className="text-xs text-slate-500 mb-3">{t('transcriptNote')}</p>
             
             <div 
               onClick={() => fileInputRef.current?.click()}
@@ -183,7 +185,7 @@ export function LearningPlanGenerator() {
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
                     className="text-xs font-bold text-red-600 hover:underline mt-2"
                   >
-                    Remove file
+                    {t('removeFile')}
                   </button>
                 </div>
               ) : (
@@ -191,8 +193,8 @@ export function LearningPlanGenerator() {
                   <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center mb-4 transition-colors">
                     <Upload className="w-6 h-6 text-slate-400 group-hover:text-indigo-600" />
                   </div>
-                  <p className="font-bold text-slate-700 group-hover:text-indigo-900 transition-colors">Click to upload your transcript</p>
-                  <p className="text-xs text-slate-500 mt-1 uppercase font-bold tracking-widest">Supports .HTML</p>
+                  <p className="font-bold text-slate-700 group-hover:text-indigo-900 transition-colors">{t('clickToUpload')}</p>
+                  <p className="text-xs text-slate-500 mt-1 uppercase font-bold tracking-widest">{t('supportsHtml')}</p>
                 </>
               )}
             </div>
@@ -207,12 +209,12 @@ export function LearningPlanGenerator() {
           {isSubmitting ? (
             <>
               <Loader2 className="w-6 h-6 animate-spin" />
-              AI is drafting your path...
+              {t('drafting')}
             </>
           ) : (
             <>
               <Sparkles className="w-6 h-6" />
-              Generate My Learning Path
+              {t('generateButton')}
               <ArrowRight className="w-6 h-6" />
             </>
           )}

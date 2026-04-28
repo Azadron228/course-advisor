@@ -5,6 +5,7 @@ import { CheckCircle, Circle, Play, ExternalLink, Loader2, BookOpen } from 'luci
 import { updateStepStatus } from '@/app/[locale]/plan/actions';
 import { cn } from '@/lib/utils';
 import { CourseDrawer } from '@/components/shared/course-drawer';
+import { useTranslations } from 'next-intl';
 
 export interface LearningPathStep {
   order: number;
@@ -31,6 +32,8 @@ interface PlanStepperProps {
 }
 
 export function PlanStepper({ plan }: PlanStepperProps) {
+  const t = useTranslations('Plan');
+  const tCommon = useTranslations('Common');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -43,7 +46,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
       try {
         await updateStepStatus(plan.id!, order, 'completed');
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : tCommon('error'));
       }
     });
   };
@@ -60,7 +63,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   if (!plan || !plan.steps || plan.steps.length === 0) {
     return (
       <div className="p-8 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
-        <p className="text-slate-500">No learning plan found. Go to the dashboard to generate one.</p>
+        <p className="text-slate-500">{t('notFound')}</p>
       </div>
     );
   }
@@ -72,8 +75,8 @@ export function PlanStepper({ plan }: PlanStepperProps) {
     <>
       <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">My Learning Plan</h1>
-        <p className="text-slate-600">Goal: {plan.goal}</p>
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">{t('myPlan')}</h1>
+        <p className="text-slate-600">{t('goalValue', { goal: plan.goal })}</p>
       </div>
 
       {error && (
@@ -127,11 +130,11 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                           isCurrent ? "bg-indigo-100 text-indigo-700" :
                           "bg-slate-100 text-slate-500"
                         )}>
-                          Step {index + 1}
+                          {t('stepLabel', { index: index + 1 })}
                         </span>
                         {step.is_external && (
                           <span className="flex items-center gap-1 text-xs text-slate-400">
-                            <ExternalLink className="w-3 h-3" /> External
+                            <ExternalLink className="w-3 h-3" /> {t('external')}
                           </span>
                         )}
                       </div>
@@ -154,10 +157,10 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                         {isPending ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Updating...
+                            {t('updating')}
                           </>
                         ) : (
-                          'Mark as Complete'
+                          t('markComplete')
                         )}
                       </button>
                     )}
@@ -178,7 +181,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                         onClick={() => handleViewResource(step)}
                         className="text-xs font-bold text-indigo-600 hover:text-indigo-500 hover:underline inline-flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
-                        {step.is_external ? 'Open External Resource' : 'View Materials'} 
+                        {step.is_external ? t('openExternal') : t('viewMaterials')} 
                         {step.is_external ? (
                           <ExternalLink className="w-3 h-3 ml-1" />
                         ) : (
