@@ -41,6 +41,7 @@ export default function AdminUsersPage() {
       />
 
       <EditUserModal 
+        key={editingUser?.id || 'none'}
         user={editingUser}
         isOpen={!!editingUser}
         onClose={() => setEditingUser(null)}

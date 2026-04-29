@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { User } from '@/hooks/use-auth';
 import { X } from 'lucide-react';
 
@@ -12,19 +12,13 @@ interface EditUserModalProps {
 }
 
 export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalProps) {
-  const [formData, setFormData] = useState<Partial<User>>({});
+  const [formData, setFormData] = useState<Partial<User>>({
+    full_name: user?.full_name || '',
+    email: user?.email || '',
+    is_admin: user?.is_admin || false,
+    disabled: user?.disabled || false,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        full_name: user.full_name,
-        email: user.email,
-        is_admin: user.is_admin,
-        disabled: user.disabled,
-      });
-    }
-  }, [user]);
 
   if (!isOpen || !user) return null;
 
