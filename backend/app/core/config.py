@@ -27,6 +27,17 @@ class Settings(BaseSettings):
     TAVILY_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
 
+    # authentik
+    AUTHENTIK_URL: Optional[str] = None
+    AUTHENTIK_CLIENT_ID: Optional[str] = None
+    AUTHENTIK_CLIENT_SECRET: Optional[str] = None
+
+    @property
+    def AUTHENTIK_OPENID_CONFIG_URL(self) -> str:
+        if not self.AUTHENTIK_URL:
+            return ""
+        return f"{self.AUTHENTIK_URL}/application/o/course-advisor/.well-known/openid-configuration"
+
     @property
     def ASYNC_DATABASE_URL(self) -> str:
         return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
