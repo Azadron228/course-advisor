@@ -11,7 +11,8 @@ import {
   User as UserIcon, 
   Settings,
   ChevronDown,
-  Globe
+  Globe,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -111,6 +112,18 @@ export function TopNav() {
                   <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                 </div>
                 <div className="p-1">
+                  {user?.is_admin && (
+                    <button 
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        router.push('/admin/users');
+                      }}
+                      className="flex w-full items-center gap-3 px-3 py-2 text-sm text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors"
+                    >
+                      <Shield size={18} />
+                      {t('adminPortal')}
+                    </button>
+                  )}
                   <button className="flex w-full items-center gap-3 px-3 py-2 text-sm text-slate-600 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors">
                     <UserIcon size={18} />
                     {t('profile')}
