@@ -12,8 +12,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   
   // pathname from @/i18n/routing doesn't include the locale prefix
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAdminRoute = pathname.startsWith('/admin');
 
-  if (isPublicRoute) {
+  if (isPublicRoute || isAdminRoute) {
     return <>{children}</>;
   }
 
