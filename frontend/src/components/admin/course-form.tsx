@@ -99,12 +99,13 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
 
           <div className="space-y-2">
             <label htmlFor="credits" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Credits
+              {t('credits', { count: '' }).replace(': ', '').replace(/^[0-9 ]+/, '')}
             </label>
             <input
               {...register('credits', { valueAsNumber: true })}
               id="credits"
               type="number"
+              step="0.5"
               className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
             />
             {errors.credits && <p className="text-sm text-red-500">{errors.credits.message}</p>}
@@ -188,7 +189,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
           disabled={isSubmitting}
           className="rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-[0.98]"
         >
-          {isSubmitting ? '...' : isEdit ? t('updateCourse') : t('createCourse')}
+          {isSubmitting ? t('uploading') : isEdit ? t('updateCourse') : t('createCourse')}
         </button>
       </div>
     </form>
