@@ -23,6 +23,28 @@ async def read_courses(db: Session = Depends(get_db), admin_user=Depends(get_cur
     return course_repo.get_all()
 
 
+@router.post("/courses", response_model=CoursePublic)
+async def create_course(
+    course_in: CourseCreate,
+    db: Session = Depends(get_db),
+    admin_user=Depends(get_current_admin_user),
+):
+    course_repo = CourseRepository(db)
+    if course_repo.get_by_id(course_in.id):
+        raise HTTPException(status_code=400, detail="Course ID already exists")
+
+    # Generate initial embedding
+    embedding = get_embedding(course_in.description)
+
+    # Create Course Entity
+    from app.domain.catalog.entities import Course as CourseEntity
+
+    course = CourseEntity(**course_in.model_dump(), embedding=embedding)
+
+    course_repo.save(course)
+    return course
+
+
 @router.put("/courses/{course_id}", response_model=CoursePublic)
 async def update_course(
     course_id: str,
