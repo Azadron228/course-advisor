@@ -19,7 +19,7 @@ from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.embeddings import get_embedding
 from app.infrastructure.ai.agent import get_model
-from app.infrastructure.ai.analysis_agent import generate_global_analysis, parse_global_analysis
+from app.infrastructure.ai.analysis_agent import generate_global_analysis
 
 # We might want to move RAG scoring logic to a domain-friendly infrastructure service
 from app.infrastructure.ai.rag import RAGScorer
@@ -201,15 +201,9 @@ class AdvisorService:
 
         try:
             llm = get_model(provider)
-            agent = get_analysis_agent(llm, student, courses)
-
-            handler = agent.run(user_msg="Perform global analysis and output JSON.")
-            response = await handler
+            goal_msg = f"Recommendation interests: {', '.join(preference.interest_tags)}"
+            parsed = await generate_global_analysis(llm, student, courses, goal_msg)
             
-            from llama_index.core.agent.workflow.workflow_events import AgentOutput
-            response_content = str(response.response) if isinstance(response, AgentOutput) else str(response)
-
-            parsed = parse_global_analysis(response_content)
             analysis_data = parsed.skill_gap_analysis
             learning_path = parsed.learning_path
         except Exception as e:

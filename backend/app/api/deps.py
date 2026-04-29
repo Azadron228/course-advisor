@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.core.container import get_container
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
+from app.infrastructure.db.repositories.chat_repository import ChatRepository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
 
@@ -29,6 +30,10 @@ def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorSer
 
 
 def get_chat_history_service(service: RedisChatHistory = Depends(get_service(RedisChatHistory))):
+    return service
+
+
+def get_chat_repository(service: ChatRepository = Depends(get_service(ChatRepository))):
     return service
 
 

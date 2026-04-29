@@ -4,7 +4,7 @@ from app.domain.identity.entities import User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.api.v1.schemas.recommendations import LearningPlan, PlanGenerateRequest
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 router = APIRouter()
 

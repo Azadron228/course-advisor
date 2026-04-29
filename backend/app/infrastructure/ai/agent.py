@@ -126,7 +126,7 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
         f"Output MUST be ONLY a valid JSON object with the fields: score, reasoning, tags."
     )
 
-    return ReActAgent(tools=tools, llm=llm, verbose=True, system_prompt=system_prompt)
+    return ReActAgent(tools=tools, llm=llm, verbose=False, system_prompt=system_prompt)
 
 
 def get_advisor_agent(
@@ -162,10 +162,12 @@ def get_advisor_agent(
         f"- Current Skills: {current_skills}\n"
         f"{plan_context}\n"
         "When giving advice, consider the student's background and goals. If you need to suggest external resources, "
-        "use the 'search_external_resources' tool. Be professional, supportive, and concise."
+        "use the 'search_external_resources' tool. Be professional, supportive, and concise.\n\n"
+        "IMPORTANT: You MUST always conclude your response with 'Final Answer: ' followed by your advice. "
+        "Do not include your internal thoughts or tool calls in the final response to the student."
     )
 
-    return ReActAgent(tools=tools, llm=llm, verbose=True, system_prompt=system_prompt)
+    return ReActAgent(tools=tools, llm=llm, verbose=False, system_prompt=system_prompt)
 
 
 def is_capable_model(llm: LLM) -> bool:

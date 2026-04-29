@@ -25,16 +25,31 @@ class UserPreference(BaseModel):
 class ChatMessage(BaseModel):
     role: str
     content: str
+    created_at: Optional[str] = None
+
+
+class ChatSession(BaseModel):
+    id: int
+    title: str
+    created_at: str
+    updated_at: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatSessionDetail(ChatSession):
+    messages: List[ChatMessage] = []
 
 
 class ChatRequest(BaseModel):
     message: str
     stream: bool = False
+    session_id: Optional[int] = None
 
 
 class ChatResponse(BaseModel):
     response: str
     history: List[ChatMessage]
+    session_id: int
 
 
 class ScoreBreakdown(BaseModel):

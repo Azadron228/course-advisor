@@ -40,7 +40,8 @@ class PlanRepository:
             .where(LearningPlanORM.id == plan_id)
             .where(LearningPlanORM.user_id == user_id)
         )
-        if not o: return None
+        if not o:
+            return None
         return self._to_domain(o)
 
     def get_active_plan(self, user_id: int) -> Optional[LearningPlan]:

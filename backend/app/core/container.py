@@ -7,6 +7,7 @@ from app.infrastructure.db.repositories.course_repository import CourseRepositor
 from app.infrastructure.db.repositories.user_repository import UserRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
+from app.infrastructure.db.repositories.chat_repository import ChatRepository
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.rag import RAGScorer
@@ -26,6 +27,7 @@ def get_container() -> punq.Container:
     container.register(UserRepository)
     container.register(ProfileRepository)
     container.register(PlanRepository)
+    container.register(ChatRepository)
     container.register(RedisChatHistory)
     container.register(RAGScorer)
 

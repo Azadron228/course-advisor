@@ -119,6 +119,23 @@ class RecommendationResponse:
     learning_path: List[LearningPathStep] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class ChatMessage:
+    role: str
+    content: str
+    created_at: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ChatSession:
+    id: Optional[int]
+    user_id: int
+    title: str
+    created_at: str
+    updated_at: str
+    messages: List[ChatMessage] = field(default_factory=list)
+
+
 class ModelProvider(str, Enum):
     OPENAI = "openai"
     AUTO = "auto"
