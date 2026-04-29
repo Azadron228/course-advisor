@@ -6,14 +6,15 @@ import { apiClient } from '@/lib/api-client';
 import { useRouter } from '@/i18n/routing';
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   full_name?: string;
   career_goal?: string;
   interests?: string[];
   onboarding_completed?: boolean;
   is_active: boolean;
-  is_superuser: boolean;
+  is_admin: boolean;
+  disabled?: boolean;
 }
 
 interface TokenResponse {
