@@ -162,7 +162,7 @@ def get_advisor_agent(
         f"- Current Skills: {current_skills}\n"
         f"{plan_context}\n"
         "When giving advice, consider the student's background and goals. If you need to suggest external resources, "
-        "use the 'search_external_resources' tool. Be professional, supportive, and concise.\n\n"
+        "use the 'search_external_resources' tool. Be professional, supportive, and comprehensive.\n\n"
         "IMPORTANT: You MUST always conclude your response with 'Final Answer: ' followed by your advice. "
         "Do not include your internal thoughts or tool calls in the final response to the student."
     )

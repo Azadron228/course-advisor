@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -149,30 +150,31 @@ async def chat_with_advisor(
                         full_response += delta
                         
                         if not final_answer_started:
-                            if "Final Answer:" in full_response:
+                            # Use a more robust check for the final answer prefix (start of line or start of string)
+                            if re.search(r"(?:^|\n)Final Answer:", full_response):
                                 final_answer_started = True
-                                part = full_response.split("Final Answer:")[-1].lstrip()
-                                if part:
-                                    yield part
-                            elif "Answer:" in full_response:
-                                final_answer_started = True
-                                part = full_response.split("Answer:")[-1].lstrip()
+                                # Find the last occurrence to be sure we're at the actual final answer
+                                parts = re.split(r"(?:^|\n)Final Answer:", full_response)
+                                part = parts[-1].lstrip()
                                 if part:
                                     yield part
                         else:
                             yield delta
                 
                 # If we never detected a final answer prefix but have content, 
-                # it might be a direct response without ReAct formatting.
+                # it might be a direct response without ReAct formatting or 
+                # the prefix was missed in the stream.
                 if not final_answer_started and full_response:
-                    yield full_response
+                    # Still try to clean it up if it somehow has ReAct traces but missed the prefix logic
+                    clean_response = full_response
+                    if re.search(r"(?:^|\n)Final Answer:", clean_response):
+                        clean_response = re.split(r"(?:^|\n)Final Answer:", clean_response)[-1].strip()
+                    yield clean_response
 
                 # After streaming finishes, save history (cleaned)
                 clean_response = full_response
-                if "Final Answer:" in clean_response:
-                    clean_response = clean_response.split("Final Answer:")[-1].strip()
-                elif "Answer:" in clean_response:
-                    clean_response = clean_response.split("Answer:")[-1].strip()
+                if re.search(r"(?:^|\n)Final Answer:", clean_response):
+                    clean_response = re.split(r"(?:^|\n)Final Answer:", clean_response)[-1].strip()
 
                 # Save to DB
                 chat_repo.add_message(session_id, "user", request.message)
@@ -189,10 +191,8 @@ async def chat_with_advisor(
         if isinstance(result, AgentOutput):
             response_content = str(result.response)
             # Clean up ReAct traces if they leaked into the final response
-            if "Final Answer:" in response_content:
-                response_content = response_content.split("Final Answer:")[-1].strip()
-            elif "Answer:" in response_content:
-                response_content = response_content.split("Answer:")[-1].strip()
+            if re.search(r"(?:^|\n)Final Answer:", response_content):
+                response_content = re.split(r"(?:^|\n)Final Answer:", response_content)[-1].strip()
         else:
             response_content = str(result)
 

@@ -73,7 +73,10 @@
     "suggestPlan": "Explain my learning plan",
     "suggestDataScience": "How to start in Data Science?",
     "placeholder": "Ask your advisor anything...",
-    "aiPoweredNote": "AI-powered suggestions based on your profile and goals."
+    "aiPoweredNote": "AI-powered suggestions based on your profile and goals.",
+    "clearHistory": "Clear History",
+    "newChat": "New Chat",
+    "noHistory": "No chat history yet"
   },
   "Plan": {
     "myPaths": "My Paths",

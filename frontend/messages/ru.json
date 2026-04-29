@@ -73,7 +73,10 @@
     "suggestPlan": "Объясни мой план обучения",
     "suggestDataScience": "С чего начать в Data Science?",
     "placeholder": "Спросите о чем угодно...",
-    "aiPoweredNote": "Рекомендации ИИ на основе вашего профиля и целей."
+    "aiPoweredNote": "Рекомендации ИИ на основе вашего профиля и целей.",
+    "clearHistory": "Очистить историю",
+    "newChat": "Новый чат",
+    "noHistory": "История чатов пуста"
   },
   "Plan": {
     "myPaths": "Мои пути",
