@@ -108,25 +108,6 @@ export default async function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* Optional: Placeholder for additional dashboard content */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
-          <TrendingUp className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">{t('insightsSoon')}</h4>
-          <p className="text-sm text-slate-500">{t('insightsDesc')}</p>
-        </div>
-        <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
-          <Award className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">{t('leaderboards')}</h4>
-          <p className="text-sm text-slate-500">{t('leaderboardsDesc')}</p>
-        </div>
-        <div className="rounded-xl border border-dashed border-slate-300 p-8 flex flex-col items-center justify-center text-center">
-          <Zap className="h-10 w-10 text-slate-300 mb-3" />
-          <h4 className="font-medium text-slate-900">{t('quickActions')}</h4>
-          <p className="text-sm text-slate-500">{t('quickActionsDesc')}</p>
-        </div>
-      </div>
     </div>
   );
 }
