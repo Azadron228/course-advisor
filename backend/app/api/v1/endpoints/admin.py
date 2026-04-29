@@ -6,6 +6,7 @@ from app.api.deps import get_db, get_current_admin_user
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.api.v1.schemas.course import CoursePublic, CourseCreate
 from app.infrastructure.ai.embeddings import get_embedding
+from app.domain.catalog.entities import Course as CourseEntity
 
 try:
     import PyPDF2
@@ -37,8 +38,6 @@ async def create_course(
     embedding = get_embedding(course_in.description)
 
     # Create Course Entity
-    from app.domain.catalog.entities import Course as CourseEntity
-
     course = CourseEntity(**course_in.model_dump(), embedding=embedding)
 
     course_repo.save(course)
