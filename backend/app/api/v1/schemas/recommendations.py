@@ -18,8 +18,6 @@ class Student(BaseModel):
 
 class UserPreference(BaseModel):
     interest_tags: List[str]
-    target_difficulty: float
-    max_workload: float
 
 
 class ChatMessage(BaseModel):
@@ -57,12 +55,10 @@ class ScoreBreakdown(BaseModel):
     content_sim: float = 0.0
     preference: float = 0.0
     rag_reasoning: float = 0.0
-    difficulty: float = 0.0
-    load: float = 0.0
 
 
 class RecommendationResult(BaseModel):
-    course_id: str
+    course_id: int
     subject_name: str
     score: float = 0.0
     breakdown: ScoreBreakdown = Field(default_factory=ScoreBreakdown)

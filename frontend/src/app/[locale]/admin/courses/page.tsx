@@ -16,7 +16,7 @@ export default function AdminCourseListPage() {
   const { courses, isLoading, deleteCourse } = useAdminCourses();
   const t = useTranslations('Admin');
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = async (id: number, name: string) => {
     if (confirm(t('confirmDelete', { name }))) {
       try {
         await deleteCourse(id);
@@ -87,9 +87,6 @@ export default function AdminCourseListPage() {
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   ID: {course.id}
                 </span>
-                <span className="px-2 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-md uppercase">
-                  {t('credits', { count: course.credits })}
-                </span>
               </div>
               <h3 className="text-xl font-bold text-slate-900 font-lexend mb-2 line-clamp-1">
                 {course.subject_name}
@@ -99,17 +96,19 @@ export default function AdminCourseListPage() {
               </p>
             </div>
 
-            <div className="mt-auto pt-6 border-t border-slate-50">
-              <div className="flex justify-between items-center mb-2 text-sm font-medium">
-                <span className="text-slate-500">{t('difficulty')}</span>
-                <span className="text-slate-900 font-bold">{Math.round(course.difficulty * 100)}%</span>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div 
-                  className="bg-primary h-full rounded-full transition-all duration-700 ease-out" 
-                  style={{ width: `${course.difficulty * 100}%` }}
-                />
-              </div>
+            <div className="mt-auto pt-4 border-t border-slate-50">
+               <div className="flex flex-wrap gap-2">
+                {course.skills_taught.slice(0, 3).map((skill, index) => (
+                  <span key={index} className="px-2 py-1 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-md uppercase">
+                    {skill}
+                  </span>
+                ))}
+                {course.skills_taught.length > 3 && (
+                  <span className="px-2 py-1 bg-slate-50 text-slate-400 text-[10px] font-bold rounded-md uppercase">
+                    +{course.skills_taught.length - 3}
+                  </span>
+                )}
+               </div>
             </div>
           </div>
         ))}

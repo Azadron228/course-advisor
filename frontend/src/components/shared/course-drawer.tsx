@@ -6,10 +6,14 @@ import { apiClient } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 
+interface CourseMaterial {
+  content: string;
+}
+
 interface Course {
   subject_name: string;
   description: string;
-  materials_content: string | null;
+  materials: CourseMaterial[];
 }
 
 interface CourseDrawerProps {
@@ -27,6 +31,8 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
   });
 
   if (!isOpen) return null;
+
+  const aggregatedMaterials = course?.materials?.map(m => m.content).join('\n\n---\n\n') || '';
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -67,8 +73,8 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
                   </div>
 
                   <div className="prose prose-slate max-w-none border-t border-slate-100 pt-8 text-slate-900">
-                    {course.materials_content ? (
-                      <ReactMarkdown>{course.materials_content}</ReactMarkdown>
+                    {aggregatedMaterials ? (
+                      <ReactMarkdown>{aggregatedMaterials}</ReactMarkdown>
                     ) : (
                       <p className="italic text-slate-400">{t('noMaterials')}</p>
                     )}

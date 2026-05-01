@@ -44,7 +44,6 @@ class AgentRecommendation(BaseModel):
 
     @model_validator(mode="after")
     def validate_cross_fields(self) -> "AgentRecommendation":
-        # Requirement 4: cross-field business logic
         if self.score > 0.8 and len(self.reasoning) < 10:
             raise ValueError("Reasoning must be at least 10 characters long for high scores.")
         return self
@@ -71,16 +70,11 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
 
 
 async def search_external_resources(query: str) -> str:
-    """
-    Search for high-quality external online courses or learning resources (Coursera, edX, YouTube, Documentation)
-    to supplement the student's learning path or fill specific skill gaps not covered by the internal course.
-    """
     if not TAVILY_API_KEY:
         return "External search is currently unavailable (API key missing)."
 
     try:
         tavily = TavilyClient(api_key=TAVILY_API_KEY)
-        # Search for online courses specifically
         search_query = f"best online courses or tutorials for {query} on Coursera edX Udemy"
         response = tavily.search(query=search_query, search_depth="basic", max_results=3)
 
@@ -100,9 +94,13 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)
     course_skills = ", ".join(course.skills_taught)
+    
+    # Aggregate all analyzed materials
+    materials_content = " ".join([m.content for m in course.materials if m.status == "analyzed"])
+    
     materials_prompt = (
-        f"\nAdditional Course Materials (Text extracted from syllabi/notes): {course.materials_content}"
-        if course.materials_content
+        f"\nAdditional Course Materials (Analyzed content from multiple sources): {materials_content}"
+        if materials_content
         else ""
     )
 
@@ -178,7 +176,6 @@ def is_capable_model(llm: LLM) -> bool:
 
 def parse_agent_recommendation(text: str) -> AgentRecommendation:
     try:
-        # LlamaIndex agents sometimes wrap JSON in code blocks
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
             data = json.loads(match.group())

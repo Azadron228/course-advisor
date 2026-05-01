@@ -1,19 +1,15 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.infrastructure.db.models import CourseORM, UserORM
+from app.infrastructure.db.models import CourseORM, CourseMaterialORM, UserORM
 from app.infrastructure.ai.embeddings import get_embedding
 from app.core.config import settings
 from app.core.security import get_password_hash
 
 COURSES = [
     {
-        "id": "CS401",
         "subject_name": "Artificial Intelligence",
-        "credits": 6.0,
         "description": "Comprehensive introduction to AI, including machine learning, neural networks, and search algorithms.",
         "skills_taught": ["Python", "Machine Learning", "AI", "Algorithms"],
-        "difficulty": 0.8,
-        "workload": 0.7,
         "materials_content": """
 # Introduction to Artificial Intelligence
 Welcome to CS401. This course covers:
@@ -26,13 +22,9 @@ Check out the official documentation for [Scikit-Learn](https://scikit-learn.org
         """
     },
     {
-        "id": "CS402",
         "subject_name": "Cloud Computing",
-        "credits": 6.0,
         "description": "Deep dive into AWS, Azure, and Google Cloud. Focus on distributed systems and serverless architecture.",
         "skills_taught": ["AWS", "Docker", "Kubernetes", "Cloud Arch"],
-        "difficulty": 0.6,
-        "workload": 0.6,
         "materials_content": """
 # Cloud Computing Architecture
 Master the cloud with CS402:
@@ -42,13 +34,9 @@ Master the cloud with CS402:
         """
     },
     {
-        "id": "CS403",
         "subject_name": "Cybersecurity Essentials",
-        "credits": 6.0,
         "description": "Learn about network security, cryptography, and defensive programming techniques.",
         "skills_taught": ["Security", "Cryptography", "Linux", "Networking"],
-        "difficulty": 0.7,
-        "workload": 0.5,
         "materials_content": """
 # Cybersecurity Fundamentals
 Protecting systems in CS403:
@@ -58,13 +46,9 @@ Protecting systems in CS403:
         """
     },
     {
-        "id": "CS404",
         "subject_name": "Advanced Web Development",
-        "credits": 6.0,
         "description": "Master React, Next.js, and modern frontend performance optimization.",
         "skills_taught": ["React", "JavaScript", "TypeScript", "Web Performance"],
-        "difficulty": 0.5,
-        "workload": 0.8,
         "materials_content": """
 # Advanced Web Development
 Building modern apps in CS404:
@@ -85,29 +69,53 @@ def seed():
     # Seed Courses
     for c in COURSES:
         print(f"Seeding course: {c['subject_name']}")
-        emb = get_embedding(c["description"])
+        
+        # Check if course exists by subject_name
+        course = session.query(CourseORM).filter(CourseORM.subject_name == c["subject_name"]).first()
+        
+        # Aggregate description and materials for initial embedding
+        aggregated_content = c["description"] + " " + c["materials_content"]
+        emb = get_embedding(aggregated_content)
 
-        # Check if course exists
-        course = session.query(CourseORM).filter(CourseORM.id == c["id"]).first()
         if not course:
             course = CourseORM(
-                id=c["id"],
                 subject_name=c["subject_name"],
-                credits=c["credits"],
                 description=c["description"],
                 skills_taught=c["skills_taught"],
-                difficulty=c["difficulty"],
-                workload=c["workload"],
                 embedding=emb,
-                materials_content=c.get("materials_content"),
             )
             session.add(course)
+            session.flush() # Get ID
+            
+            # Add material
+            material = CourseMaterialORM(
+                course_id=course.id,
+                filename="syllabus.md",
+                content=c["materials_content"],
+                status="analyzed"
+            )
+            session.add(material)
         else:
             course.subject_name = c["subject_name"]
             course.description = c["description"]
             course.skills_taught = c["skills_taught"]
             course.embedding = emb
-            course.materials_content = c.get("materials_content")
+            
+            # Update or Add material
+            existing_material = session.query(CourseMaterialORM).filter(
+                CourseMaterialORM.course_id == course.id,
+                CourseMaterialORM.filename == "syllabus.md"
+            ).first()
+            if existing_material:
+                existing_material.content = c["materials_content"]
+            else:
+                material = CourseMaterialORM(
+                    course_id=course.id,
+                    filename="syllabus.md",
+                    content=c["materials_content"],
+                    status="analyzed"
+                )
+                session.add(material)
 
     # Seed Admin User
     print("Seeding admin user...")

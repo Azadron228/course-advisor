@@ -1,7 +1,8 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Float, JSON, CheckConstraint, Text, ForeignKey
-from pgvector.sqlalchemy import Vector
 from typing import List, Optional
+from sqlalchemy import String, Integer, ForeignKey, Text, Float, JSON, DateTime
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
+from datetime import datetime
 
 
 class Base(DeclarativeBase):
@@ -10,31 +11,36 @@ class Base(DeclarativeBase):
 
 class UserORM(Base):
     __tablename__ = "users"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    disabled: Mapped[bool] = mapped_column(default=False)
+    full_name: Mapped[str] = mapped_column(String, nullable=True)
     is_admin: Mapped[bool] = mapped_column(default=False)
-    career_goal: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    disabled: Mapped[bool] = mapped_column(default=False)
     onboarding_completed: Mapped[bool] = mapped_column(default=False)
-    default_skill_level: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    default_learning_style: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    default_study_time: Mapped[Optional[int]] = mapped_column(default=10)
-    interests: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
+    career_goal: Mapped[str] = mapped_column(Text, nullable=True)
+    interests: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
+
+    # Preferences
+    default_skill_level: Mapped[str] = mapped_column(String, nullable=False, default="Beginner")
+    default_learning_style: Mapped[str] = mapped_column(String, nullable=False, default="Practical")
+    default_study_time: Mapped[int] = mapped_column(default=10)
 
 
 class UserSkillORM(Base):
     __tablename__ = "user_skills"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     skill_name: Mapped[str] = mapped_column(String, nullable=False)
-    mastery_level: Mapped[int] = mapped_column(default=0)  # 0-100
-    category: Mapped[str] = mapped_column(String, nullable=False)
+    mastery_level: Mapped[int] = mapped_column(Integer, default=0)
+    category: Mapped[str] = mapped_column(String, nullable=True)
 
 
 class UserTranscriptORM(Base):
     __tablename__ = "user_transcripts"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     subject_name: Mapped[str] = mapped_column(String, nullable=False)
@@ -44,6 +50,7 @@ class UserTranscriptORM(Base):
 
 class LearningPlanORM(Base):
     __tablename__ = "learning_plans"
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     goal: Mapped[str] = mapped_column(String, nullable=False)
@@ -57,19 +64,29 @@ class LearningPlanORM(Base):
 
 class CourseORM(Base):
     __tablename__ = "courses"
-    id: Mapped[str] = mapped_column(String, primary_key=True)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     subject_name: Mapped[str] = mapped_column(String, nullable=False)
-    credits: Mapped[float] = mapped_column(Float, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     skills_taught: Mapped[dict] = mapped_column(JSON, nullable=False)
-    difficulty: Mapped[float] = mapped_column(
-        Float, CheckConstraint("difficulty >= 0 AND difficulty <= 1")
-    )
-    workload: Mapped[float] = mapped_column(
-        Float, CheckConstraint("workload >= 0 AND workload <= 1")
-    )
-    materials_content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536))
+
+    materials: Mapped[List["CourseMaterialORM"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan"
+    )
+
+
+class CourseMaterialORM(Base):
+    __tablename__ = "course_materials"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="analyzed")  # pending, analyzed, error
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    course: Mapped["CourseORM"] = relationship(back_populates="materials")
 
 
 class ChatSessionORM(Base):
@@ -88,4 +105,3 @@ class ChatMessageORM(Base):
     role: Mapped[str] = mapped_column(String, nullable=False)  # 'user' or 'assistant'
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)  # ISO format
-

@@ -241,8 +241,6 @@ async def get_recommendations(
     )
     preference_domain = UserPreference(
         interest_tags=preference.interest_tags,
-        target_difficulty=preference.target_difficulty,
-        max_workload=preference.max_workload,
     )
 
     # We still need all courses for recommendation

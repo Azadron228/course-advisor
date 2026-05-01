@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/{course_id}", response_model=CoursePublic)
 async def get_course_by_id(
-    course_id: str,
+    course_id: int,
     current_user: User = Depends(get_current_active_user),
     course_repo: CourseRepository = Depends(get_service(CourseRepository))
 ):

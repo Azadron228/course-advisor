@@ -4,22 +4,23 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_admin_user
 from app.infrastructure.db.repositories.course_repository import CourseRepository
-from app.api.v1.schemas.course import CoursePublic, CourseCreate
+from app.api.v1.schemas.course import CoursePublic, CourseCreate, CourseUpdate, CourseMaterialPublic
 from app.infrastructure.ai.embeddings import get_embedding
-from app.domain.catalog.entities import Course as CourseEntity
+from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity
 
 try:
     import PyPDF2
 except ImportError:
     PyPDF2 = None
 
-logger = logging.getLogger(__name__)
-
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/courses", response_model=list[CoursePublic])
-async def read_courses(db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)):
+async def list_courses(
+    db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)
+):
     course_repo = CourseRepository(db)
     return course_repo.get_all()
 
@@ -31,23 +32,21 @@ async def create_course(
     admin_user=Depends(get_current_admin_user),
 ):
     course_repo = CourseRepository(db)
-    if course_repo.get_by_id(course_in.id):
-        raise HTTPException(status_code=400, detail="Course ID already exists")
 
     # Generate initial embedding
     embedding = get_embedding(course_in.description)
 
     # Create Course Entity
-    course = CourseEntity(**course_in.model_dump(), embedding=embedding)
+    course = CourseEntity(**course_in.model_dump(), embedding=embedding, id=0)
 
-    course_repo.save(course)
-    return course
+    saved_course = course_repo.save(course)
+    return saved_course
 
 
 @router.put("/courses/{course_id}", response_model=CoursePublic)
 async def update_course(
-    course_id: str,
-    course_in: CourseCreate,
+    course_id: int,
+    course_in: CourseUpdate,
     db: Session = Depends(get_db),
     admin_user=Depends(get_current_admin_user),
 ):
@@ -59,7 +58,6 @@ async def update_course(
     update_data = course_in.model_dump(exclude_unset=True)
 
     # Create new course object with updated values
-    # In a real app we might have a cleaner way to update dataclasses
     from dataclasses import replace
 
     updated_course = replace(course, **update_data)
@@ -70,13 +68,29 @@ async def update_course(
             updated_course, embedding=get_embedding(updated_course.description)
         )
 
-    course_repo.save(updated_course)
-    return updated_course
+    saved_course = course_repo.save(updated_course)
+    return saved_course
 
 
-@router.post("/courses/{course_id}/materials", response_model=CoursePublic)
+@router.delete("/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_course(
+    course_id: int, db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)
+):
+    course_repo = CourseRepository(db)
+    course = course_repo.get_by_id(course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    course_repo.delete(course_id)
+    return None
+
+
+# Course Materials
+
+
+@router.post("/courses/{course_id}/materials", response_model=CourseMaterialPublic)
 async def upload_course_materials(
-    course_id: str,
+    course_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     admin_user=Depends(get_current_admin_user),
@@ -87,49 +101,80 @@ async def upload_course_materials(
         raise HTTPException(status_code=404, detail="Course not found")
 
     content = ""
-    filename = file.filename.lower()
-    file_bytes = await file.read()
-
+    filename = file.filename or "unknown"
     if filename.endswith(".pdf"):
-        if PyPDF2:
-            try:
-                pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
-                for page in pdf_reader.pages:
-                    content += page.extract_text() + "\n"
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Failed to parse PDF: {str(e)}")
-        else:
-            raise HTTPException(status_code=500, detail="PDF processing library not installed")
-    else:
-        # Assume text/plain or similar
+        if PyPDF2 is None:
+            raise HTTPException(status_code=500, detail="PyPDF2 not installed")
         try:
-            content = file_bytes.decode("utf-8")
-        except UnicodeDecodeError:
-            content = file_bytes.decode("latin-1")
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(await file.read()))
+            for page in pdf_reader.pages:
+                content += page.extract_text()
+        except Exception as e:
+            logger.error(f"PDF extraction failed: {e}")
+            raise HTTPException(status_code=400, detail="Could not extract text from PDF")
+    else:
+        # Assume text/plain
+        content = (await file.read()).decode("utf-8")
 
-    if not content.strip():
-        raise HTTPException(status_code=400, detail="Uploaded file is empty or could not be read")
+    # Create material entity
+    material = CourseMaterialEntity(
+        id=0,
+        course_id=course_id,
+        filename=filename,
+        content=content,
+        status="analyzed",
+        created_at="",
+    )
+
+    saved_material = course_repo.add_material(material)
+
+    # Trigger course embedding update (aggregate all materials)
+    all_materials = course_repo.get_by_id(course_id).materials
+    aggregated_content = course.description + " " + " ".join([m.content for m in all_materials])
+    new_embedding = get_embedding(aggregated_content)
 
     from dataclasses import replace
-
-    # Update embedding based on both description and materials for better retrieval
-    combined_text = f"{course.description}\n\n{content[:5000]}"
-    new_embedding = get_embedding(combined_text)
-
-    updated_course = replace(course, materials_content=content, embedding=new_embedding)
-
+    updated_course = replace(course, embedding=new_embedding)
     course_repo.save(updated_course)
-    return updated_course
+
+    return saved_material
 
 
-@router.delete("/courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_course(
-    course_id: str, db: Session = Depends(get_db), admin_user=Depends(get_current_admin_user)
+@router.get("/courses/{course_id}/materials", response_model=list[CourseMaterialPublic])
+async def list_course_materials(
+    course_id: int,
+    db: Session = Depends(get_db),
+    admin_user=Depends(get_current_admin_user),
 ):
     course_repo = CourseRepository(db)
     course = course_repo.get_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
+    return course.materials
 
-    course_repo.delete(course_id)
+
+@router.delete("/courses/{course_id}/materials/{material_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_course_material(
+    course_id: int,
+    material_id: int,
+    db: Session = Depends(get_db),
+    admin_user=Depends(get_current_admin_user),
+):
+    course_repo = CourseRepository(db)
+    material = course_repo.get_material(material_id)
+    if not material or material.course_id != course_id:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    course_repo.delete_material(material_id)
+
+    # Update embedding again
+    course = course_repo.get_by_id(course_id)
+    all_materials = course.materials
+    aggregated_content = course.description + " " + " ".join([m.content for m in all_materials])
+    new_embedding = get_embedding(aggregated_content)
+
+    from dataclasses import replace
+    updated_course = replace(course, embedding=new_embedding)
+    course_repo.save(updated_course)
+
     return None

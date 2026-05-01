@@ -7,7 +7,6 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.api.deps import get_db
 from app.infrastructure.db.models import Base, UserORM
-from app.core.config import settings
 from app.core.security import get_password_hash, create_access_token
 
 # Setup test database

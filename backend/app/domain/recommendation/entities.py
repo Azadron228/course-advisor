@@ -21,8 +21,6 @@ class Student:
 @dataclass(frozen=True)
 class UserPreference:
     interest_tags: List[str]
-    target_difficulty: float
-    max_workload: float
 
 
 @dataclass(frozen=True)
@@ -31,13 +29,11 @@ class ScoreBreakdown:
     content_sim: float = 0.0
     preference: float = 0.0
     rag_reasoning: float = 0.0
-    difficulty: float = 0.0
-    load: float = 0.0
 
 
 @dataclass(frozen=True)
 class RecommendationResult:
-    course_id: str
+    course_id: int
     subject_name: str
     score: float
     breakdown: ScoreBreakdown

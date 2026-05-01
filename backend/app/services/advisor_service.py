@@ -141,9 +141,7 @@ class AdvisorService:
             courses = self.course_repo.get_all()
 
         if preference is None:
-            preference = UserPreference(
-                interest_tags=[], target_difficulty=0.5, max_workload=0.5
-            )
+            preference = UserPreference(interest_tags=[])
 
         # Aggregate transcript subject names for embedding
         subjects = [entry.subject_name for entry in student.transcript]
@@ -179,8 +177,6 @@ class AdvisorService:
                 content_sim=content_sim,
                 preference=pref_score,
                 rag_reasoning=rag_result.score,
-                difficulty=course.difficulty,
-                load=course.workload,
             )
 
             results.append(

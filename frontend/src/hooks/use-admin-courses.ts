@@ -1,15 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
+export interface CourseMaterial {
+  id: number;
+  course_id: number;
+  filename: string;
+  status: string;
+  created_at: string;
+}
+
 export interface Course {
-  id: string;
+  id: number;
   subject_name: string;
-  credits: number;
   description: string;
   skills_taught: string[];
-  difficulty: number;
-  workload: number;
-  materials_content?: string;
+  materials: CourseMaterial[];
 }
 
 export function useAdminCourses() {
@@ -21,7 +26,7 @@ export function useAdminCourses() {
   });
 
   const createCourseMutation = useMutation({
-    mutationFn: (data: Omit<Course, 'materials_content'>) => 
+    mutationFn: (data: Omit<Course, 'id' | 'materials'>) => 
       apiClient.post<Course>('/admin/courses', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
@@ -29,7 +34,7 @@ export function useAdminCourses() {
   });
 
   const updateCourseMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Course> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Course, 'id' | 'materials'>> }) =>
       apiClient.put<Course>(`/admin/courses/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
@@ -37,18 +42,26 @@ export function useAdminCourses() {
   });
 
   const deleteCourseMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/admin/courses/${id}`),
+    mutationFn: (id: number) => apiClient.delete(`/admin/courses/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
     },
   });
 
   const uploadMaterialsMutation = useMutation({
-    mutationFn: ({ id, file }: { id: string; file: File }) => {
+    mutationFn: ({ id, file }: { id: number; file: File }) => {
       const formData = new FormData();
       formData.append('file', file);
-      return apiClient.post<Course>(`/admin/courses/${id}/materials`, formData);
+      return apiClient.post<CourseMaterial>(`/admin/courses/${id}/materials`, formData);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
+    },
+  });
+
+  const deleteMaterialMutation = useMutation({
+    mutationFn: ({ courseId, materialId }: { courseId: number; materialId: number }) =>
+      apiClient.delete(`/admin/courses/${courseId}/materials/${materialId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
     },
@@ -62,5 +75,6 @@ export function useAdminCourses() {
     updateCourse: updateCourseMutation.mutateAsync,
     deleteCourse: deleteCourseMutation.mutateAsync,
     uploadMaterials: uploadMaterialsMutation.mutateAsync,
+    deleteMaterial: deleteMaterialMutation.mutateAsync,
   };
 }

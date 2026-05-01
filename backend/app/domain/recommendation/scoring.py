@@ -25,11 +25,7 @@ class ScoringService:
 
         pref_score = matches / len(tags) if tags else 0.5
 
-        # Factor in difficulty and workload
-        diff_penalty = abs(course.difficulty - preference.target_difficulty)
-        work_penalty = max(0, course.workload - preference.max_workload)
-
-        return max(0, pref_score - (diff_penalty * 0.2) - (work_penalty * 0.2))
+        return pref_score
 
     def combine_scores(
         self,

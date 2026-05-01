@@ -12,14 +12,17 @@ import {
   Upload, 
   CheckCircle2, 
   AlertCircle,
-  Loader2
+  Loader2,
+  Trash2,
+  FileCode,
+  FilePen
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
 export default function EditCoursePage() {
   const params = useParams();
-  const id = params.id as string;
-  const { courses, isLoading, updateCourse, uploadMaterials } = useAdminCourses();
+  const id = parseInt(params.id as string, 10);
+  const { courses, isLoading, updateCourse, uploadMaterials, deleteMaterial } = useAdminCourses();
   const t = useTranslations('Admin');
   const tCommon = useTranslations('Common');
   const router = useRouter();
@@ -70,7 +73,7 @@ export default function EditCoursePage() {
     setIsUploading(true);
     try {
       await uploadMaterials({ id, file });
-      alert(t('uploadSuccess'));
+      // alert(t('uploadSuccess')); // Removed alert for smoother flow
     } catch (error) {
       console.error('Failed to upload materials:', error);
       alert(tCommon('error'));
@@ -82,8 +85,19 @@ export default function EditCoursePage() {
     }
   };
 
+  const handleDeleteMaterial = async (materialId: number) => {
+    if (confirm('Are you sure you want to delete this material?')) {
+      try {
+        await deleteMaterial({ courseId: id, materialId });
+      } catch (error) {
+        console.error('Failed to delete material:', error);
+        alert(tCommon('error'));
+      }
+    }
+  };
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8 p-8">
+    <div className="max-w-6xl mx-auto space-y-8 p-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link 
@@ -96,7 +110,7 @@ export default function EditCoursePage() {
             <h1 className="text-3xl font-bold text-slate-900 font-lexend">
               {t('editCourse')}
             </h1>
-            <p className="text-slate-500 mt-1">{course.subject_name} ({course.id})</p>
+            <p className="text-slate-500 mt-1">{course.subject_name} (ID: {course.id})</p>
           </div>
         </div>
       </div>
@@ -114,9 +128,9 @@ export default function EditCoursePage() {
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col h-fit">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+              <div className="p-2 bg-indigo-50 rounded-lg text-[#4F46E5]">
                 <FileText className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 font-lexend">
@@ -125,23 +139,55 @@ export default function EditCoursePage() {
             </div>
 
             <div className="space-y-6">
-              {course.materials_content ? (
-                <div className="flex items-start gap-3 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100">
-                  <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm font-medium">
-                    {t('syllabusAnalyzed')}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex items-start gap-3 p-4 bg-slate-50 text-slate-600 rounded-xl border border-slate-100">
-                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm">
-                    {t('uploadPrompt')}
-                  </p>
-                </div>
-              )}
+              {/* Materials List */}
+              <div className="space-y-3">
+                {course.materials && course.materials.length > 0 ? (
+                  course.materials.map((material) => (
+                    <div 
+                      key={material.id} 
+                      className="group flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-100 text-slate-400 group-hover:text-indigo-500 transition-colors">
+                          {material.filename.endsWith('.pdf') ? <FileText className="w-4 h-4" /> : <FileCode className="w-4 h-4" />}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-semibold text-slate-700 truncate group-hover:text-slate-900 transition-colors">
+                            {material.filename}
+                          </p>
+                          <div className="flex items-center gap-2">
+                             <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
+                               material.status === 'analyzed' ? 'bg-emerald-50 text-emerald-600' : 
+                               material.status === 'pending' ? 'bg-amber-50 text-orange-600' : 
+                               'bg-red-50 text-red-600'
+                             }`}>
+                               {material.status}
+                             </span>
+                             <span className="text-[10px] text-slate-400">
+                               {new Date(material.created_at).toLocaleDateString()}
+                             </span>
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteMaterial(material.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                   <div className="text-center py-8 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <FilePen className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm text-slate-500 font-medium">No materials yet</p>
+                      <p className="text-xs text-slate-400 mt-1">Upload files to help AI understand your course</p>
+                   </div>
+                )}
+              </div>
 
-              <div className="pt-2">
+              {/* Upload Zone */}
+              <div className="pt-4 border-t border-slate-50">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -152,7 +198,7 @@ export default function EditCoursePage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-all font-semibold"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] disabled:opacity-50 transition-all font-semibold shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
                 >
                   {isUploading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -161,6 +207,9 @@ export default function EditCoursePage() {
                   )}
                   {isUploading ? t('uploading') : t('uploadFile')}
                 </button>
+                <p className="text-[10px] text-center text-slate-400 mt-3 font-medium uppercase tracking-widest">
+                  PDF or TXT only
+                </p>
               </div>
             </div>
           </div>
