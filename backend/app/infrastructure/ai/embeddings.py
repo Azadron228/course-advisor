@@ -2,6 +2,8 @@ import logging
 from openai import OpenAI
 from app.core.config import settings
 
+from llama_index.core.node_parser import TokenTextSplitter
+
 logger = logging.getLogger(__name__)
 client = None
 
@@ -20,3 +22,9 @@ def get_embedding(text: str, model: str = "text-embedding-3-small") -> list[floa
     cl = get_client()
     text = text.replace("\n", " ")
     return cl.embeddings.create(input=[text], model=model).data[0].embedding
+
+
+def chunk_text(text: str, chunk_size: int = 800, chunk_overlap: int = 100) -> list[str]:
+    """Splits text into overlapping chunks using llama-index TokenTextSplitter."""
+    splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    return splitter.split_text(text)

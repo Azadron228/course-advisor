@@ -13,6 +13,15 @@ class CourseMaterial:
 
 
 @dataclass
+class CourseMaterialChunk:
+    id: Optional[int]
+    material_id: int
+    content: str
+    embedding: List[float]
+    chunk_index: int
+
+
+@dataclass
 class Course:
     id: int
     subject_name: str

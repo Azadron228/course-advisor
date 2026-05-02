@@ -151,9 +151,14 @@ class AdvisorService:
         for course in courses:
             content_sim = 0.0
             if student_embedding:
-                content_sim = self.course_repo.get_content_similarity(
-                    course.id, student_embedding
-                )
+                # 1. Broad match (Description)
+                desc_sim = self.course_repo.get_content_similarity(course.id, student_embedding)
+                
+                # 2. Granular match (Best Material Chunk)
+                chunk_sim = self.course_repo.get_best_material_similarity(course.id, student_embedding)
+                
+                # Final content similarity is the best match found
+                content_sim = max(desc_sim, chunk_sim)
 
             skill_gap = self.scoring_service.calculate_skill_gap(student, course)
             pref_score = self.scoring_service.calculate_preference_score(

@@ -87,6 +87,21 @@ class CourseMaterialORM(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     course: Mapped["CourseORM"] = relationship(back_populates="materials")
+    chunks: Mapped[List["CourseMaterialChunkORM"]] = relationship(
+        back_populates="material", cascade="all, delete-orphan"
+    )
+
+
+class CourseMaterialChunkORM(Base):
+    __tablename__ = "course_material_chunks"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    material_id: Mapped[int] = mapped_column(ForeignKey("course_materials.id", ondelete="CASCADE"), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding: Mapped[List[float]] = mapped_column(Vector(1536), nullable=False)
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    material: Mapped["CourseMaterialORM"] = relationship(back_populates="chunks")
 
 
 class ChatSessionORM(Base):

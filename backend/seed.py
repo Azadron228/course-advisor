@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.infrastructure.db.models import CourseORM, CourseMaterialORM, UserORM
-from app.infrastructure.ai.embeddings import get_embedding
+from app.infrastructure.db.models import CourseORM, CourseMaterialORM, UserORM, CourseMaterialChunkORM
+from app.infrastructure.ai.embeddings import get_embedding, chunk_text
 from app.core.config import settings
 from app.core.security import get_password_hash
 
@@ -73,9 +73,8 @@ def seed():
         # Check if course exists by subject_name
         course = session.query(CourseORM).filter(CourseORM.subject_name == c["subject_name"]).first()
         
-        # Aggregate description and materials for initial embedding
-        aggregated_content = c["description"] + " " + c["materials_content"]
-        emb = get_embedding(aggregated_content)
+        # NOW ONLY USES DESCRIPTION for course embedding
+        emb = get_embedding(c["description"])
 
         if not course:
             course = CourseORM(
@@ -95,6 +94,19 @@ def seed():
                 status="analyzed"
             )
             session.add(material)
+            session.flush()
+
+            # Chunk and Seed Material
+            text_chunks = chunk_text(c["materials_content"])
+            for i, chunk_txt in enumerate(text_chunks):
+                chunk_emb = get_embedding(chunk_txt)
+                chunk_orm = CourseMaterialChunkORM(
+                    material_id=material.id,
+                    content=chunk_txt,
+                    embedding=chunk_emb,
+                    chunk_index=i
+                )
+                session.add(chunk_orm)
         else:
             course.subject_name = c["subject_name"]
             course.description = c["description"]
@@ -108,6 +120,21 @@ def seed():
             ).first()
             if existing_material:
                 existing_material.content = c["materials_content"]
+                # Clear old chunks and re-chunk
+                session.query(CourseMaterialChunkORM).filter(
+                    CourseMaterialChunkORM.material_id == existing_material.id
+                ).delete()
+                
+                text_chunks = chunk_text(c["materials_content"])
+                for i, chunk_txt in enumerate(text_chunks):
+                    chunk_emb = get_embedding(chunk_txt)
+                    chunk_orm = CourseMaterialChunkORM(
+                        material_id=existing_material.id,
+                        content=chunk_txt,
+                        embedding=chunk_emb,
+                        chunk_index=i
+                    )
+                    session.add(chunk_orm)
             else:
                 material = CourseMaterialORM(
                     course_id=course.id,
@@ -116,6 +143,19 @@ def seed():
                     status="analyzed"
                 )
                 session.add(material)
+                session.flush()
+
+                # Chunk and Seed Material
+                text_chunks = chunk_text(c["materials_content"])
+                for i, chunk_txt in enumerate(text_chunks):
+                    chunk_emb = get_embedding(chunk_txt)
+                    chunk_orm = CourseMaterialChunkORM(
+                        material_id=material.id,
+                        content=chunk_txt,
+                        embedding=chunk_emb,
+                        chunk_index=i
+                    )
+                    session.add(chunk_orm)
 
     # Seed Admin User
     print("Seeding admin user...")

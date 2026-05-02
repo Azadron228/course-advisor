@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_admin_user
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.api.v1.schemas.course import CoursePublic, CourseCreate, CourseUpdate, CourseMaterialPublic
-from app.infrastructure.ai.embeddings import get_embedding
-from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity
+from app.infrastructure.ai.embeddings import get_embedding, chunk_text
+from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity, CourseMaterialChunk
 
 try:
     import PyPDF2
@@ -128,10 +128,23 @@ async def upload_course_materials(
 
     saved_material = course_repo.add_material(material)
 
-    # Trigger course embedding update (aggregate all materials)
-    all_materials = course_repo.get_by_id(course_id).materials
-    aggregated_content = course.description + " " + " ".join([m.content for m in all_materials])
-    new_embedding = get_embedding(aggregated_content)
+    # Chunk and Embed
+    text_chunks = chunk_text(content)
+    chunks_to_save = []
+    for i, chunk_txt in enumerate(text_chunks):
+        emb = get_embedding(chunk_txt)
+        chunks_to_save.append(CourseMaterialChunk(
+            id=None, 
+            material_id=saved_material.id, 
+            content=chunk_txt, 
+            embedding=emb, 
+            chunk_index=i
+        ))
+    
+    course_repo.add_material_chunks(chunks_to_save)
+
+    # Trigger course embedding update (NOW ONLY USES DESCRIPTION)
+    new_embedding = get_embedding(course.description)
 
     from dataclasses import replace
     updated_course = replace(course, embedding=new_embedding)
@@ -167,11 +180,9 @@ async def delete_course_material(
 
     course_repo.delete_material(material_id)
 
-    # Update embedding again
+    # Update embedding again (NOW ONLY USES DESCRIPTION)
     course = course_repo.get_by_id(course_id)
-    all_materials = course.materials
-    aggregated_content = course.description + " " + " ".join([m.content for m in all_materials])
-    new_embedding = get_embedding(aggregated_content)
+    new_embedding = get_embedding(course.description)
 
     from dataclasses import replace
     updated_course = replace(course, embedding=new_embedding)

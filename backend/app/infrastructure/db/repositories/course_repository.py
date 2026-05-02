@@ -1,7 +1,7 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
-from app.infrastructure.db.models import CourseORM, CourseMaterialORM
-from app.domain.catalog.entities import Course, CourseMaterial
+from app.infrastructure.db.models import CourseORM, CourseMaterialORM, CourseMaterialChunkORM
+from app.domain.catalog.entities import Course, CourseMaterial, CourseMaterialChunk
 import json
 
 
@@ -119,3 +119,24 @@ class CourseRepository:
             status=m.status,
             created_at=m.created_at.isoformat(),
         )
+
+    def add_material_chunks(self, chunks: list[CourseMaterialChunk]) -> None:
+        for chunk in chunks:
+            orm = CourseMaterialChunkORM(
+                material_id=chunk.material_id,
+                content=chunk.content,
+                embedding=chunk.embedding,
+                chunk_index=chunk.chunk_index
+            )
+            self.db.add(orm)
+        self.db.commit()
+
+    def get_best_material_similarity(self, course_id: int, student_embedding: list[float]) -> float:
+        """Finds the maximum similarity score among all chunks of a course."""
+        query = (
+            select(func.max(1 - CourseMaterialChunkORM.embedding.cosine_distance(student_embedding)))
+            .join(CourseMaterialORM)
+            .where(CourseMaterialORM.course_id == course_id)
+        )
+        result = self.db.scalar(query)
+        return float(result) if result is not None else 0.0
