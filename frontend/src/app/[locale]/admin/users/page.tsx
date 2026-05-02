@@ -23,13 +23,13 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white font-lexend flex items-center">
+          <h1 className="text-3xl font-bold text-foreground font-lexend flex items-center">
             <UsersIcon className="mr-3 h-8 w-8 text-primary" />
             User Management
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage system users, roles, and permissions.</p>
+          <p className="text-muted mt-1">Manage system users, roles, and permissions.</p>
         </div>
-        <div className="text-sm text-slate-500 dark:text-slate-400 font-medium bg-surface dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800">
+        <div className="text-sm text-muted font-medium bg-surface px-4 py-2 rounded-lg border border-border">
           Total Users: {users.length}
         </div>
       </div>

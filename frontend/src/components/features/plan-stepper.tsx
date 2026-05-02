@@ -70,8 +70,8 @@ export function PlanStepper({ plan }: PlanStepperProps) {
 
   if (!plan || !plan.steps || plan.steps.length === 0) {
     return (
-      <div className="p-8 text-center bg-surface dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <p className="text-slate-500 dark:text-slate-400">{t('notFound')}</p>
+      <div className="p-8 text-center bg-surface rounded-xl border border-border shadow-sm">
+        <p className="text-muted">{t('notFound')}</p>
       </div>
     );
   }
@@ -82,9 +82,9 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   return (
     <>
       <div className="space-y-6">
-      <div className="bg-surface dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t('myPlan')}</h1>
-        <p className="text-slate-600 dark:text-slate-400">{t('goalValue', { goal: plan.goal })}</p>
+      <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t('myPlan')}</h1>
+        <p className="text-muted">{t('goalValue', { goal: plan.goal })}</p>
       </div>
 
       {error && (
@@ -96,7 +96,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
       <div className="relative">
         {/* Vertical line connecting steps */}
         <div 
-          className="absolute left-6 top-4 bottom-4 w-0.5 bg-slate-200 dark:bg-slate-800" 
+          className="absolute left-6 top-4 bottom-4 w-0.5 bg-border " 
           aria-hidden="true"
         />
 
@@ -109,15 +109,15 @@ export function PlanStepper({ plan }: PlanStepperProps) {
               <div key={step.order} className="relative flex gap-6">
                 <div className="flex-shrink-0 z-10">
                   {isCompleted ? (
-                    <div className="bg-secondary/10 dark:bg-secondary/20 rounded-full p-2 text-secondary dark:text-secondary ring-4 ring-white dark:ring-slate-950">
+                    <div className="bg-secondary/10 dark:bg-secondary/20 rounded-full p-2 text-secondary dark:text-secondary ring-4 ring-background">
                       <CheckCircle className="w-8 h-8" />
                     </div>
                   ) : isCurrent ? (
-                    <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full p-2 text-indigo-600 dark:text-indigo-400 ring-4 ring-white dark:ring-slate-950 animate-pulse">
+                    <div className="bg-primary/10 rounded-full p-2 text-primary ring-4 ring-background animate-pulse">
                       <Play className="w-8 h-8 fill-current" />
                     </div>
                   ) : (
-                    <div className="bg-surface dark:bg-slate-900 rounded-full p-2 text-slate-300 dark:text-slate-700 ring-4 ring-white dark:ring-slate-950 border-2 border-slate-200 dark:border-slate-800">
+                    <div className="bg-surface rounded-full p-2 text-muted/30 ring-4 ring-background border-2 border-border">
                       <Circle className="w-8 h-8" />
                     </div>
                   )}
@@ -126,8 +126,8 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                 <div className={cn(
                   "flex-1 p-6 rounded-xl border transition-all",
                   isCompleted ? "bg-secondary/5 dark:bg-secondary/10 border-secondary/20 dark:border-secondary/30" : 
-                  isCurrent ? "bg-surface dark:bg-slate-900 border-indigo-200 dark:border-indigo-800 shadow-md ring-1 ring-indigo-50 dark:ring-indigo-900/20" : 
-                  "bg-surface/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-70"
+                  isCurrent ? "bg-surface border-primary/20 shadow-md ring-1 ring-primary/5" : 
+                  "bg-surface/50 /50 border-border opacity-70"
                 )}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -135,22 +135,22 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                         <span className={cn(
                           "text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
                           isCompleted ? "bg-secondary/10 dark:bg-secondary/20 text-secondary" :
-                          isCurrent ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400" :
-                          "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                          isCurrent ? "bg-primary/10 text-primary" :
+                          "bg-muted  text-muted"
                         )}>
                           {t('stepLabel', { index: index + 1 })}
                         </span>
                         {step.is_external && (
-                          <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+                          <span className="flex items-center gap-1 text-xs text-muted">
                             <ExternalLink className="w-3 h-3" /> {t('external')}
                           </span>
                         )}
                       </div>
                       <h3 className={cn(
                         "text-lg font-bold",
-                        isCompleted ? "text-slate-900 dark:text-slate-100" :
-                        isCurrent ? "text-indigo-900 dark:text-indigo-300" :
-                        "text-slate-700 dark:text-slate-400"
+                        isCompleted ? "text-foreground" :
+                        isCurrent ? "text-primary" :
+                        "text-muted"
                       )}>
                         {step.title}
                       </h3>
@@ -160,7 +160,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                       <button
                         onClick={() => handleMarkComplete(step.order)}
                         disabled={isPending}
-                        className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-lg shadow-indigo-200 dark:shadow-none"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-lg shadow-primary/20 dark:shadow-none"
                       >
                         {isPending ? (
                           <>
@@ -176,27 +176,27 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                   
                   <p className={cn(
                     "mt-3 text-sm leading-relaxed",
-                    isCompleted ? "text-slate-600 dark:text-slate-300" :
-                    isCurrent ? "text-slate-600 dark:text-slate-300" :
-                    "text-slate-500 dark:text-slate-400"
+                    isCompleted ? "text-muted" :
+                    isCurrent ? "text-muted" :
+                    "text-muted"
                   )}>
                     {step.description}
                   </p>
 
                   {step.materials && step.materials.length > 0 && (
                     <div className="mt-4 space-y-3">
-                      <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t('materials')}</h4>
+                      <h4 className="text-xs font-bold text-muted uppercase tracking-wider">{t('materials')}</h4>
                       {step.materials.map((mat, midx) => (
-                        <div key={midx} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                        <div key={midx} className="p-3 bg-input/50 rounded-lg border border-border">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{mat.title}</span>
+                            <span className="text-sm font-bold text-foreground">{mat.title}</span>
                             {mat.url && (
-                              <a href={mat.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+                              <a href={mat.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80">
                                 <ExternalLink className="w-3 h-3" />
                               </a>
                             )}
                           </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{mat.description}</p>
+                          <p className="text-xs text-muted leading-relaxed">{mat.description}</p>
                         </div>
                       ))}
                     </div>
@@ -206,7 +206,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                     <div className="mt-4 flex items-center gap-2">
                       <button 
                         onClick={() => handleViewResource(step)}
-                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:underline inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="text-xs font-bold text-primary hover:text-primary/80 hover:underline inline-flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         {step.is_external ? t('openExternal') : t('viewMaterials')} 
                         {step.is_external ? (

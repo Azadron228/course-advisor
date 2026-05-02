@@ -54,32 +54,32 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column: General Information */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-foreground border-b border-slate-200 dark:border-slate-800 pb-2">
+          <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
             {t('generalInfo')}
           </h3>
 
           <div className="space-y-2">
-            <label htmlFor="subject_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="subject_name" className="block text-sm font-medium text-foreground">
               {t('subjectName')}
             </label>
             <input
               {...register('subject_name')}
               id="subject_name"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
               placeholder="Introduction to Computer Science"
             />
             {errors.subject_name && <p className="text-sm text-red-500">{errors.subject_name.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="description" className="block text-sm font-medium text-foreground">
               {t('description')}
             </label>
             <textarea
               {...register('description')}
               id="description"
               rows={5}
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
             />
             {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
           </div>
@@ -87,25 +87,25 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
 
         {/* Right Column: Metadata & Skills */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-foreground border-b border-slate-200 dark:border-slate-800 pb-2">
+          <h3 className="text-lg font-semibold text-foreground border-b border-border pb-2">
             {t('metadataSkills')}
           </h3>
 
           <div className="space-y-2">
-            <label htmlFor="skills_taught" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="skills_taught" className="block text-sm font-medium text-foreground">
               {t('skillsTaught')}
             </label>
             <input
               {...register('skills_taught')}
               id="skills_taught"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
               placeholder={t('skillsPlaceholder')}
             />
           </div>
         </div>
       </div>
 
-      <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+      <div className="pt-6 border-t border-border flex justify-end">
         <button
           type="submit"
           disabled={isSubmitting}

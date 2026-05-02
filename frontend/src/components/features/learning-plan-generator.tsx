@@ -66,42 +66,42 @@ export function LearningPlanGenerator() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{t('createNew')}</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-lg">{t('defineGoals')}</p>
+        <h1 className="text-3xl font-extrabold text-foreground">{t('createNew')}</h1>
+        <p className="text-muted text-lg">{t('defineGoals')}</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-surface dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-surface p-8 rounded-3xl border border-border shadow-xl shadow-primary/5 dark:shadow-none">
         <div className="grid gap-8 md:grid-cols-2">
           {/* Goal & Interests Section */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{t('goalLabel')}</label>
+              <label className="text-sm font-bold text-foreground uppercase tracking-wider">{t('goalLabel')}</label>
               <textarea
                 {...register('goal')}
                 rows={3}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white resize-none"
+                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground resize-none"
                 placeholder={t('goalPlaceholder')}
               />
               {errors.goal && <p className="text-xs text-red-500 font-medium">{errors.goal.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{t('interestsLabel')}</label>
+              <label className="text-sm font-bold text-foreground uppercase tracking-wider">{t('interestsLabel')}</label>
               <div className="relative">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
                 <input
                   value={currentTag}
                   onChange={(e) => setCurrentTag(e.target.value)}
                   onKeyDown={handleAddInterest}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground"
                   placeholder={t('typeAndPressEnter')}
                 />
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {interests.map((tag) => (
-                  <span key={tag} className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-xs font-bold border border-indigo-100 dark:border-indigo-800 animate-in zoom-in-95 duration-200">
+                  <span key={tag} className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold border border-border dark:border-primary/20 animate-in zoom-in-95 duration-200">
                     {tag}
-                    <button type="button" onClick={() => removeInterest(tag)} className="hover:text-indigo-900 dark:hover:text-indigo-200 p-0.5 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors">
+                    <button type="button" onClick={() => removeInterest(tag)} className="hover:text-primary p-0.5 rounded-full hover:bg-primary/20 transition-colors">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -113,10 +113,10 @@ export function LearningPlanGenerator() {
           {/* Preferences Section */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{t('skillLevelLabel')}</label>
+              <label className="text-sm font-bold text-foreground uppercase tracking-wider">{t('skillLevelLabel')}</label>
               <select
                 {...register('skill_level')}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white appearance-none"
+                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground appearance-none"
               >
                 <option value="Beginner">{t('beginner')}</option>
                 <option value="Intermediate">{t('intermediate')}</option>
@@ -125,12 +125,12 @@ export function LearningPlanGenerator() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Brain className="w-4 h-4 text-indigo-500" /> {t('learningStyle')}
+              <label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Brain className="w-4 h-4 text-primary" /> {t('learningStyle')}
               </label>
               <select
                 {...register('learning_style')}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white appearance-none"
+                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground appearance-none"
               >
                 <option value="Visual">{t('visual')}</option>
                 <option value="Practical">{t('practical')}</option>
@@ -139,13 +139,13 @@ export function LearningPlanGenerator() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-500" /> {t('studyTime')}
+              <label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" /> {t('studyTime')}
               </label>
               <input
                 type="number"
                 {...register('study_time', { valueAsNumber: true })}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900 dark:text-white"
+                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground"
               />
               {errors.study_time && <p className="text-xs text-red-500 font-medium">{errors.study_time.message}</p>}
             </div>
@@ -153,18 +153,18 @@ export function LearningPlanGenerator() {
         </div>
 
         {/* File Upload Section */}
-        <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-6 border-t border-border">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-500" /> {t('academicTranscript')}
+            <label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" /> {t('academicTranscript')}
             </label>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">{t('transcriptNote')}</p>
+            <p className="text-xs text-muted mb-3">{t('transcriptNote')}</p>
             
             <div 
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "group relative border-2 border-dashed rounded-2xl p-8 transition-all cursor-pointer flex flex-col items-center justify-center text-center",
-                file ? "border-green-300 bg-green-50 dark:bg-green-900/10" : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                file ? "border-green-300 bg-green-50 dark:bg-green-900/10" : "border-border bg-input hover:border-primary hover:bg-primary/5"
               )}
             >
               <input
@@ -190,11 +190,11 @@ export function LearningPlanGenerator() {
                 </div>
               ) : (
                 <>
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 flex items-center justify-center mb-4 transition-colors">
-                    <Upload className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4 transition-colors">
+                    <Upload className="w-6 h-6 text-muted group-hover:text-primary" />
                   </div>
-                  <p className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-900 dark:group-hover:text-white transition-colors">{t('clickToUpload')}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 uppercase font-bold tracking-widest">{t('supportsHtml')}</p>
+                  <p className="font-bold text-foreground group-hover:text-primary transition-colors">{t('clickToUpload')}</p>
+                  <p className="text-xs text-muted dark:text-muted mt-1 uppercase font-bold tracking-widest">{t('supportsHtml')}</p>
                 </>
               )}
             </div>
@@ -204,7 +204,7 @@ export function LearningPlanGenerator() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-5 rounded-2xl transition-all shadow-xl shadow-indigo-200 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-extrabold py-5 rounded-2xl transition-all shadow-xl shadow-primary/20 disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

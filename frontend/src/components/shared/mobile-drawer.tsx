@@ -38,7 +38,7 @@ export function MobileDrawer() {
     <div className="fixed inset-0 z-[60] lg:hidden">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={() => setMobileDrawerOpen(false)}
       />
       
@@ -55,7 +55,7 @@ export function MobileDrawer() {
           </div>
           <button
             onClick={() => setMobileDrawerOpen(false)}
-            className="p-2 rounded-lg text-muted hover:bg-muted/10 transition-colors"
+            className="p-2 rounded-lg text-muted hover:bg-input transition-colors"
           >
             <X size={20} />
           </button>
@@ -74,7 +74,7 @@ export function MobileDrawer() {
                   "flex items-center gap-4 px-4 py-3 rounded-xl transition-all group",
                   isActive 
                     ? "bg-primary/10 text-primary" 
-                    : "text-muted hover:bg-muted/10 hover:text-foreground"
+                    : "text-muted hover:bg-input hover:text-foreground"
                 )}
               >
                 <Icon 

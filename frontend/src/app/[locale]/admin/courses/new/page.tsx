@@ -32,21 +32,21 @@ export default function NewCoursePage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/courses"
-          className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-full hover:bg-input transition-colors"
         >
-          <ChevronLeft className="w-6 h-6 text-slate-500" />
+          <ChevronLeft className="w-6 h-6 text-muted" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white font-lexend">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground font-lexend">
             {t('addNewCourse')}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             {t('backToCourses')}
           </p>
         </div>
       </div>
 
-      <div className="bg-surface rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8">
+      <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-8">
         <CourseForm 
           onSubmit={handleCreate} 
           isSubmitting={isSubmitting} 

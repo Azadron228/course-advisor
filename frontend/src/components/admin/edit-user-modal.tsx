@@ -40,7 +40,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
           <h3 className="text-xl font-bold text-foreground font-lexend">Edit User</h3>
           <button 
             onClick={onClose} 
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className="p-2 text-muted hover:text-foreground rounded-full hover:bg-input transition-all"
             aria-label="Close"
           >
             <X className="w-5 h-5" />

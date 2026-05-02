@@ -44,7 +44,7 @@ export function LanguageSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         disabled={isPending}
         className={cn(
-          "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700",
+          "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:bg-input transition-colors border border-border",
           isPending && "opacity-50 cursor-not-allowed"
         )}
       >
@@ -52,21 +52,21 @@ export function LanguageSwitcher() {
         <span className="uppercase">{locale}</span>
         <ChevronDown 
           size={14} 
-          className={cn("text-slate-400 transition-transform", isOpen && "rotate-180")} 
+          className={cn("text-muted transition-transform", isOpen && "rotate-180")} 
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-36 bg-surface border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in duration-200">
+        <div className="absolute right-0 mt-2 w-36 bg-surface border border-border rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in duration-200">
           {LOCALES.map((l) => (
             <button
               key={l.code}
               onClick={() => switchLanguage(l.code)}
-              className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center justify-between w-full px-4 py-2 text-sm text-left text-foreground hover:bg-input transition-colors"
             >
               <span>{l.label}</span>
               {locale === l.code && (
-                <Check size={16} className="text-indigo-600 dark:text-indigo-400" />
+                <Check size={16} className="text-primary" />
               )}
             </button>
           ))}
