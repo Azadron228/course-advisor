@@ -38,23 +38,29 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
       <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-border">
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h3 className="text-xl font-bold text-foreground font-lexend">Edit User</h3>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+          <button 
+            onClick={onClose} 
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            aria-label="Close"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
+            <label htmlFor="full_name" className="block text-sm font-medium text-foreground mb-1">Full Name</label>
             <input
+              id="full_name"
               type="text"
-              className="w-full px-4 py-2 rounded-lg border border-border bg-input text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-border bg-input text-foreground focus:ring-2 focus:ring-ring/20 focus:border-ring transition-all outline-none"
               value={formData.full_name || ''}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">Email</label>
             <input
+              id="email"
               type="email"
               className="w-full px-4 py-2 rounded-lg border border-border bg-input/50 text-muted cursor-not-allowed outline-none"
               value={formData.email || ''}
@@ -99,7 +105,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center"
+              className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>

@@ -55,7 +55,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.is_admin ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300' : 'bg-muted text-foreground'
+                    user.is_admin ? 'bg-primary/10 text-primary' : 'bg-muted/10 text-muted'
                   }`}>
                     {user.is_admin ? <Shield className="w-3 h-3 mr-1" /> : <UserIcon className="w-3 h-3 mr-1" />}
                     {user.is_admin ? 'Admin' : 'Student'}
