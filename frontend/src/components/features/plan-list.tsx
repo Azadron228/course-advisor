@@ -47,12 +47,6 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
                 </h3>
                 <div className="flex flex-wrap gap-4 text-xs font-semibold text-muted">
                   <span className="flex items-center gap-1.5 px-2 py-1 bg-muted  rounded-md">
-                    {t(`${plan.skill_level.toLowerCase()}Level`)}
-                  </span>
-                  <span className="flex items-center gap-1.5 px-2 py-1 bg-muted  rounded-md">
-                    <Clock className="w-3 h-3" /> {t('hoursPerWeek', { count: plan.study_time })}
-                  </span>
-                  <span className="flex items-center gap-1.5 px-2 py-1 bg-muted  rounded-md">
                     {t('stepsCount', { count: plan.steps.length })}
                   </span>
                 </div>

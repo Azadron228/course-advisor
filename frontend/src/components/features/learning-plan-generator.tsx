@@ -71,9 +71,9 @@ export function LearningPlanGenerator() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-surface p-8 rounded-3xl border border-border shadow-xl shadow-primary/5 dark:shadow-none">
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="space-y-8">
           {/* Goal & Interests Section */}
-          <div className="space-y-6">
+          <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-2">
               <label className="text-sm font-bold text-foreground uppercase tracking-wider">{t('goalLabel')}</label>
               <textarea
@@ -107,47 +107,6 @@ export function LearningPlanGenerator() {
                   </span>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Preferences Section */}
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-foreground uppercase tracking-wider">{t('skillLevelLabel')}</label>
-              <select
-                {...register('skill_level')}
-                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground appearance-none"
-              >
-                <option value="Beginner">{t('beginner')}</option>
-                <option value="Intermediate">{t('intermediate')}</option>
-                <option value="Advanced">{t('advanced')}</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                <Brain className="w-4 h-4 text-primary" /> {t('learningStyle')}
-              </label>
-              <select
-                {...register('learning_style')}
-                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground appearance-none"
-              >
-                <option value="Visual">{t('visual')}</option>
-                <option value="Practical">{t('practical')}</option>
-                <option value="Theoretical">{t('theoretical')}</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" /> {t('studyTime')}
-              </label>
-              <input
-                type="number"
-                {...register('study_time', { valueAsNumber: true })}
-                className="w-full px-4 py-3 bg-input border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-foreground"
-              />
-              {errors.study_time && <p className="text-xs text-red-500 font-medium">{errors.study_time.message}</p>}
             </div>
           </div>
         </div>
