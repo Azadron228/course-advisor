@@ -61,16 +61,14 @@ export default async function DashboardPage() {
       description: t('learningPlanDesc'),
       href: "/plan",
       icon: ClipboardList,
-      color: "bg-blue-50 text-blue-600",
-      borderColor: "border-blue-100"
+      color: "bg-primary/10 text-primary"
     },
     {
       title: tNav('aiAdvisor'),
       description: t('aiAdvisorDesc'),
       href: "/chat",
       icon: MessageSquare,
-      color: "bg-purple-50 text-purple-600",
-      borderColor: "border-purple-100"
+      color: "bg-secondary/10 text-secondary"
     }
   ];
 
@@ -83,24 +81,24 @@ export default async function DashboardPage() {
       />
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{tCommon('navHub')}</h2>
+        <h2 className="text-xl font-bold text-foreground">{tCommon('navHub')}</h2>
         <div className="grid gap-6 md:grid-cols-2">
           {navCards.map((card) => (
             <Link 
               key={card.title} 
               href={card.href}
-              className="group relative flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-surface p-6 shadow-sm transition-all hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md"
+              className="group relative flex flex-col rounded-xl border border-border bg-surface p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
             >
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-lg ${card.color}`}>
                 <card.icon className="h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              <h3 className="mb-2 text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                 {card.title}
               </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 flex-1">
+              <p className="text-sm text-muted mb-4 flex-1">
                 {card.description}
               </p>
-              <div className="flex items-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center text-sm font-semibold text-primary">
                 {t('goTo')} {card.title}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
