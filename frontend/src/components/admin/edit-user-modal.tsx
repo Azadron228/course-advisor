@@ -35,36 +35,36 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white font-lexend">Edit User</h3>
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-border">
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h3 className="text-xl font-bold text-foreground font-lexend">Edit User</h3>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
             <X className="w-5 h-5" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
             <input
               type="text"
-              className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-surface dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-border bg-input text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
               value={formData.full_name || ''}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <input
               type="email"
-              className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-border bg-input/50 text-muted cursor-not-allowed outline-none"
               value={formData.email || ''}
               disabled
             />
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <div className="text-sm font-medium text-slate-900 dark:text-white">Administrator</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">Grant admin privileges</div>
+              <div className="text-sm font-medium text-foreground">Administrator</div>
+              <div className="text-xs text-muted">Grant admin privileges</div>
             </div>
             <button
               type="button"
@@ -78,10 +78,10 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
               }`} />
             </button>
           </div>
-          <div className="flex items-center justify-between py-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+          <div className="flex items-center justify-between py-2 border-t border-border pt-4">
             <div>
-              <div className="text-sm font-medium text-slate-900 dark:text-white">Disabled</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">Disable user account</div>
+              <div className="text-sm font-medium text-foreground">Disabled</div>
+              <div className="text-xs text-muted">Disable user account</div>
             </div>
             <button
               type="button"
