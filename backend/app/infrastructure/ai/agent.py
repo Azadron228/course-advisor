@@ -75,7 +75,7 @@ async def search_external_resources(query: str) -> str:
 
     try:
         tavily = TavilyClient(api_key=TAVILY_API_KEY)
-        search_query = f"best online courses or tutorials for {query} on Coursera edX Udemy"
+        search_query = f"best {query} official documentation, youtube tutorials, and technical articles -site:coursera.org -site:udemy.com -site:edx.org"
         response = tavily.search(query=search_query, search_depth="basic", max_results=3)
 
         results = []
