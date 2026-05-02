@@ -75,7 +75,7 @@ async def search_external_resources(query: str) -> str:
 
     try:
         tavily = TavilyClient(api_key=TAVILY_API_KEY)
-        search_query = f"best online courses or tutorials for {query} on Coursera edX Udemy"
+        search_query = f"best {query} official documentation, youtube tutorials, and technical articles -site:coursera.org -site:udemy.com -site:edx.org"
         response = tavily.search(query=search_query, search_depth="basic", max_results=3)
 
         results = []
@@ -119,7 +119,7 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
         f"{materials_prompt}\n\n"
         f"If the internal course has significant skill gaps or if the student needs supplementary "
         f"learning, you MUST use the 'search_external_resources' tool to find 1-2 high-quality "
-        f"online courses (Coursera, edX, Udemy) or documentation. "
+        f"official documentation, technical articles, or tutorials. "
         f"Include these in your reasoning if relevant.\n\n"
         f"Output MUST be ONLY a valid JSON object with the fields: score, reasoning, tags."
     )
