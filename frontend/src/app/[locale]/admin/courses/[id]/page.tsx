@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAdminCourses } from '@/hooks/use-admin-courses';
+import { useQueryClient } from '@tanstack/react-query';
 import { CourseForm } from '@/components/admin/course-form';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -23,14 +24,47 @@ export default function EditCoursePage() {
   const params = useParams();
   const id = parseInt(params.id as string, 10);
   const { courses, isLoading, updateCourse, uploadMaterials, deleteMaterial } = useAdminCourses();
+  const queryClient = useQueryClient();
   const t = useTranslations('Admin');
   const tCommon = useTranslations('Common');
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [processingMaterialId, setProcessingMaterialId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const course = courses.find((c) => c.id === id);
+
+  // Polling for processing progress
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (processingMaterialId) {
+      interval = setInterval(() => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [processingMaterialId, queryClient]);
+
+  // If any material is currently in 'pending' or 'processing' status, and we are not already tracking it, track it
+  React.useEffect(() => {
+    const pendingMaterial = course?.materials?.find(
+      (m) => m.status === 'pending' || m.status === 'processing'
+    );
+    if (pendingMaterial) {
+      setProcessingMaterialId(pendingMaterial.id);
+    } else {
+      setProcessingMaterialId(null);
+    }
+  }, [course?.materials]);
+
+  const processingProgress = React.useMemo(() => {
+    if (!processingMaterialId || !course?.materials) return 0;
+    const material = course.materials.find((m) => m.id === processingMaterialId);
+    if (!material || !material.total_chunks) return 0;
+    return Math.round((material.processed_chunks / material.total_chunks) * 100);
+  }, [processingMaterialId, course?.materials]);
 
   if (isLoading) {
     return (
@@ -71,14 +105,20 @@ export default function EditCoursePage() {
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      await uploadMaterials({ id, file });
+      await uploadMaterials({ 
+        id, 
+        file, 
+        onProgress: (progress) => setUploadProgress(progress) 
+      });
       // alert(t('uploadSuccess')); // Removed alert for smoother flow
     } catch (error) {
       console.error('Failed to upload materials:', error);
       alert(tCommon('error'));
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -139,6 +179,29 @@ export default function EditCoursePage() {
             </div>
 
             <div className="space-y-6">
+              {/* Processing Notification */}
+              {(processingMaterialId || isUploading) && (
+                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20 space-y-3">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-primary">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>
+                        {isUploading 
+                          ? (uploadProgress < 100 ? t('uploading') : t('processing'))
+                          : t('processing')}
+                      </span>
+                    </div>
+                    <span>{isUploading ? uploadProgress : processingProgress}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-input rounded-full overflow-hidden border border-border">
+                    <div 
+                      className="h-full bg-primary transition-all duration-300 ease-out rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.4)]"
+                      style={{ width: `${isUploading ? uploadProgress : processingProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Materials List */}
               <div className="space-y-3">
                 {course.materials && course.materials.length > 0 ? (

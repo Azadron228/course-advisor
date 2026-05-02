@@ -7,7 +7,83 @@ from app.infrastructure.ai.agent import (
     parse_agent_recommendation,
 )
 
+from app.infrastructure.ai.embeddings import get_embedding, chunk_text
+from app.infrastructure.db.models import CourseMaterialORM, CourseMaterialChunkORM, CourseORM
+from sqlalchemy import select, update
+from app.infrastructure.db.session import SessionLocal
+
 logger = logging.getLogger(__name__)
+
+
+async def process_material_embeddings(ctx: dict, material_id: int) -> dict:
+    logger.info(f"Starting embedding generation for material {material_id}")
+    
+    # We use a context manager for the session to ensure it's closed
+    with SessionLocal() as session:
+        try:
+            material = session.get(CourseMaterialORM, material_id)
+            if not material:
+                logger.error(f"Material {material_id} not found")
+                return {"error": "Material not found"}
+
+            # 1. Chunking
+            text_chunks = chunk_text(material.content)
+            total = len(text_chunks)
+            
+            # Update material status and total chunks
+            session.execute(
+                update(CourseMaterialORM)
+                .where(CourseMaterialORM.id == material_id)
+                .values(total_chunks=total, status="processing")
+            )
+            session.commit()
+
+            # 2. Embedding each chunk
+            for i, chunk_txt in enumerate(text_chunks):
+                emb = get_embedding(chunk_txt)
+                chunk_orm = CourseMaterialChunkORM(
+                    material_id=material_id,
+                    content=chunk_txt,
+                    embedding=emb,
+                    chunk_index=i
+                )
+                session.add(chunk_orm)
+                
+                # Update progress
+                session.execute(
+                    update(CourseMaterialORM)
+                    .where(CourseMaterialORM.id == material_id)
+                    .values(processed_chunks=i + 1)
+                )
+                session.commit()
+                logger.debug(f"Processed chunk {i+1}/{total} for material {material_id}")
+
+            # 3. Finalize
+            session.execute(
+                update(CourseMaterialORM)
+                .where(CourseMaterialORM.id == material_id)
+                .values(status="analyzed")
+            )
+            
+            # Also update course embedding (only uses description now)
+            course = session.get(CourseORM, material.course_id)
+            if course:
+                new_course_emb = get_embedding(course.description)
+                course.embedding = new_course_emb
+            
+            session.commit()
+            logger.info(f"Successfully processed material {material_id}")
+            return {"status": "success", "chunks": total}
+
+        except Exception as e:
+            logger.error(f"Error processing material {material_id}: {e}", exc_info=True)
+            session.execute(
+                update(CourseMaterialORM)
+                .where(CourseMaterialORM.id == material_id)
+                .values(status="error")
+            )
+            session.commit()
+            return {"error": str(e)}
 
 
 async def run_agent_task(

@@ -15,6 +15,8 @@ class CourseMaterialPublic(BaseModel):
     course_id: int
     filename: str
     status: str
+    total_chunks: int = 0
+    processed_chunks: int = 0
     created_at: str
     model_config = ConfigDict(from_attributes=True)
 

@@ -50,6 +50,8 @@ class CourseRepository:
                     filename=m.filename,
                     content=m.content,
                     status=m.status,
+                    total_chunks=m.total_chunks,
+                    processed_chunks=m.processed_chunks,
                     created_at=m.created_at.isoformat(),
                 )
             )
@@ -117,6 +119,8 @@ class CourseRepository:
             filename=m.filename,
             content=m.content,
             status=m.status,
+            total_chunks=m.total_chunks,
+            processed_chunks=m.processed_chunks,
             created_at=m.created_at.isoformat(),
         )
 

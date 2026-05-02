@@ -6,6 +6,8 @@ export interface CourseMaterial {
   course_id: number;
   filename: string;
   status: string;
+  total_chunks: number;
+  processed_chunks: number;
   created_at: string;
 }
 
@@ -49,10 +51,10 @@ export function useAdminCourses() {
   });
 
   const uploadMaterialsMutation = useMutation({
-    mutationFn: ({ id, file }: { id: number; file: File }) => {
+    mutationFn: ({ id, file, onProgress }: { id: number; file: File; onProgress?: (progress: number) => void }) => {
       const formData = new FormData();
       formData.append('file', file);
-      return apiClient.post<CourseMaterial>(`/admin/courses/${id}/materials`, formData);
+      return apiClient.upload<CourseMaterial>(`/admin/courses/${id}/materials`, formData, onProgress);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });

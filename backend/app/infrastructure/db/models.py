@@ -83,7 +83,9 @@ class CourseMaterialORM(Base):
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
     filename: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(String, default="analyzed")  # pending, analyzed, error
+    status: Mapped[str] = mapped_column(String, default="pending")  # pending, analyzed, error
+    total_chunks: Mapped[int] = mapped_column(Integer, default=0)
+    processed_chunks: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     course: Mapped["CourseORM"] = relationship(back_populates="materials")

@@ -149,6 +149,57 @@ export const apiClient = {
     return handleResponse<T>(response);
   },
 
+  async upload<T>(
+    endpoint: string, 
+    formData: FormData, 
+    onProgress?: (progress: number) => void
+  ): Promise<T> {
+    const token = Cookies.get('token');
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          onProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response as T);
+          } catch {
+            resolve({} as T);
+          }
+        } else {
+          let errorMessage = 'Upload failed';
+          try {
+            const errorData = JSON.parse(xhr.responseText);
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch {
+            errorMessage = xhr.statusText || errorMessage;
+          }
+          reject({ message: errorMessage, status: xhr.status } as ApiError);
+        }
+      };
+
+      xhr.onerror = () => {
+        reject({ message: 'Network error', status: 0 } as ApiError);
+      };
+
+      xhr.send(formData);
+    });
+  },
+
   async stream(endpoint: string, body: unknown, onChunk: (chunk: string) => void, options: RequestInit = {}): Promise<void> {
     const token = Cookies.get('token');
     const url = `${API_BASE_URL}${endpoint}`;

@@ -154,6 +154,7 @@
     "syllabusAnalyzed": "Силлабус проанализирован для RAG рекомендаций",
     "uploadPrompt": "Загрузите PDF/Txt для улучшения рекомендаций ИИ",
     "uploading": "Загрузка...",
+    "processing": "Обработка...",
     "uploadFile": "Загрузить файл",
     "createSuccess": "Курс успешно создан!",
     "updateSuccess": "Курс успешно обновлен!",

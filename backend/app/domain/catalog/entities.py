@@ -10,6 +10,8 @@ class CourseMaterial:
     content: str
     status: str
     created_at: str
+    total_chunks: int = 0
+    processed_chunks: int = 0
 
 
 @dataclass

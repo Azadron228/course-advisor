@@ -154,6 +154,7 @@
     "syllabusAnalyzed": "Syllabus analyzed for RAG recommendations",
     "uploadPrompt": "Upload PDF/Txt for better AI recommendations",
     "uploading": "Uploading...",
+    "processing": "Processing...",
     "uploadFile": "Upload File",
     "createSuccess": "Course created successfully!",
     "updateSuccess": "Course updated successfully!",

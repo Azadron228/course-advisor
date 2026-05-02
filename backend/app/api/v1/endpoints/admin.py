@@ -2,11 +2,12 @@ import io
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
+from app.api import deps
 from app.api.deps import get_db, get_current_admin_user
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.api.v1.schemas.course import CoursePublic, CourseCreate, CourseUpdate, CourseMaterialPublic
-from app.infrastructure.ai.embeddings import get_embedding, chunk_text
-from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity, CourseMaterialChunk
+from app.infrastructure.ai.embeddings import get_embedding
+from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity
 
 try:
     import PyPDF2
@@ -94,6 +95,7 @@ async def upload_course_materials(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     admin_user=Depends(get_current_admin_user),
+    arq_pool = Depends(deps.get_arq_pool),
 ):
     course_repo = CourseRepository(db)
     course = course_repo.get_by_id(course_id)
@@ -125,33 +127,14 @@ async def upload_course_materials(
         course_id=course_id,
         filename=filename,
         content=content,
-        status="analyzed",
+        status="pending",
         created_at="",
     )
 
     saved_material = course_repo.add_material(material)
 
-    # Chunk and Embed
-    text_chunks = chunk_text(content)
-    chunks_to_save = []
-    for i, chunk_txt in enumerate(text_chunks):
-        emb = get_embedding(chunk_txt)
-        chunks_to_save.append(CourseMaterialChunk(
-            id=None, 
-            material_id=saved_material.id, 
-            content=chunk_txt, 
-            embedding=emb, 
-            chunk_index=i
-        ))
-    
-    course_repo.add_material_chunks(chunks_to_save)
-
-    # Trigger course embedding update (NOW ONLY USES DESCRIPTION)
-    new_embedding = get_embedding(course.description)
-
-    from dataclasses import replace
-    updated_course = replace(course, embedding=new_embedding)
-    course_repo.save(updated_course)
+    # Enqueue background task for chunking and embedding
+    await arq_pool.enqueue_job("process_material_embeddings", saved_material.id)
 
     return saved_material
 
