@@ -116,6 +116,9 @@ async def upload_course_materials(
         # Assume text/plain
         content = (await file.read()).decode("utf-8")
 
+    # Sanitize content (PostgreSQL does not allow NUL characters)
+    content = content.replace("\x00", "")
+
     # Create material entity
     material = CourseMaterialEntity(
         id=0,

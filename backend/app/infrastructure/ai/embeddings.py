@@ -18,9 +18,14 @@ def get_client():
     return client
 
 
+def sanitize_text(text: str) -> str:
+    """Removes NUL characters and other database-unfriendly characters."""
+    return text.replace("\x00", "")
+
+
 def get_embedding(text: str, model: str = "text-embedding-3-small") -> list[float]:
     cl = get_client()
-    text = text.replace("\n", " ")
+    text = sanitize_text(text).replace("\n", " ")
     return cl.embeddings.create(input=[text], model=model).data[0].embedding
 
 

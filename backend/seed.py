@@ -76,6 +76,8 @@ def seed():
         # NOW ONLY USES DESCRIPTION for course embedding
         emb = get_embedding(c["description"])
 
+        materials_content = c["materials_content"].replace("\x00", "")
+
         if not course:
             course = CourseORM(
                 subject_name=c["subject_name"],
@@ -90,14 +92,14 @@ def seed():
             material = CourseMaterialORM(
                 course_id=course.id,
                 filename="syllabus.md",
-                content=c["materials_content"],
+                content=materials_content,
                 status="analyzed"
             )
             session.add(material)
             session.flush()
 
             # Chunk and Seed Material
-            text_chunks = chunk_text(c["materials_content"])
+            text_chunks = chunk_text(materials_content)
             for i, chunk_txt in enumerate(text_chunks):
                 chunk_emb = get_embedding(chunk_txt)
                 chunk_orm = CourseMaterialChunkORM(
@@ -119,13 +121,13 @@ def seed():
                 CourseMaterialORM.filename == "syllabus.md"
             ).first()
             if existing_material:
-                existing_material.content = c["materials_content"]
+                existing_material.content = materials_content
                 # Clear old chunks and re-chunk
                 session.query(CourseMaterialChunkORM).filter(
                     CourseMaterialChunkORM.material_id == existing_material.id
                 ).delete()
                 
-                text_chunks = chunk_text(c["materials_content"])
+                text_chunks = chunk_text(materials_content)
                 for i, chunk_txt in enumerate(text_chunks):
                     chunk_emb = get_embedding(chunk_txt)
                     chunk_orm = CourseMaterialChunkORM(
@@ -139,14 +141,14 @@ def seed():
                 material = CourseMaterialORM(
                     course_id=course.id,
                     filename="syllabus.md",
-                    content=c["materials_content"],
+                    content=materials_content,
                     status="analyzed"
                 )
                 session.add(material)
                 session.flush()
 
                 # Chunk and Seed Material
-                text_chunks = chunk_text(c["materials_content"])
+                text_chunks = chunk_text(materials_content)
                 for i, chunk_txt in enumerate(text_chunks):
                     chunk_emb = get_embedding(chunk_txt)
                     chunk_orm = CourseMaterialChunkORM(
