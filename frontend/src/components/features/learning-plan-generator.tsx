@@ -123,7 +123,7 @@ export function LearningPlanGenerator() {
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "group relative border-2 border-dashed rounded-2xl p-8 transition-all cursor-pointer flex flex-col items-center justify-center text-center",
-                file ? "border-green-300 bg-green-50 dark:bg-green-900/10" : "border-border bg-input hover:border-primary hover:bg-primary/5"
+                file ? "border-success/30 bg-success/5" : "border-border bg-input hover:border-primary hover:bg-primary/5"
               )}
             >
               <input
@@ -135,14 +135,14 @@ export function LearningPlanGenerator() {
               />
               
               {file ? (
-                <div className="flex flex-col items-center gap-2 text-green-700 dark:text-green-400">
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-2">
+                <div className="flex flex-col items-center gap-2 text-success">
+                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-2">
                     <Check className="w-6 h-6" />
                   </div>
                   <p className="font-bold">{file.name}</p>
                   <button 
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                    className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline mt-2"
+                    className="text-xs font-bold text-destructive hover:underline mt-2"
                   >
                     {t('removeFile')}
                   </button>

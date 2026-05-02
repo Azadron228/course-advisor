@@ -8,8 +8,6 @@ from app.domain.recommendation.entities import (
     ScoreBreakdown,
     ModelProvider,
     LearningPlan,
-    SkillNode,
-    SkillMapResponse,
 )
 from app.domain.catalog.entities import Course
 from app.domain.identity.entities import User
@@ -109,24 +107,6 @@ class AdvisorService:
         except Exception as db_err:
             logger.error(f"Failed to persist learning plan: {db_err}")
             raise
-
-    def get_skill_map(self, user_id: int) -> SkillMapResponse:
-        """
-        Derives a skill map (nodes for visualization) from the user's stored skills.
-        """
-        user_skills = self.profile_repo.get_skills(user_id)
-
-        nodes = [
-            SkillNode(
-                id=s.skill_name.lower().replace(" ", "_"),
-                label=s.skill_name,
-                mastery_level=s.mastery_level,
-                category=s.category,
-            )
-            for s in user_skills
-        ]
-
-        return SkillMapResponse(nodes=nodes)
 
     async def recommend(
         self,

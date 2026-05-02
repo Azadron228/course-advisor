@@ -41,7 +41,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${inter.variable} ${lexend.variable} h-full antialiased`}>
+    <html lang={locale} className={`${inter.variable} ${lexend.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="h-full bg-background font-lexend text-foreground">
         <NextIntlClientProvider messages={messages}>
           <Providers>

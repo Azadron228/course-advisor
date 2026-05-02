@@ -220,9 +220,9 @@ export default function EditCoursePage() {
                           </p>
                           <div className="flex items-center gap-2">
                              <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
-                               material.status === 'analyzed' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' : 
-                               material.status === 'pending' ? 'bg-amber-50 dark:bg-amber-900/20 text-orange-600 dark:text-orange-400' : 
-                               'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                               material.status === 'analyzed' ? 'bg-success/10 text-success' : 
+                               material.status === 'pending' || material.status === 'processing' ? 'bg-warning/10 text-warning' : 
+                               'bg-destructive/10 text-destructive'
                              }`}>
                                {material.status}
                              </span>

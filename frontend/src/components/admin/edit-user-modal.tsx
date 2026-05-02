@@ -76,7 +76,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
               type="button"
               onClick={() => setFormData({ ...formData, is_admin: !formData.is_admin })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                formData.is_admin ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'
+                formData.is_admin ? 'bg-primary' : 'bg-muted/30'
               }`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -93,7 +93,7 @@ export function EditUserModal({ user, isOpen, onClose, onSave }: EditUserModalPr
               type="button"
               onClick={() => setFormData({ ...formData, disabled: !formData.disabled })}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                formData.disabled ? 'bg-red-500' : 'bg-slate-200 dark:bg-slate-700'
+                formData.disabled ? 'bg-destructive' : 'bg-muted/30'
               }`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

@@ -16,6 +16,9 @@
   --border: #e2e8f0;
   --input: #f8fafc;
   --ring: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
 }
 
 .dark {
@@ -26,6 +29,9 @@
   --border: #1e293b;     /* Slate 800 */
   --input: #1e293b;
   --ring: #6366f1;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --destructive: #f87171;
 }
 
 @theme inline {
@@ -39,6 +45,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
   
   --radius-md: var(--radius);
   --font-lexend: var(--font-lexend);

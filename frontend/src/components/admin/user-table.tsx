@@ -63,7 +63,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    !user.disabled ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                    !user.disabled ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                   }`}>
                     {!user.disabled ? 'Active' : 'Disabled'}
                   </span>

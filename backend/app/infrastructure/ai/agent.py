@@ -95,15 +95,6 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
     current_skills = ", ".join(student.current_skills)
     course_skills = ", ".join(course.skills_taught)
     
-    # Aggregate all analyzed materials
-    materials_content = " ".join([m.content for m in course.materials if m.status == "analyzed"])
-    
-    materials_prompt = (
-        f"\nAdditional Course Materials (Analyzed content from multiple sources): {materials_content}"
-        if materials_content
-        else ""
-    )
-
     system_prompt = (
         f"You are a professional university advisor. "
         f"Your task is to analyze a student's transcript and current skills "

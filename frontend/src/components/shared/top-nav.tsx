@@ -117,7 +117,7 @@ export function TopNav() {
                 <div className="p-1 border-t border-border">
                   <button
                     onClick={() => logout()}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                    className="flex w-full items-center gap-3 px-3 py-2 text-sm text-destructive rounded-lg hover:bg-destructive/10 transition-colors"
                   >
                     <LogOut size={18} />
                     {t('logout')}

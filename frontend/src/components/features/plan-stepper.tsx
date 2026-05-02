@@ -109,7 +109,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
               <div key={step.order} className="relative flex gap-6">
                 <div className="flex-shrink-0 z-10">
                   {isCompleted ? (
-                    <div className="bg-secondary/10 dark:bg-secondary/20 rounded-full p-2 text-secondary dark:text-secondary ring-4 ring-background">
+                    <div className="bg-success/10 rounded-full p-2 text-success ring-4 ring-background">
                       <CheckCircle className="w-8 h-8" />
                     </div>
                   ) : isCurrent ? (
@@ -125,18 +125,18 @@ export function PlanStepper({ plan }: PlanStepperProps) {
 
                 <div className={cn(
                   "flex-1 p-6 rounded-xl border transition-all",
-                  isCompleted ? "bg-secondary/5 dark:bg-secondary/10 border-secondary/20 dark:border-secondary/30" : 
+                  isCompleted ? "bg-success/5 border-success/20" : 
                   isCurrent ? "bg-surface border-primary/20 shadow-md ring-1 ring-primary/5" : 
-                  "bg-surface/50 /50 border-border opacity-70"
+                  "bg-surface/50 border-border opacity-70"
                 )}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className={cn(
-                          "text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
-                          isCompleted ? "bg-secondary/10 dark:bg-secondary/20 text-secondary" :
+                          "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
+                          isCompleted ? "bg-success/10 text-success" :
                           isCurrent ? "bg-primary/10 text-primary" :
-                          "bg-muted  text-muted"
+                          "bg-muted/10 text-muted"
                         )}>
                           {t('stepLabel', { index: index + 1 })}
                         </span>
