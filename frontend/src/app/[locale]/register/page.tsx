@@ -40,12 +40,12 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-sm border border-slate-200 dark:border-slate-800 transition-all">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-sm border border-border transition-all">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground font-[family-name:var(--font-lexend)]">
             {t('createAccount')}
           </h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-[family-name:var(--font-inter)]">
+          <p className="mt-2 text-sm text-muted font-[family-name:var(--font-inter)]">
             {t('registerSubtitle')}
           </p>
         </div>
@@ -57,7 +57,7 @@ export default function RegisterPage() {
           )}
           <div className="space-y-4">
             <div>
-              <label htmlFor="full-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="full-name" className="block text-sm font-medium text-foreground mb-1.5">
                 {t('fullName')}
               </label>
               <input
@@ -65,14 +65,14 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+                className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder-muted focus:border-ring focus:ring-ring/20 focus:outline-none sm:text-sm transition-all"
                 placeholder="John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="email-address" className="block text-sm font-medium text-foreground mb-1.5">
                 {t('emailAddress')}
               </label>
               <input
@@ -81,14 +81,14 @@ export default function RegisterPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+                className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder-muted focus:border-ring focus:ring-ring/20 focus:outline-none sm:text-sm transition-all"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
                 {t('password')}
               </label>
               <input
@@ -97,7 +97,7 @@ export default function RegisterPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+                className="block w-full rounded-lg border border-border bg-input px-4 py-2.5 text-foreground placeholder-muted focus:border-ring focus:ring-ring/20 focus:outline-none sm:text-sm transition-all"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -114,7 +114,7 @@ export default function RegisterPage() {
               {isLoading ? t('creatingAccount') : t('createAccount')}
             </button>
 
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-center text-sm text-muted">
               {t('alreadyHaveAccount')}{' '}
               <Link href="/login" className="font-semibold text-primary hover:underline">
                 {t('signIn')}
