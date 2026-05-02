@@ -9,7 +9,7 @@ from app.infrastructure.ai.agent import (
 
 from app.infrastructure.ai.embeddings import get_embedding, chunk_text
 from app.infrastructure.db.models import CourseMaterialORM, CourseMaterialChunkORM, CourseORM
-from sqlalchemy import select, update
+from sqlalchemy import update
 from app.infrastructure.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
