@@ -10,6 +10,22 @@
   --tertiary: #f59e0b;
   --surface: #ffffff;
   --radius: 0.5rem;
+  
+  /* Added/Refined Variables */
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --input: #f1f5f9;
+  --ring: #4f46e5;
+}
+
+.dark {
+  --background: #020617; /* Slate 950 */
+  --foreground: #f8fafc;
+  --surface: #0f172a;    /* Slate 900 */
+  --muted: #94a3b8;
+  --border: #1e293b;     /* Slate 800 */
+  --input: #1e293b;
+  --ring: #6366f1;
 }
 
 @theme inline {
@@ -19,15 +35,14 @@
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
   --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
   --radius-md: var(--radius);
   --font-lexend: var(--font-lexend);
   --font-inter: var(--font-inter);
-}
-
-.dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --surface: #1e293b;
 }
 
 body {
