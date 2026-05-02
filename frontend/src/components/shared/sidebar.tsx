@@ -31,24 +31,24 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ease-in-out lg:static",
+        "fixed inset-y-0 left-0 z-50 flex flex-col bg-surface border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out lg:static",
         isCollapsed ? "w-20" : "w-64"
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200 dark:border-slate-800">
         <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
             <GraduationCap size={20} />
           </div>
           {!isCollapsed && (
-            <span className="font-lexend font-bold text-slate-900 truncate">
+            <span className="font-lexend font-bold text-slate-900 dark:text-white truncate">
               {tCommon('title')}
             </span>
           )}
         </Link>
         <button
           onClick={toggleSidebar}
-          className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100"
+          className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
@@ -64,26 +64,26 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
                 isActive 
-                  ? "bg-indigo-50 text-indigo-700" 
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300" 
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
               )}
             >
               <Icon 
                 size={20} 
                 className={cn(
-                  "flex-shrink-0",
-                  isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+                  "flex-shrink-0 transition-colors",
+                  isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
                 )} 
               />
               {!isCollapsed && (
-                <span className="text-sm font-medium whitespace-nowrap">
+                <span className="text-sm font-semibold whitespace-nowrap">
                   {item.name}
                 </span>
               )}
               {isCollapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-slate-800 dark:border-slate-700">
                   {item.name}
                 </div>
               )}

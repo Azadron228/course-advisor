@@ -65,7 +65,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
             <input
               {...register('subject_name')}
               id="subject_name"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
               placeholder="Introduction to Computer Science"
             />
             {errors.subject_name && <p className="text-sm text-red-500">{errors.subject_name.message}</p>}
@@ -79,7 +79,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
               {...register('description')}
               id="description"
               rows={5}
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
             />
             {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
           </div>
@@ -98,7 +98,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, isEdit }: Cour
             <input
               {...register('skills_taught')}
               id="skills_taught"
-              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
+              className="block w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-primary focus:bg-surface dark:focus:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 sm:text-sm transition-all"
               placeholder={t('skillsPlaceholder')}
             />
           </div>

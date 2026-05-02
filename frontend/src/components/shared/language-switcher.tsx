@@ -57,7 +57,7 @@ export function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in duration-200">
+        <div className="absolute right-0 mt-2 w-36 bg-surface border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in duration-200">
           {LOCALES.map((l) => (
             <button
               key={l.code}

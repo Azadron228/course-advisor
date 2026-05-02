@@ -63,73 +63,73 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <div className="flex items-center gap-4 mb-8">
-        <div className="bg-blue-100 p-3 rounded-full">
-          <UserIcon className="w-8 h-8 text-blue-600" />
+        <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+          <UserIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('userProfile')}</h1>
-          <p className="text-gray-500">{t('manageProfile')}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('userProfile')}</h1>
+          <p className="text-gray-500 dark:text-gray-400">{t('manageProfile')}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-surface dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           {message && (
-            <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+            <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'}`}>
               {message.text}
             </div>
           )}
 
           <div className="space-y-2">
-            <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('fullName')}
             </label>
             <input
               id="full_name"
               {...register('full_name')}
-              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                errors.full_name ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:bg-slate-800 dark:text-white ${
+                errors.full_name ? 'border-red-300 dark:border-red-900' : 'border-gray-300 dark:border-slate-700'
               }`}
               placeholder="John Doe"
             />
             {errors.full_name && (
-              <p className="text-sm text-red-600">{errors.full_name.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.full_name.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('emailAddress')}
             </label>
             <input
               id="email"
               type="email"
               {...register('email')}
-              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                errors.email ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:bg-slate-800 dark:text-white ${
+                errors.email ? 'border-red-300 dark:border-red-900' : 'border-gray-300 dark:border-slate-700'
               }`}
               placeholder="john@example.com"
             />
             {errors.email && (
-              <p className="text-sm text-red-600">{errors.email.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="career_goal" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="career_goal" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('careerGoal')}
             </label>
             <textarea
               id="career_goal"
               rows={4}
               {...register('career_goal')}
-              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                errors.career_goal ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:bg-slate-800 dark:text-white ${
+                errors.career_goal ? 'border-red-300 dark:border-red-900' : 'border-gray-300 dark:border-slate-700'
               }`}
               placeholder={t('careerGoalPlaceholder')}
             />
             {errors.career_goal && (
-              <p className="text-sm text-red-600">{errors.career_goal.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.career_goal.message}</p>
             )}
           </div>
 

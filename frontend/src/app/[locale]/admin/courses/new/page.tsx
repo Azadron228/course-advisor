@@ -46,7 +46,7 @@ export default function NewCoursePage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8">
+      <div className="bg-surface rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-800 p-8">
         <CourseForm 
           onSubmit={handleCreate} 
           isSubmitting={isSubmitting} 

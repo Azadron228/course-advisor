@@ -42,7 +42,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${inter.variable} ${lexend.variable} h-full antialiased`}>
-      <body className="h-full bg-slate-50 font-lexend text-slate-900">
+      <body className="h-full bg-background font-lexend text-foreground">
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <MainLayout>
