@@ -31,7 +31,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-muted/50 text-muted text-xs uppercase font-semibold">
+          <thead className="bg-input/50 text-muted text-xs uppercase font-semibold">
             <tr>
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Role</th>
@@ -41,7 +41,7 @@ export function UserTable({ users, onEdit, onDelete }: UserTableProps) {
           </thead>
           <tbody className="divide-y divide-border">
             {filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-muted/30 transition-colors">
+              <tr key={user.id} className="hover:bg-input/30 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
