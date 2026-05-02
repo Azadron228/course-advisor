@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { X, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -13,16 +14,18 @@ import {
 import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/hooks/use-layout-store';
 
-const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Learning Plan', href: '/plan', icon: BookOpen },
-  { name: 'AI Advisor', href: '/chat', icon: MessageSquare },
-  { name: 'Profile', href: '/profile', icon: User },
-];
-
 export function MobileDrawer() {
+  const t = useTranslations('Navigation');
+  const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const { isMobileDrawerOpen, setMobileDrawerOpen } = useLayoutStore();
+
+  const navItems = [
+    { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
+    { name: t('learningPlan'), href: '/plan', icon: BookOpen },
+    { name: t('aiAdvisor'), href: '/chat', icon: MessageSquare },
+    { name: t('profile'), href: '/profile', icon: User },
+  ];
 
   // Close drawer when route changes
   useEffect(() => {
@@ -40,19 +43,19 @@ export function MobileDrawer() {
       />
       
       {/* Drawer */}
-      <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-surface shadow-2xl animate-in slide-in-from-left duration-300 border-r border-slate-200 dark:border-slate-800">
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-surface shadow-2xl animate-in slide-in-from-left duration-300 border-r border-border">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none">
               <GraduationCap size={20} />
             </div>
-            <span className="font-lexend font-bold text-slate-900 dark:text-white">
-              EduPath AI
+            <span className="font-lexend font-bold text-foreground">
+              {tCommon('title')}
             </span>
           </div>
           <button
             onClick={() => setMobileDrawerOpen(false)}
-            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-muted hover:bg-muted/10 transition-colors"
           >
             <X size={20} />
           </button>
@@ -65,16 +68,22 @@ export function MobileDrawer() {
 
             return (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-xl transition-all",
+                  "flex items-center gap-4 px-4 py-3 rounded-xl transition-all group",
                   isActive 
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none" 
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted hover:bg-muted/10 hover:text-foreground"
                 )}
               >
-                <Icon size={22} className={cn(isActive ? "text-white" : "text-slate-400 dark:text-slate-500")} />
+                <Icon 
+                  size={22} 
+                  className={cn(
+                    "transition-colors",
+                    isActive ? "text-primary" : "text-muted group-hover:text-foreground"
+                  )} 
+                />
                 <span className="font-semibold">{item.name}</span>
               </Link>
             );
