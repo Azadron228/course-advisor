@@ -17,7 +17,7 @@ export default function middleware(request: NextRequest) {
 
   // 2. Auth logic
   // Strip locale from pathname for route checking (e.g. /ru/dashboard -> /dashboard)
-  const pathnameWithoutLocale = pathname.replace(/^\/(en|ru)/, '') || '/';
+  const pathnameWithoutLocale = pathname.replace(/^\/(en|ru|kk)/, '') || '/';
 
   const isProtectedRoute = protectedRoutes.some((route) => 
     pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(`${route}/`)
@@ -44,5 +44,5 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/(ru|en)/:path*', '/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: ['/', '/(ru|en|kk)/:path*', '/((?!api|_next/static|_next/image|favicon.ico).*)']
 };
