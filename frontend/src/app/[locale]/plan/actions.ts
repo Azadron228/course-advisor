@@ -94,5 +94,5 @@ export async function generatePlanAction(formData: FormData) {
   revalidatePath('/dashboard');
   
   // Redirect to the new plan view
-  redirect(`/plan?id=${newPlan.id}`);
+  redirect(`/plan/${newPlan.id}`);
 }

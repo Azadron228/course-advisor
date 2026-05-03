@@ -13,7 +13,7 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-extrabold text-foreground">{t('myPaths')}</h1>
         <Link 
-          href="/plan?view=new"
+          href="/plan/new"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/10 dark:shadow-none"
         >
           <Zap className="w-4 h-4" />
@@ -28,7 +28,7 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
             <h3 className="text-lg font-bold text-foreground">{t('noPaths')}</h3>
             <p className="text-muted mb-6 max-w-xs mx-auto">{t('startGenerating')}</p>
             <Link 
-              href="/plan?view=new"
+              href="/plan/new"
               className="inline-flex items-center text-primary font-bold hover:underline"
             >
               {t('getStarted')} <ChevronRight className="w-4 h-4 ml-1" />
@@ -38,7 +38,7 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
           plans.map((plan) => (
             <Link 
               key={plan.id}
-              href={`/plan?id=${plan.id}`}
+              href={`/plan/${plan.id}`}
               className="group flex items-center justify-between p-6 bg-surface rounded-2xl border border-border hover:border-primary hover:shadow-xl hover:shadow-primary/5 dark:hover:shadow-none transition-all"
             >
               <div className="flex-1 min-w-0">
