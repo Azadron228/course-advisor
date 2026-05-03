@@ -88,15 +88,15 @@ class UserRepository:
             raise Exception("User not found")
 
         o.email = user.email
-        o.full_name = user.full_name
+        setattr(o, "full_name", user.full_name)
         o.is_admin = user.is_admin
         o.disabled = user.disabled
-        o.career_goal = user.career_goal
+        setattr(o, "career_goal", user.career_goal)
         o.onboarding_completed = user.onboarding_completed
-        o.interests = user.interests
-        o.default_skill_level = user.default_skill_level
-        o.default_learning_style = user.default_learning_style
-        o.default_study_time = user.default_study_time
+        setattr(o, "interests", user.interests)
+        setattr(o, "default_skill_level", user.default_skill_level)
+        setattr(o, "default_learning_style", user.default_learning_style)
+        setattr(o, "default_study_time", user.default_study_time)
         if user.hashed_password:
             o.hashed_password = user.hashed_password
 

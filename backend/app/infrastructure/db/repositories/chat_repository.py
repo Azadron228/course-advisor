@@ -1,5 +1,5 @@
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, delete, update
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models import ChatSessionORM, ChatMessageORM
@@ -10,7 +10,7 @@ class ChatRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def _session_to_domain(self, o: ChatSessionORM, messages: List[ChatMessage] = None) -> ChatSession:
+    def _session_to_domain(self, o: ChatSessionORM, messages: Optional[List[ChatMessage]] = None) -> ChatSession:
         return ChatSession(
             id=o.id,
             user_id=o.user_id,
@@ -54,7 +54,7 @@ class ChatRepository:
         return self._session_to_domain(o, messages)
 
     def create_session(self, user_id: int, title: str) -> ChatSession:
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         db_session = ChatSessionORM(
             user_id=user_id,
             title=title,
@@ -67,7 +67,7 @@ class ChatRepository:
         return self._session_to_domain(db_session)
 
     def add_message(self, session_id: int, role: str, content: str) -> ChatMessage:
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         db_message = ChatMessageORM(
             session_id=session_id,
             role=role,

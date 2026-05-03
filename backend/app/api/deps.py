@@ -58,13 +58,15 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        sub = payload.get("sub")
+        if not isinstance(sub, str):
             raise credentials_exception
-        token_data = TokenData(email=email)
-    except jwt.PyJWTError:
+        token_data = TokenData(email=sub)
+    except (jwt.PyJWTError, ValueError):
         raise credentials_exception
     user_repo = UserRepository(db)
+    if token_data.email is None:
+        raise credentials_exception
     user = user_repo.get_by_email(token_data.email)
     if user is None:
         raise credentials_exception

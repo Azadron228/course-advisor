@@ -13,6 +13,8 @@ async def list_learning_plans(
     current_user: User = Depends(get_current_active_user),
     plan_repo: PlanRepository = Depends(get_service(PlanRepository))
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     return plan_repo.get_all_plans(current_user.id)
 
 @router.get("/{plan_id}", response_model=LearningPlan)
@@ -21,6 +23,8 @@ async def get_plan_by_id(
     current_user: User = Depends(get_current_active_user),
     plan_repo: PlanRepository = Depends(get_service(PlanRepository))
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     plan = plan_repo.get_by_id(current_user.id, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
@@ -42,6 +46,8 @@ async def update_learning_plan_step(
     current_user: User = Depends(get_current_active_user),
     plan_repo: PlanRepository = Depends(get_service(PlanRepository))
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     plan = plan_repo.get_by_id(current_user.id, plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Learning plan not found")
@@ -69,4 +75,6 @@ async def update_learning_plan_step(
     from dataclasses import replace
     updated_plan = replace(plan, steps=updated_steps)
     
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     return plan_repo.update_plan(current_user.id, updated_plan)

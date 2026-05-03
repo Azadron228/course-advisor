@@ -116,14 +116,18 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
         f"Output MUST be ONLY a valid JSON object with the fields: score, reasoning, tags."
     )
 
-    return ReActAgent(tools=tools, llm=llm, verbose=False, system_prompt=system_prompt)
+    from typing import Any
+    return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
+
+
+from app.api.v1.schemas.auth import UserPublic
 
 
 def get_advisor_agent(
     llm: LLM,
     transcript_summary: str = "No transcript provided.",
     current_skills: str = "No skills provided.",
-    user: Optional[User] = None,
+    user: Optional[User | UserPublic] = None,
     learning_plan: Optional[LearningPlan] = None,
 ) -> ReActAgent:
     tools = [FunctionTool.from_defaults(async_fn=search_external_resources)]
@@ -160,7 +164,8 @@ def get_advisor_agent(
         "Do not include your internal thoughts or tool calls in the final response to the student."
     )
 
-    return ReActAgent(tools=tools, llm=llm, verbose=False, system_prompt=system_prompt)
+    from typing import Any
+    return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
 
 
 def is_capable_model(llm: LLM) -> bool:

@@ -16,7 +16,7 @@ router = APIRouter()
 def authenticate_user(db: Session, email: str, password: str):
     user_repo = UserRepository(db)
     user = user_repo.get_by_email(email)
-    if not user:
+    if not user or not user.hashed_password:
         return False
     if not verify_password(password, user.hashed_password):
         return False

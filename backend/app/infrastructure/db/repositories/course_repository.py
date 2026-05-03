@@ -73,7 +73,7 @@ class CourseRepository:
 
         o.subject_name = course.subject_name
         o.description = course.description
-        o.skills_taught = course.skills_taught
+        setattr(o, "skills_taught", course.skills_taught)
         o.embedding = course.embedding
 
         self.db.commit()

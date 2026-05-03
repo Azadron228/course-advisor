@@ -50,6 +50,8 @@ async def update_user_me(
             UserSkill(skill_name=interest, mastery_level=0, category="General")
             for interest in interests
         ]
+        if current_user.id is None:
+            raise HTTPException(status_code=401, detail="User ID not found")
         profile_repo.set_skills(current_user.id, skills)
         
     return updated_user

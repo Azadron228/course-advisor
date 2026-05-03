@@ -119,7 +119,7 @@ class PlanRepository:
         ]
 
         o.goal = plan.goal
-        o.steps = steps_data
+        setattr(o, "steps", steps_data)
         o.is_active = plan.is_active
         o.skill_level = plan.skill_level
         o.learning_style = plan.learning_style

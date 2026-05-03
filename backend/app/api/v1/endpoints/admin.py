@@ -9,10 +9,13 @@ from app.api.v1.schemas.course import CoursePublic, CourseCreate, CourseUpdate, 
 from app.infrastructure.ai.embeddings import get_embedding
 from app.domain.catalog.entities import Course as CourseEntity, CourseMaterial as CourseMaterialEntity
 
+from typing import Any
+
 try:
     import PyPDF2
+    PyPDF2_ANY: Any = PyPDF2
 except ImportError:
-    PyPDF2 = None
+    PyPDF2_ANY = None
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -105,10 +108,10 @@ async def upload_course_materials(
     content = ""
     filename = file.filename or "unknown"
     if filename.endswith(".pdf"):
-        if PyPDF2 is None:
+        if PyPDF2_ANY is None:
             raise HTTPException(status_code=500, detail="PyPDF2 not installed")
         try:
-            pdf_reader = PyPDF2.PdfReader(io.BytesIO(await file.read()))
+            pdf_reader = PyPDF2_ANY.PdfReader(io.BytesIO(await file.read()))
             for page in pdf_reader.pages:
                 content += page.extract_text()
         except Exception as e:
@@ -168,6 +171,9 @@ async def delete_course_material(
 
     # Update embedding again (NOW ONLY USES DESCRIPTION)
     course = course_repo.get_by_id(course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+        
     new_embedding = get_embedding(course.description)
 
     from dataclasses import replace

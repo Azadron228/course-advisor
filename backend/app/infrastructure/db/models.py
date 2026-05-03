@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy import String, Integer, ForeignKey, Text, Float, JSON, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class Base(DeclarativeBase):
@@ -86,7 +86,7 @@ class CourseMaterialORM(Base):
     status: Mapped[str] = mapped_column(String, default="pending")  # pending, analyzed, error
     total_chunks: Mapped[int] = mapped_column(Integer, default=0)
     processed_chunks: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     course: Mapped["CourseORM"] = relationship(back_populates="materials")
     chunks: Mapped[List["CourseMaterialChunkORM"]] = relationship(

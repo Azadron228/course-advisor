@@ -1,5 +1,5 @@
 from app.infrastructure.db.models import UserORM, UserSkillORM, UserTranscriptORM, LearningPlanORM, CourseORM, CourseMaterialORM
-from datetime import datetime
+from datetime import datetime, timezone
 
 def test_course_orm_instantiation():
     course = CourseORM(
@@ -16,7 +16,7 @@ def test_course_material_orm_instantiation():
         filename="test.pdf",
         content="some content",
         status="analyzed",
-        created_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc)
     )
     assert material.filename == "test.pdf"
     assert material.status == "analyzed"

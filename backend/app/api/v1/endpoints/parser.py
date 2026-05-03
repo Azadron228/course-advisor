@@ -12,7 +12,8 @@ router = APIRouter()
 async def parse_transcript(
     file: UploadFile = File(...), current_user: User = Depends(get_current_active_user)
 ):
-    if not file.filename.endswith(".html"):
+    filename = file.filename or ""
+    if not filename.endswith(".html"):
         raise HTTPException(status_code=400, detail="Only HTML files are supported")
 
     content = await file.read()

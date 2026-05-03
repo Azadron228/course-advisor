@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Any
 from app.domain.recommendation.entities import (
     Student,
     UserPreference,
@@ -40,11 +40,14 @@ class AdvisorService:
         self.scoring_service = scoring_service
         self.rag_scorer = rag_scorer
 
-    async def generate_learning_plan(self, user: User, request: Optional[any] = None) -> LearningPlan:
+    async def generate_learning_plan(self, user: User, request: Optional[Any] = None) -> LearningPlan:
         """
         Generate a learning plan for a user using AI analysis of their profile and available courses.
         Saves the plan to the database and returns it.
         """
+        if user.id is None:
+            raise ValueError("User ID cannot be None")
+
         # 1. Gather profile data from repositories
         skills = self.profile_repo.get_skills(user.id)
         
@@ -99,6 +102,9 @@ class AdvisorService:
                 study_time=study_time,
                 interests=interests,
             )
+
+            if user.id is None:
+                raise ValueError("User ID cannot be None")
 
             self.plan_repo.deactivate_all_plans(user.id)
             saved_plan = self.plan_repo.create_plan(user.id, new_plan)

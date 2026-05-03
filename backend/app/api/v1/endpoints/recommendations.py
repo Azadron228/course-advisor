@@ -49,6 +49,8 @@ async def list_chat_sessions(
     current_user: User = Depends(get_current_active_user),
     chat_repo: ChatRepository = Depends(get_chat_repository),
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     return chat_repo.list_sessions(current_user.id)
 
 
@@ -58,6 +60,8 @@ async def get_chat_session(
     current_user: User = Depends(get_current_active_user),
     chat_repo: ChatRepository = Depends(get_chat_repository),
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     session = chat_repo.get_session(current_user.id, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Chat session not found")
@@ -70,6 +74,8 @@ async def delete_chat_session(
     current_user: User = Depends(get_current_active_user),
     chat_repo: ChatRepository = Depends(get_chat_repository),
 ):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     chat_repo.delete_session(current_user.id, session_id)
     return {"status": "success"}
 
@@ -113,6 +119,10 @@ async def chat_with_advisor(
             # Also clear redis history for new session
             await chat_history.clear_history(current_user.email)
         
+        if session_id is None:
+             raise HTTPException(status_code=400, detail="Session ID is required")
+        if current_user.id is None:
+            raise HTTPException(status_code=401, detail="User ID not found")
         session = chat_repo.get_session(current_user.id, session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Chat session not found")
@@ -176,6 +186,8 @@ async def chat_with_advisor(
                 if re.search(r"(?:^|\n)Final Answer:", clean_response):
                     clean_response = re.split(r"(?:^|\n)Final Answer:", clean_response)[-1].strip()
 
+                if session_id is None:
+                    raise HTTPException(status_code=400, detail="Session ID is required")
                 # Save to DB
                 chat_repo.add_message(session_id, "user", request.message)
                 chat_repo.add_message(session_id, "assistant", clean_response)
@@ -196,6 +208,8 @@ async def chat_with_advisor(
         else:
             response_content = str(result)
 
+        if session_id is None:
+            raise HTTPException(status_code=400, detail="Session ID is required")
         # Save to DB
         chat_repo.add_message(session_id, "user", request.message)
         chat_repo.add_message(session_id, "assistant", response_content)
@@ -204,7 +218,13 @@ async def chat_with_advisor(
         await chat_history.add_message(current_user.email, "user", request.message)
         await chat_history.add_message(current_user.email, "assistant", response_content)
 
+        if session_id is None:
+            raise HTTPException(status_code=400, detail="Session ID is required for history retrieval")
+        if current_user.id is None:
+            raise HTTPException(status_code=401, detail="User ID not found")
         updated_session = chat_repo.get_session(current_user.id, session_id)
+        if not updated_session:
+             raise HTTPException(status_code=404, detail="Session not found after message addition")
         history = [ChatMessage(role=m.role, content=m.content, created_at=m.created_at) for m in updated_session.messages]
 
         return ChatResponse(response=response_content, history=history, session_id=session_id)
@@ -281,5 +301,7 @@ async def clear_chat_history_endpoint(
     chat_repo: ChatRepository = Depends(get_chat_repository),
 ):
     await chat_history.clear_history(current_user.email)
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
     chat_repo.clear_user_sessions(current_user.id)
     return {"status": "success"}

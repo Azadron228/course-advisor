@@ -11,6 +11,8 @@ async def get_dashboard(
     current_user: User = Depends(get_current_active_user),
     plan_repo: PlanRepository = Depends(get_service(PlanRepository))
 ):
+    if current_user.id is None:
+        return None # Or raise exception, but dashboard usually needs a user
     active_plan = plan_repo.get_active_plan(current_user.id)
     
     active_plan_title = active_plan.goal if active_plan else None
