@@ -96,8 +96,6 @@ export function useChat() {
       let assistantContent = '';
       setLocalMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      let finalSessionId = currentSessionId;
-
       // 3. Start streaming
       await apiClient.stream(
         '/recommendations/chat',

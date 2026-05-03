@@ -17,7 +17,7 @@ type CourseFormValues = z.infer<typeof courseSchema>;
 
 interface CourseFormProps {
   initialData?: Partial<Course>;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Omit<Course, 'id' | 'materials'>) => void;
   isSubmitting: boolean;
   isEdit?: boolean;
 }

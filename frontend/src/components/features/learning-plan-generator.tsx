@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useTranslations } from 'next-intl';
 import { generatePlanAction } from '@/app/[locale]/plan/actions';
-import { Loader2, ArrowRight, Tag, X, Sparkles, Upload, FileText, Check, Clock, Brain } from 'lucide-react';
+import { Loader2, ArrowRight, Tag, X, Sparkles, Upload, FileText, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function LearningPlanGenerator() {

@@ -5,10 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { 
   ClipboardList, 
   MessageSquare, 
-  ArrowRight,
-  TrendingUp,
-  Award,
-  Zap
+  ArrowRight
 } from 'lucide-react';
 import { DashboardSummary } from '@/components/features/dashboard-summary';
 import { API_BASE_URL } from '@/lib/config';

@@ -11,7 +11,6 @@ import {
   ArrowLeft, 
   FileText, 
   Upload, 
-  CheckCircle2, 
   AlertCircle,
   Loader2,
   Trash2,
@@ -31,10 +30,12 @@ export default function EditCoursePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [processingMaterialId, setProcessingMaterialId] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const course = courses.find((c) => c.id === id);
+  const processingMaterialId = course?.materials?.find(
+    (m) => m.status === 'pending' || m.status === 'processing'
+  )?.id ?? null;
 
   // Polling for processing progress
   React.useEffect(() => {
@@ -47,24 +48,12 @@ export default function EditCoursePage() {
     return () => clearInterval(interval);
   }, [processingMaterialId, queryClient]);
 
-  // If any material is currently in 'pending' or 'processing' status, and we are not already tracking it, track it
-  React.useEffect(() => {
-    const pendingMaterial = course?.materials?.find(
-      (m) => m.status === 'pending' || m.status === 'processing'
-    );
-    if (pendingMaterial) {
-      setProcessingMaterialId(pendingMaterial.id);
-    } else {
-      setProcessingMaterialId(null);
-    }
-  }, [course?.materials]);
-
   const processingProgress = React.useMemo(() => {
     if (!processingMaterialId || !course?.materials) return 0;
     const material = course.materials.find((m) => m.id === processingMaterialId);
     if (!material || !material.total_chunks) return 0;
     return Math.round((material.processed_chunks / material.total_chunks) * 100);
-  }, [processingMaterialId, course?.materials]);
+  }, [processingMaterialId, course.materials]);
 
   if (isLoading) {
     return (
@@ -86,7 +75,7 @@ export default function EditCoursePage() {
     );
   }
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: Parameters<typeof updateCourse>[0]['data']) => {
     setIsUpdating(true);
     try {
       await updateCourse({ id, data });

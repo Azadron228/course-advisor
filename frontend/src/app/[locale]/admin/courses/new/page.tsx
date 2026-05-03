@@ -13,7 +13,7 @@ export default function NewCoursePage() {
   const { createCourse } = useAdminCourses();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: Parameters<typeof createCourse>[0]) => {
     setIsSubmitting(true);
     try {
       await createCourse(data);

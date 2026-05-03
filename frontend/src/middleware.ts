@@ -29,8 +29,8 @@ export default function middleware(request: NextRequest) {
 
   const segments = pathname.split('/');
   const firstSegment = segments[1];
-  const locales = routing.locales;
-  const currentLocale = locales.includes(firstSegment as any) ? firstSegment : routing.defaultLocale;
+  const locales = routing.locales as readonly string[];
+  const currentLocale = locales.includes(firstSegment) ? firstSegment : routing.defaultLocale;
 
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL(`/${currentLocale}/login`, request.url));

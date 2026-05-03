@@ -1,10 +1,9 @@
 'use client';
 
 import { LearningPlan } from '@/components/features/plan-stepper';
-import { ChevronRight, Calendar, BookOpen, Clock, Zap } from 'lucide-react';
+import { ChevronRight, BookOpen, Zap } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
 
 export function PlanList({ plans }: { plans: LearningPlan[] }) {
   const t = useTranslations('Plan');

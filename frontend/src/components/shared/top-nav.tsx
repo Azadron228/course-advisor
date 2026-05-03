@@ -1,17 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { usePathname, useRouter } from '@/i18n/routing';
-import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { 
   Menu, 
-  Bell, 
-  Search, 
   LogOut, 
   User as UserIcon, 
   Settings,
   ChevronDown,
-  Globe,
   Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,19 +19,12 @@ import { LanguageSwitcher } from './language-switcher';
 
 export function TopNav() {
   const t = useTranslations('Common');
-  const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
   
   const { user, logout, isAuthenticated } = useAuth();
   const { toggleMobileDrawer } = useLayoutStore();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const toggleLanguage = () => {
-    const nextLocale = locale === 'en' ? 'ru' : 'en';
-    router.replace(pathname, { locale: nextLocale });
-  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
