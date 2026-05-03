@@ -25,7 +25,6 @@ export function Sidebar() {
     { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('learningPlan'), href: '/plan', icon: BookOpen },
     { name: t('aiAdvisor'), href: '/chat', icon: MessageSquare },
-    { name: t('profile'), href: '/profile', icon: User },
   ];
 
   return (
