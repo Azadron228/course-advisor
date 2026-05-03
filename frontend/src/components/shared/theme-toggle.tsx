@@ -30,7 +30,7 @@ export function ThemeToggle() {
       {theme === 'dark' ? (
         <Sun size={20} className="text-amber-500" />
       ) : (
-        <Moon size={20} className="text-foreground" />
+        <Moon size={20} className="text-foreground text-primary" />
       )}
     </button>
   );
