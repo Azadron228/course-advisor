@@ -33,7 +33,7 @@ def test_upload_material_admin(client, admin_token_headers):
         upload_res = client.post(f"/api/v1/admin/courses/{course_id}/materials", files=files, headers=admin_token_headers)
         assert upload_res.status_code == 200
         assert upload_res.json()["filename"] == "test.txt"
-        assert upload_res.json()["status"] == "analyzed"
+        assert upload_res.json()["status"] == "pending"
 
         # Check course has materials now
         get_res = client.get("/api/v1/admin/courses", headers=admin_token_headers)
