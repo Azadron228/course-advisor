@@ -4,8 +4,8 @@ import { useState, useTransition } from 'react';
 import { CheckCircle, Circle, Play, ExternalLink, Loader2, BookOpen } from 'lucide-react';
 import { updateStepStatus } from '@/app/[locale]/plan/actions';
 import { cn } from '@/lib/utils';
-import { CourseDrawer } from '@/components/shared/course-drawer';
 import { useTranslations } from 'next-intl';
+import { useRouter, useParams } from 'next/navigation';
 
 export interface LearningMaterial {
   title: string;
@@ -42,10 +42,11 @@ interface PlanStepperProps {
 export function PlanStepper({ plan }: PlanStepperProps) {
   const t = useTranslations('Plan');
   const tCommon = useTranslations('Common');
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleMarkComplete = async (order: number) => {
     if (!plan.id) return;
@@ -63,8 +64,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
     if (step.is_external && step.resource_id) {
        window.open(step.resource_id, '_blank');
     } else if (step.resource_id) {
-       setSelectedCourseId(step.resource_id);
-       setIsDrawerOpen(true);
+       router.push(`/${locale}/lesson/${step.resource_id}`);
     }
   };
 
@@ -80,8 +80,7 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   const sortedSteps = [...plan.steps].sort((a, b) => a.order - b.order);
 
   return (
-    <>
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
         <h1 className="text-2xl font-bold text-foreground mb-2">{t('myPlan')}</h1>
         <p className="text-muted">{t('goalValue', { goal: plan.goal })}</p>
@@ -224,12 +223,5 @@ export function PlanStepper({ plan }: PlanStepperProps) {
         </div>
       </div>
     </div>
-
-    <CourseDrawer 
-      courseId={selectedCourseId} 
-      isOpen={isDrawerOpen} 
-      onClose={() => setIsDrawerOpen(false)} 
-    />
-  </>
-);
+  );
 }
