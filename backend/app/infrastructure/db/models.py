@@ -122,3 +122,21 @@ class ChatMessageORM(Base):
     role: Mapped[str] = mapped_column(String, nullable=False)  # 'user' or 'assistant'
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(String, nullable=False)  # ISO format
+
+
+class PracticeTestORM(Base):
+    __tablename__ = "practice_tests"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    material_id: Mapped[int] = mapped_column(ForeignKey("course_materials.id", ondelete="CASCADE"), nullable=False)
+    content: Mapped[dict] = mapped_column(JSON, nullable=False)  # questions, options, answers
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class UserTestScoreORM(Base):
+    __tablename__ = "user_test_scores"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    material_id: Mapped[int] = mapped_column(ForeignKey("course_materials.id"), nullable=False)
+    score: Mapped[int] = mapped_column(Integer, nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, default=1)
+    completed_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))

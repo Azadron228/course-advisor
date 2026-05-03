@@ -5,6 +5,8 @@ services:
       - POSTGRES_DB=course_advisor
       - POSTGRES_USER=advisor
       - POSTGRES_PASSWORD=advisor_password
+    ports:
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
