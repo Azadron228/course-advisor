@@ -169,42 +169,54 @@ export function ChatWindow() {
             </div>
           )}
 
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex w-full gap-4 items-start animate-in fade-in slide-in-from-bottom-2 duration-300",
-                message.role === 'user' ? "flex-row-reverse" : "flex-row"
-              )}
-            >
-              <div className={cn(
-                "flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm",
-                message.role === 'user' 
-                  ? "bg-primary text-white" 
-                  : "bg-surface border border-border text-primary"
-              )}>
-                {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
-              </div>
-              
-              <div className={cn(
-                "max-w-[85%] sm:max-w-[75%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm relative",
-                message.role === 'user' 
-                  ? "bg-primary text-white rounded-tr-none" 
-                  : "bg-surface text-foreground rounded-tl-none"
-              )}>
-                {message.role === 'assistant' && (
-                  <>
-                    <div className="absolute inset-0 rounded-2xl rounded-tl-none p-[1px] bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/30 -z-10" />
-                    <div className="absolute inset-[1px] rounded-[15px] rounded-tl-none bg-surface -z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-                  </>
+          {messages.map((message, index) => {
+            // Skip rendering if it's an empty assistant message placeholder while sending
+            const isLast = index === messages.length - 1;
+            const isStreamingEmpty = isSending && isLast && message.role === 'assistant' && !message.content;
+            
+            if (isStreamingEmpty) return null;
+
+            return (
+              <div
+                key={index}
+                className={cn(
+                  "flex w-full gap-4 items-start animate-in fade-in slide-in-from-bottom-2 duration-300",
+                  message.role === 'user' ? "flex-row-reverse" : "flex-row"
                 )}
-                <div className="relative z-10 whitespace-pre-wrap">{message.content}</div>
+              >
+                <div className={cn(
+                  "flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center shadow-sm",
+                  message.role === 'user' 
+                    ? "bg-primary text-white" 
+                    : "bg-surface border border-border text-primary"
+                )}>
+                  {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
+                </div>
+                
+                <div className={cn(
+                  "max-w-[85%] sm:max-w-[75%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm relative",
+                  message.role === 'user' 
+                    ? "bg-primary text-white rounded-tr-none" 
+                    : "bg-surface text-foreground rounded-tl-none"
+                )}>
+                  {message.role === 'assistant' && (
+                    <>
+                      <div className="absolute inset-0 rounded-2xl rounded-tl-none p-[1px] bg-gradient-to-br from-primary/30 via-secondary/20 to-primary/30 -z-10" />
+                      <div className="absolute inset-[1px] rounded-[15px] rounded-tl-none bg-surface -z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+                    </>
+                  )}
+                  <div className="relative z-10 whitespace-pre-wrap">{message.content}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {isSending && (
+            messages.length === 0 || 
+            messages[messages.length - 1].role !== 'assistant' || 
+            !messages[messages.length - 1].content
+          ) && (
             <div className="flex w-full gap-4 items-start">
               <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-surface border border-border flex items-center justify-center text-primary">
                 <Bot size={18} />

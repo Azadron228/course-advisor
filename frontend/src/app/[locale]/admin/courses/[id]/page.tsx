@@ -53,7 +53,7 @@ export default function EditCoursePage() {
     const material = course.materials.find((m) => m.id === processingMaterialId);
     if (!material || !material.total_chunks) return 0;
     return Math.round((material.processed_chunks / material.total_chunks) * 100);
-  }, [processingMaterialId, course.materials]);
+  }, [processingMaterialId, course?.materials]);
 
   if (isLoading) {
     return (
