@@ -31,3 +31,20 @@ class Course:
     skills_taught: List[str]
     materials: List[CourseMaterial] = field(default_factory=list)
     embedding: Optional[List[float]] = field(default_factory=list)
+
+
+@dataclass
+class PracticeTest:
+    id: int
+    material_id: int
+    content: dict
+    created_at: str
+
+@dataclass
+class UserTestScore:
+    id: int
+    user_id: int
+    material_id: int
+    score: int
+    attempts: int
+    completed_at: str
