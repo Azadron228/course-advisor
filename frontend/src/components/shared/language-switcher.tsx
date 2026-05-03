@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 
 const LOCALES = [
   { code: 'en', label: 'English' },
-  { code: 'ru', label: 'Русский' }
+  { code: 'ru', label: 'Русский' },
+  { code: 'kk', label: 'Қазақша' }
 ];
 
 export function LanguageSwitcher() {
