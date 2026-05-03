@@ -19,7 +19,6 @@ export default function ProfilePage() {
   const profileSchema = useMemo(() => z.object({
     full_name: z.string().min(2, t('nameMinLength')),
     email: z.string().email(t('invalidEmail')),
-    career_goal: z.string().min(5, t('goalMinLength')),
   }), [t]);
 
   type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -33,7 +32,6 @@ export default function ProfilePage() {
     values: user ? {
       full_name: user.full_name || '',
       email: user.email || '',
-      career_goal: user.career_goal || '',
     } : undefined,
   });
 
@@ -67,8 +65,8 @@ export default function ProfilePage() {
           <UserIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 ">{t('userProfile')}</h1>
-          <p className="text-gray-500 dark:text-gray-400">{t('manageProfile')}</p>
+          <h1 className="text-3xl font-bold text-white-100 ">{t('userProfile')}</h1>
+          <p className="text-gray-500 dark:text-white-200">{t('manageProfile')}</p>
         </div>
       </div>
 
@@ -81,7 +79,7 @@ export default function ProfilePage() {
           )}
 
           <div className="space-y-2">
-            <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="full_name" className="block text-sm font-medium text-white-700 dark:text-gray-300">
               {t('fullName')}
             </label>
             <input
@@ -98,7 +96,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="email" className="block text-sm font-medium text-white-700 dark:text-gray-300">
               {t('emailAddress')}
             </label>
             <input
@@ -112,24 +110,6 @@ export default function ProfilePage() {
             />
             {errors.email && (
               <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="career_goal" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('careerGoal')}
-            </label>
-            <textarea
-              id="career_goal"
-              rows={4}
-              {...register('career_goal')}
-              className={`block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all   ${
-                errors.career_goal ? 'border-red-300 dark:border-red-900' : 'border-border'
-              }`}
-              placeholder={t('careerGoalPlaceholder')}
-            />
-            {errors.career_goal && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.career_goal.message}</p>
             )}
           </div>
 
