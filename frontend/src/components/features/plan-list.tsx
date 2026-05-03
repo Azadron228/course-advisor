@@ -4,6 +4,7 @@ import { LearningPlan } from '@/components/features/plan-stepper';
 import { ChevronRight, Calendar, BookOpen, Clock, Zap } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 
 export function PlanList({ plans }: { plans: LearningPlan[] }) {
   const t = useTranslations('Plan');
@@ -46,7 +47,7 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
                   {plan.goal}
                 </h3>
                 <div className="flex flex-wrap gap-4 text-xs font-semibold text-muted">
-                  <span className="flex items-center gap-1.5 px-2 py-1 bg-muted  rounded-md">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted/10 text-muted">
                     {t('stepsCount', { count: plan.steps.length })}
                   </span>
                 </div>
