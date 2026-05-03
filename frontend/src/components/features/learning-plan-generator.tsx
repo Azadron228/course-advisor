@@ -9,15 +9,6 @@ import { generatePlanAction } from '@/app/[locale]/plan/actions';
 import { Loader2, ArrowRight, Tag, X, Sparkles, Upload, FileText, Check, Clock, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const formSchema = z.object({
-  goal: z.string().min(5, 'Goal must be at least 5 characters'),
-  skill_level: z.enum(['Beginner', 'Intermediate', 'Advanced']),
-  learning_style: z.enum(['Visual', 'Practical', 'Theoretical']),
-  study_time: z.number().min(1).max(100),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export function LearningPlanGenerator() {
   const t = useTranslations('Plan');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +16,15 @@ export function LearningPlanGenerator() {
   const [currentTag, setCurrentTag] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const formSchema = z.object({
+    goal: z.string().min(5, t('validation.goalMinLength')),
+    skill_level: z.enum(['Beginner', 'Intermediate', 'Advanced']),
+    learning_style: z.enum(['Visual', 'Practical', 'Theoretical']),
+    study_time: z.number().min(1).max(100),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
