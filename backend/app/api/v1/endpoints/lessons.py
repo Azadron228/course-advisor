@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import Any, Dict
 
-from app.api.deps import get_db, get_current_active_user
+from app.api.deps import get_db, get_current_active_user, get_arq_pool
+from arq.connections import ArqRedis
 from app.infrastructure.db.models import CourseMaterialORM, PracticeTestORM, UserTestScoreORM, UserORM
 from pydantic import BaseModel
 from datetime import datetime, timezone
@@ -25,14 +26,16 @@ def get_lesson(
     return material
 
 @router.get("/{material_id}/test")
-def get_practice_test(
+async def get_practice_test(
     material_id: int,
     db: Session = Depends(get_db),
     current_user: UserORM = Depends(get_current_active_user),
+    arq_pool: ArqRedis = Depends(get_arq_pool),
 ):
     test = db.execute(select(PracticeTestORM).where(PracticeTestORM.material_id == material_id)).scalar_one_or_none()
     if not test:
-        raise HTTPException(status_code=404, detail="Test not generated yet")
+        await arq_pool.enqueue_job("generate_practice_test", material_id)
+        raise HTTPException(status_code=404, detail="Test not generated yet. Generation triggered.")
     return test
 
 @router.post("/{material_id}/test/submit")
