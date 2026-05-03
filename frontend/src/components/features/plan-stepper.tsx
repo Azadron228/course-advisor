@@ -63,8 +63,8 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   const handleViewResource = (step: LearningPathStep) => {
     if (step.is_external && step.resource_id) {
        window.open(step.resource_id, '_blank');
-    } else if (step.resource_id) {
-       router.push(`/${locale}/lesson/${step.resource_id}`);
+    } else if (step.resource_id && plan.id) {
+       router.push(`/${locale}/plan/${plan.id}/lessons/${step.resource_id}`);
     }
   };
 

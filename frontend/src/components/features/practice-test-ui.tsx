@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/config';
 
 interface Question {
   question: string;
@@ -16,7 +17,7 @@ interface TestData {
   questions: Question[];
 }
 
-export function PracticeTestUI({ lessonId, locale, testData }: { lessonId: string, locale: string, testData: TestData }) {
+export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId: string, lessonId: string, locale: string, testData: TestData }) {
   const questions = testData.questions || [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -53,7 +54,7 @@ export function PracticeTestUI({ lessonId, locale, testData }: { lessonId: strin
         const finalScore = score + (selectedOption === currentQuestion.correct_answer_index ? 1 : 0);
         const percentage = Math.round((finalScore / questions.length) * 100);
         
-        await fetch(`/api/v1/lessons/${lessonId}/test/submit`, {
+        await fetch(`${API_BASE_URL}/lessons/${lessonId}/test/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ score: percentage })
@@ -89,7 +90,7 @@ export function PracticeTestUI({ lessonId, locale, testData }: { lessonId: strin
             <RefreshCcw size={18} /> Retake Test
           </button>
           <Link 
-            href={`/${locale}/lesson/${lessonId}`}
+            href={`/${locale}/plan/${planId}/lessons/${lessonId}`}
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
           >
             Back to Lesson
