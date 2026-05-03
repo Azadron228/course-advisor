@@ -98,6 +98,7 @@ class LearningPathStep(BaseModel):
     is_external: bool = False
     status: str = "upcoming"
     materials: List[LearningMaterial] = Field(default_factory=list)
+    score: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 

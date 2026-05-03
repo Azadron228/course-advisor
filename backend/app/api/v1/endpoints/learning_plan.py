@@ -34,9 +34,10 @@ async def get_plan_by_id(
 async def generate_learning_plan(
     request: PlanGenerateRequest,
     current_user: User = Depends(get_current_active_user),
-    advisor_service: AdvisorService = Depends(get_advisor_service)
+    advisor_service: AdvisorService = Depends(get_advisor_service),
+    arq_pool = Depends(get_arq_pool)
 ):
-    return await advisor_service.generate_learning_plan(current_user, request)
+    return await advisor_service.generate_learning_plan(current_user, request, arq_pool)
 
 @router.patch("/{plan_id}/steps/{step_order}", response_model=LearningPlan)
 async def update_learning_plan_step(

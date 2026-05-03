@@ -11,13 +11,36 @@ class PlanRepository:
         self.db = db
 
     def _to_domain(self, o: LearningPlanORM) -> LearningPlan:
+        # Fetch scores for all materials in this plan
+        from app.infrastructure.db.models import UserTestScoreORM
+        
+        # Collect all resource IDs (material IDs) from steps
+        material_ids = []
+        for step in o.steps:
+            if not step.get("is_external") and step.get("resource_id"):
+                try:
+                    material_ids.append(int(step.get("resource_id")))
+                except (ValueError, TypeError):
+                    continue
+        
+        # Query scores for these materials for this user
+        scores_map = {}
+        if material_ids:
+            scores = self.db.execute(
+                select(UserTestScoreORM)
+                .where(UserTestScoreORM.user_id == o.user_id)
+                .where(UserTestScoreORM.material_id.in_(material_ids))
+            ).scalars().all()
+            scores_map = {s.material_id: s.score for s in scores}
+
         return LearningPlan(
             id=o.id,
             goal=o.goal,
             steps=[
                 LearningPathStep(
                     **{k: v for k, v in step.items() if k != "materials"},
-                    materials=[LearningMaterial(**m) for m in step.get("materials", [])]
+                    materials=[LearningMaterial(**m) for m in step.get("materials", [])],
+                    score=scores_map.get(int(step.get("resource_id"))) if not step.get("is_external") and step.get("resource_id") else None
                 ) 
                 for step in o.steps
             ],

@@ -74,6 +74,7 @@ class LearningPathStep:
     is_external: bool = False
     status: str = "upcoming"
     materials: List[LearningMaterial] = field(default_factory=list)
+    score: Optional[int] = None
 
 
 @dataclass(frozen=True)

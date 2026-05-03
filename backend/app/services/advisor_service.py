@@ -40,7 +40,7 @@ class AdvisorService:
         self.scoring_service = scoring_service
         self.rag_scorer = rag_scorer
 
-    async def generate_learning_plan(self, user: User, request: Optional[Any] = None) -> LearningPlan:
+    async def generate_learning_plan(self, user: User, request: Optional[Any] = None, arq_pool: Optional[Any] = None) -> LearningPlan:
         """
         Generate a learning plan for a user using AI analysis of their profile and available courses.
         Saves the plan to the database and returns it.
@@ -109,6 +109,18 @@ class AdvisorService:
             self.plan_repo.deactivate_all_plans(user.id)
             saved_plan = self.plan_repo.create_plan(user.id, new_plan)
             logger.info(f"Successfully saved learning plan {saved_plan.id}")
+
+            # 5. Enqueue practice test generation for all internal steps
+            if arq_pool:
+                for step in saved_plan.steps:
+                    if not step.is_external and step.resource_id:
+                        try:
+                            material_id = int(step.resource_id)
+                            await arq_pool.enqueue_job("generate_practice_test", material_id)
+                            logger.info(f"Enqueued practice test generation for material {material_id}")
+                        except (ValueError, TypeError):
+                            continue
+
             return saved_plan
         except Exception as db_err:
             logger.error(f"Failed to persist learning plan: {db_err}")
