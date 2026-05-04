@@ -29,6 +29,8 @@ export function NavItems({ items, isCollapsed, onItemClick, translationNamespace
             key={item.href}
             href={item.href}
             onClick={onItemClick}
+            aria-current={isActive ? 'page' : undefined}
+            aria-label={isCollapsed ? label : undefined}
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
               isActive 
