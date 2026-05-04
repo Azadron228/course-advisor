@@ -64,9 +64,6 @@ export function LessonSidebarChat({ lessonId, lessonContent }: { lessonId: strin
           <Bot className="w-5 h-5 text-primary" />
           <h3 className="font-bold text-sm">Lesson Tutor</h3>
         </div>
-        <div className="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase flex items-center gap-1">
-          <Sparkles className="w-3 h-3" /> Anchored
-        </div>
       </div>
       
       <div 
