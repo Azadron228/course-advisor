@@ -121,7 +121,7 @@ class AdvisorService:
             saved_plan = self.plan_repo.create_plan(user.id, initial_plan)
             logger.info(f"Successfully saved learning plan {saved_plan.id}")
 
-            # 5. Clone materials and specialized lessons for this plan
+            # 5. Populate lessons with content and check for existing scores
             updated_steps = []
             for step in saved_plan.steps:
                 if not step.is_external and step.resource_id:
@@ -131,54 +131,31 @@ class AdvisorService:
                         original_material = self.course_repo.get_material(original_material_id)
                         
                         if original_material:
-                            # Create a clone
-                            clone = CourseMaterial(
-                                id=0, # Will be set by DB
-                                course_id=original_material.course_id,
-                                filename=f"{goal[:30]} - {original_material.filename}",
-                                content=original_material.content,
-                                status="pending",
-                                created_at="" # Set by DB
-                            )
-                            # Passing saved_plan.id ensures the cloned material is linked to THIS plan
-                            saved_clone = self.course_repo.add_material(clone, plan_id=saved_plan.id)
-                            
-                            # Update step to point to the clone
-                            step.resource_id = str(saved_clone.id)
-                            logger.info(f"Cloned material {original_material_id} to {saved_clone.id} for plan {saved_plan.id}")
+                            # Copy content directly to the step
+                            step.content = original_material.content
+                            logger.info(f"Copied content from material {original_material_id} to step {step.title}")
 
-                            # Copy score if it exists for the original material
-                            from app.infrastructure.db.models import UserTestScoreORM
+                            # Check if user already passed this material in ANY previous lesson
+                            from app.infrastructure.db.models import UserTestScoreORM, LessonORM
                             from sqlalchemy import select
-                            from datetime import datetime, timezone
                             
                             existing_score = self.plan_repo.db.execute(
                                 select(UserTestScoreORM)
+                                .join(LessonORM)
                                 .where(UserTestScoreORM.user_id == user.id)
-                                .where(UserTestScoreORM.material_id == original_material_id)
-                            ).scalar_one_or_none()
+                                .where(LessonORM.material_id == original_material_id)
+                                .order_by(UserTestScoreORM.score.desc())
+                            ).scalars().first()
                             
-                            if existing_score:
-                                new_score = UserTestScoreORM(
-                                    user_id=user.id,
-                                    material_id=saved_clone.id,
-                                    score=existing_score.score,
-                                    attempts=existing_score.attempts,
-                                    completed_at=existing_score.completed_at
-                                )
-                                self.plan_repo.db.add(new_score)
-                                self.plan_repo.db.commit()
-                                logger.info(f"Copied score {existing_score.score}% from material {original_material_id} to clone {saved_clone.id}")
-                                
-                                # Mark step as completed if it was already passed
-                                if existing_score.score >= 70: # Assuming 70 is pass
-                                    step.status = "completed"
+                            if existing_score and existing_score.score >= 70:
+                                step.status = "completed"
+                                logger.info(f"Marked step {step.title} as completed based on previous score {existing_score.score}%")
                     except (ValueError, TypeError) as e:
-                        logger.warning(f"Failed to clone material for step {step.title}: {e}")
+                        logger.warning(f"Failed to process material for step {step.title}: {e}")
                 
                 updated_steps.append(step)
 
-            # Update plan with cloned resource IDs and refined status
+            # Update plan with content and refined status
             # Ensure the first non-completed step is 'current'
             found_current = False
             for step in updated_steps:
@@ -193,17 +170,39 @@ class AdvisorService:
             # repository will handle mapping Lesson entities back to LessonORM, overwriting existing ones for THIS plan
             final_plan = self.plan_repo.update_plan(user.id, saved_plan)
 
-            # 6. Enqueue practice test generation for all cloned steps
-            if arq_pool:
-                for step in final_plan.steps:
-                    if not step.is_external and step.resource_id:
-                        try:
-                            material_id = int(step.resource_id)
-                            await arq_pool.enqueue_job("generate_practice_test", material_id)
-                            logger.info(f"Enqueued practice test generation for material {material_id}")
-                        except (ValueError, TypeError):
-                            continue
+            # 6. Copy scores to the new lessons and enqueue practice test generation
+            for step in final_plan.steps:
+                if not step.is_external and step.resource_id:
+                    try:
+                        original_material_id = int(step.resource_id)
+                        from app.infrastructure.db.models import UserTestScoreORM, LessonORM
+                        
+                        existing_score = self.plan_repo.db.execute(
+                            select(UserTestScoreORM)
+                            .join(LessonORM)
+                            .where(UserTestScoreORM.user_id == user.id)
+                            .where(LessonORM.material_id == original_material_id)
+                            .order_by(UserTestScoreORM.score.desc())
+                        ).scalars().first()
 
+                        if existing_score:
+                            new_score = UserTestScoreORM(
+                                user_id=user.id,
+                                lesson_id=step.id,
+                                score=existing_score.score,
+                                attempts=existing_score.attempts,
+                                completed_at=existing_score.completed_at
+                            )
+                            self.plan_repo.db.add(new_score)
+                            logger.info(f"Copied score {existing_score.score}% to new lesson {step.id}")
+
+                        if arq_pool:
+                            await arq_pool.enqueue_job("generate_practice_test", step.id)
+                            logger.info(f"Enqueued practice test generation for lesson {step.id}")
+                    except (ValueError, TypeError):
+                        continue
+            
+            self.plan_repo.db.commit()
             return final_plan
         except Exception as db_err:
             logger.error(f"Failed to persist learning plan: {db_err}")

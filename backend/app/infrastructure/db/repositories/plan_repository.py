@@ -11,17 +11,17 @@ class PlanRepository:
         self.db = db
 
     def _to_domain(self, o: LearningPlanORM) -> LearningPlan:
-        # Collect material IDs for scores
-        material_ids = [l.material_id for l in o.lessons if l.material_id]
+        # Collect lesson IDs for scores
+        lesson_ids = [l.id for l in o.lessons]
         
         scores_map = {}
-        if material_ids:
+        if lesson_ids:
             scores = self.db.execute(
                 select(UserTestScoreORM)
                 .where(UserTestScoreORM.user_id == o.user_id)
-                .where(UserTestScoreORM.material_id.in_(material_ids))
+                .where(UserTestScoreORM.lesson_id.in_(lesson_ids))
             ).scalars().all()
-            scores_map = {s.material_id: s.score for s in scores}
+            scores_map = {s.lesson_id: s.score for s in scores}
 
         return LearningPlan(
             id=o.id,
@@ -35,9 +35,10 @@ class PlanRepository:
                     resource_id=str(l.material_id) if l.material_id else None,
                     is_external=l.is_external,
                     external_url=l.external_url,
+                    content=l.content,
                     status=l.status,
                     materials=[LearningMaterial(**m) for m in l.additional_resources],
-                    score=scores_map.get(l.material_id) if l.material_id else None
+                    score=scores_map.get(l.id)
                 ) 
                 for l in o.lessons
             ],
@@ -101,6 +102,7 @@ class PlanRepository:
                 material_id=int(s.resource_id) if s.resource_id and not s.is_external else None,
                 is_external=s.is_external,
                 external_url=s.external_url,
+                content=s.content,
                 status=s.status,
                 additional_resources=[m.model_dump() for m in s.materials]
             )
@@ -142,6 +144,7 @@ class PlanRepository:
                 material_id=int(s.resource_id) if s.resource_id and not s.is_external else None,
                 is_external=s.is_external,
                 external_url=s.external_url,
+                content=s.content,
                 status=s.status,
                 additional_resources=[m.model_dump() for m in s.materials]
             )
@@ -214,16 +217,16 @@ class PlanRepository:
         if not o:
             return None
             
-        # Collect material IDs for scores
-        material_ids = [l.material_id for l in o.lessons if l.material_id]
+        # Collect lesson IDs for scores
+        lesson_ids = [l.id for l in o.lessons]
         scores_map = {}
-        if material_ids:
+        if lesson_ids:
             scores = self.db.execute(
                 select(UserTestScoreORM)
                 .where(UserTestScoreORM.user_id == user_id)
-                .where(UserTestScoreORM.material_id.in_(material_ids))
+                .where(UserTestScoreORM.lesson_id.in_(lesson_ids))
             ).scalars().all()
-            scores_map = {s.material_id: s.score for s in scores}
+            scores_map = {s.lesson_id: s.score for s in scores}
 
         return LearningPlanDetail(
             id=o.id,
@@ -238,7 +241,7 @@ class PlanRepository:
                     description=l.description,
                     status=l.status,
                     is_external=l.is_external,
-                    score=scores_map.get(l.material_id) if l.material_id else None
+                    score=scores_map.get(l.id)
                 )
                 for l in o.lessons
             ]
@@ -257,13 +260,12 @@ class PlanRepository:
             return None
 
         score = None
-        if l.material_id:
-            score_rec = self.db.scalar(
-                select(UserTestScoreORM)
-                .where(UserTestScoreORM.user_id == user_id)
-                .where(UserTestScoreORM.material_id == l.material_id)
-            )
-            score = score_rec.score if score_rec else None
+        score_rec = self.db.scalar(
+            select(UserTestScoreORM)
+            .where(UserTestScoreORM.user_id == user_id)
+            .where(UserTestScoreORM.lesson_id == lesson_id)
+        )
+        score = score_rec.score if score_rec else None
 
         return LessonDetail(
             id=l.id,
@@ -273,8 +275,18 @@ class PlanRepository:
             status=l.status,
             is_external=l.is_external,
             external_url=l.external_url,
+            content=l.content,
             score=score,
             materials=[LearningMaterial(**m) for m in l.additional_resources]
+        )
+
+    def get_lesson_by_order(self, user_id: int, plan_id: int, order: int) -> Optional[LessonORM]:
+        return self.db.scalar(
+            select(LessonORM)
+            .join(LearningPlanORM)
+            .where(LearningPlanORM.user_id == user_id)
+            .where(LessonORM.plan_id == plan_id)
+            .where(LessonORM.order == order)
         )
 
     def touch_plan(self, plan_id: int):

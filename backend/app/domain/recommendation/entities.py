@@ -74,6 +74,7 @@ class Lesson(BaseModel):
     resource_id: Optional[str] = None
     is_external: bool = False
     external_url: Optional[str] = None
+    content: Optional[str] = None
     status: str = "upcoming"
     materials: List[LearningMaterial] = Field(default_factory=list)
     score: Optional[int] = None
