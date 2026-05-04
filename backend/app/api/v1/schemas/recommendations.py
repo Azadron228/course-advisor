@@ -104,25 +104,6 @@ class Lesson(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class LearningPlan(BaseModel):
-    id: Optional[int]
-    goal: str
-    steps: List[Lesson]
-    is_active: bool = True
-    skill_level: str = "Beginner"
-    learning_style: str = "Practical"
-    study_time: int = 10
-    interests: List[str] = Field(default_factory=list)
-    model_config = ConfigDict(from_attributes=True)
-
-
-class RecommendationResponse(BaseModel):
-    results: List[RecommendationResult] = Field(default_factory=list)
-    skill_gap_analysis: Optional[SkillGapAnalysis] = None
-    learning_path: List[Lesson] = Field(default_factory=list)
-    model_config = ConfigDict(from_attributes=True)
-
-
 class LessonSummary(BaseModel):
     id: int
     order: int
@@ -137,6 +118,18 @@ class LessonSummary(BaseModel):
 class LessonDetail(LessonSummary):
     materials: List[LearningMaterial]
     external_url: Optional[str] = None
+
+
+class LearningPlan(BaseModel):
+    id: Optional[int]
+    goal: str
+    steps: List[Lesson]
+    is_active: bool = True
+    skill_level: str = "Beginner"
+    learning_style: str = "Practical"
+    study_time: int = 10
+    interests: List[str] = Field(default_factory=list)
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LearningPlanSummary(BaseModel):
@@ -154,6 +147,13 @@ class LearningPlanDetail(BaseModel):
     is_active: bool
     last_interacted_at: datetime
     steps: List[LessonSummary]
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RecommendationResponse(BaseModel):
+    results: List[RecommendationResult] = Field(default_factory=list)
+    skill_gap_analysis: Optional[SkillGapAnalysis] = None
+    learning_path: List[Lesson] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 
