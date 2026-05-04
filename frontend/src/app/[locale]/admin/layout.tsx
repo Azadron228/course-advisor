@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import { useEffect } from 'react';
 import { AdminSidebar } from '@/components/admin/admin-sidebar';
 import { TopNav } from '@/components/shared/top-nav';
+import { MobileDrawer } from '@/components/shared/mobile-drawer';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -44,6 +45,7 @@ export default function AdminLayout({
           </div>
         </main>
       </div>
+      <MobileDrawer />
     </div>
   );
 }
