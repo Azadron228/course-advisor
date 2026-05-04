@@ -195,9 +195,6 @@ export function ChatWindow() {
               </div>
             </div>
           </form>
-          <p className="mt-3 text-[10px] text-center text-muted font-medium">
-            {tChat('aiPoweredNote')}
-          </p>
         </div>
       </div>
     </div>
