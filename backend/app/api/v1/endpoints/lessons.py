@@ -5,6 +5,7 @@ from sqlalchemy import select
 from app.api.deps import get_db, get_current_active_user, get_arq_pool
 from arq.connections import ArqRedis
 from app.infrastructure.db.models import CourseMaterialORM, PracticeTestORM, UserTestScoreORM, UserORM
+from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.api.v1.schemas.course import CourseMaterialDetail
 from pydantic import BaseModel
 from datetime import datetime, timezone
@@ -125,6 +126,7 @@ def submit_test(
         
         if found:
             db.commit()
+            PlanRepository(db).touch_plan(plan.id)
 
     return {"message": "Score saved successfully"}
 

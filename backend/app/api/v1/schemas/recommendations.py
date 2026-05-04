@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from enum import Enum
+from datetime import datetime
 
 
 class TranscriptEntry(BaseModel):
@@ -103,6 +104,22 @@ class Lesson(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LessonSummary(BaseModel):
+    id: int
+    order: int
+    title: str
+    description: str
+    status: str
+    score: Optional[int] = None
+    is_external: bool
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LessonDetail(LessonSummary):
+    materials: List[LearningMaterial]
+    external_url: Optional[str] = None
+
+
 class LearningPlan(BaseModel):
     id: Optional[int]
     goal: str
@@ -112,6 +129,24 @@ class LearningPlan(BaseModel):
     learning_style: str = "Practical"
     study_time: int = 10
     interests: List[str] = Field(default_factory=list)
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LearningPlanSummary(BaseModel):
+    id: int
+    goal: str
+    is_active: bool
+    last_interacted_at: datetime
+    step_count: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LearningPlanDetail(BaseModel):
+    id: int
+    goal: str
+    is_active: bool
+    last_interacted_at: datetime
+    steps: List[LessonSummary]
     model_config = ConfigDict(from_attributes=True)
 
 
