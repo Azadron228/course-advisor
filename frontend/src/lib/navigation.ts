@@ -2,14 +2,15 @@ import {
   LayoutDashboard, 
   BookOpen, 
   MessageSquare,
-  Users
+  Users,
+  type LucideIcon
 } from 'lucide-react';
 
 export interface NavItem {
   nameKey?: string;
   name?: string;
   href: string;
-  icon: any;
+  icon: LucideIcon;
 }
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [
