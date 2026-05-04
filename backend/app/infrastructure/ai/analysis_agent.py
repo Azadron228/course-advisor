@@ -7,7 +7,7 @@ from llama_index.core.llms import LLM
 from app.domain.recommendation.entities import (
     Student,
     SkillGapAnalysis,
-    LearningPathStep,
+    Lesson,
 )
 from app.domain.catalog.entities import Course
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class GlobalAnalysis(BaseModel):
     skill_gap_analysis: SkillGapAnalysis
-    learning_path: List[LearningPathStep]
+    learning_path: List[Lesson]
 
 
 async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str) -> GlobalAnalysis:

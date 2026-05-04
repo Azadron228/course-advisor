@@ -184,6 +184,7 @@ class AdvisorService:
                         step.status = "upcoming"
             
             saved_plan.steps = updated_steps
+            # repository will handle mapping Lesson entities back to LessonORM
             self.plan_repo.update_plan(user.id, saved_plan)
 
             # 6. Enqueue practice test generation for all cloned steps
