@@ -62,7 +62,6 @@ def test_learning_plan_orm_new_fields():
     plan = LearningPlanORM(
         user_id=1,
         goal="Master ML",
-        steps={"nodes": []},
         skill_level="Advanced",
         learning_style="Practical",
         study_time=20,
