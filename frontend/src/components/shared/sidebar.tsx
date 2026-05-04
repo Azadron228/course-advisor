@@ -4,10 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
-  LayoutDashboard, 
-  BookOpen, 
-  MessageSquare, 
-  User,
   ChevronLeft,
   ChevronRight,
   GraduationCap
@@ -15,25 +11,20 @@ import {
 import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/hooks/use-layout-store';
 import { ChatSidebarHistory } from '../features/chat-sidebar-history';
+import { NavItems } from './nav-items';
+import { STUDENT_NAV_ITEMS } from '@/lib/navigation';
 
 export function Sidebar() {
-  const t = useTranslations('Navigation');
   const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useLayoutStore();
 
   const isChatPage = pathname.includes('/chat');
 
-  const navItems = [
-    { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
-    { name: t('learningPlan'), href: '/plan', icon: BookOpen },
-    { name: t('aiAdvisor'), href: '/chat', icon: MessageSquare },
-  ];
-
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col bg-surface border-r border-border transition-all duration-300 ease-in-out lg:static",
+        "hidden lg:flex lg:flex-col bg-surface border-r border-border transition-all duration-300 ease-in-out lg:static lg:inset-y-0",
         isCollapsed ? "w-20" : "w-64"
       )}
     >
@@ -57,43 +48,9 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <nav className="px-3 py-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href === '/chat' && isChatPage);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
-                  isActive 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted hover:bg-muted/10 hover:text-foreground"
-                )}
-              >
-                <Icon 
-                  size={20} 
-                  className={cn(
-                    "flex-shrink-0 transition-colors",
-                    isActive ? "text-primary" : "text-muted group-hover:text-foreground"
-                  )} 
-                />
-                {!isCollapsed && (
-                  <span className="text-sm font-semibold whitespace-nowrap">
-                    {item.name}
-                  </span>
-                )}
-                {isCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-surface text-foreground text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-border">
-                    {item.name}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="px-3 py-4">
+          <NavItems items={STUDENT_NAV_ITEMS} isCollapsed={isCollapsed} />
+        </div>
 
         {isChatPage && !isCollapsed && (
           <div className="flex-1 flex flex-col min-h-0 border-t border-border pt-4 overflow-hidden">
