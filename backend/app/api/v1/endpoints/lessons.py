@@ -58,8 +58,8 @@ async def get_lesson_test(
     if not plan:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    if lesson.is_external or not lesson.material_id:
-        raise HTTPException(status_code=400, detail="External steps do not have practice tests")
+    if lesson.is_external or (not lesson.material_id and not lesson.content):
+        raise HTTPException(status_code=400, detail="External steps or steps without content do not have practice tests")
 
     test = db.execute(select(PracticeTestORM).where(PracticeTestORM.lesson_id == lesson_id)).scalar_one_or_none()
     if not test:

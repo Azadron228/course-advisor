@@ -4,13 +4,14 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { generatePlanAction } from '@/app/[locale]/plan/actions';
 import { Loader2, ArrowRight, Tag, X, Sparkles, Upload, FileText, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function LearningPlanGenerator() {
   const t = useTranslations('Plan');
+  const locale = useLocale();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
@@ -53,6 +54,7 @@ export function LearningPlanGenerator() {
     formData.append('learning_style', data.learning_style);
     formData.append('study_time', data.study_time.toString());
     formData.append('interests', JSON.stringify(interests));
+    formData.append('language', locale);
     if (file) formData.append('transcript', file);
 
     try {

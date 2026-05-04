@@ -66,6 +66,7 @@ export async function generatePlanAction(formData: FormData) {
   const learning_style = formData.get('learning_style') as string;
   const study_time = Number(formData.get('study_time'));
   const interests = JSON.parse(formData.get('interests') as string);
+  const language = formData.get('language') as string || 'en';
 
   const generateResponse = await fetch(`${API_BASE_URL}/learning-plan/generate`, {
     method: 'POST',
@@ -79,7 +80,8 @@ export async function generatePlanAction(formData: FormData) {
       learning_style,
       study_time,
       interests,
-      transcript: parsedTranscript
+      transcript: parsedTranscript,
+      language
     })
   });
 

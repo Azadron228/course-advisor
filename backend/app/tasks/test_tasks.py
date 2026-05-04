@@ -20,16 +20,22 @@ async def generate_practice_test(ctx, lesson_id: int):
             return
         
         lesson = db.execute(select(LessonORM).where(LessonORM.id == lesson_id)).scalar_one_or_none()
-        if not lesson or not lesson.material_id:
-            logger.warning(f"No lesson or material found for lesson_id {lesson_id}")
+        if not lesson:
+            logger.warning(f"No lesson found for lesson_id {lesson_id}")
             return
+            
+        content = None
+        if lesson.material_id:
+            material = db.execute(select(CourseMaterialORM).where(CourseMaterialORM.id == lesson.material_id)).scalar_one_or_none()
+            if material:
+                content = material.content
         
-        material = db.execute(select(CourseMaterialORM).where(CourseMaterialORM.id == lesson.material_id)).scalar_one_or_none()
-        if not material:
-            logger.warning(f"No material found for material_id {lesson.material_id}")
+        if not content and lesson.content:
+            content = lesson.content
+
+        if not content:
+            logger.warning(f"No content found for lesson {lesson_id} (material_id: {lesson.material_id})")
             return
-        
-        content = material.content
         prompt = f"""Generate a 3-question multiple choice practice test based ONLY on the following text.
 Return ONLY valid JSON in this exact structure, nothing else:
 {{

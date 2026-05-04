@@ -43,13 +43,13 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${inter.variable} ${lexend.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="h-full bg-background font-lexend text-foreground">
-        <NextIntlClientProvider messages={messages}>
-          <Providers>
+        <Providers>
+          <NextIntlClientProvider messages={messages}>
             <MainLayout>
               {children}
             </MainLayout>
-          </Providers>
-        </NextIntlClientProvider>
+          </NextIntlClientProvider>
+        </Providers>
       </body>
     </html>
   );

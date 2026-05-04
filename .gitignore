@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .env
 .venv/
+node_modules/
 .worktrees/
 *.log
 *.logs.worktrees/

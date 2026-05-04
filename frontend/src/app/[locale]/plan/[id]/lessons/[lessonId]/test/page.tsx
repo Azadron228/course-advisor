@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { PracticeTestUI } from '@/components/features/practice-test-ui';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
@@ -11,7 +11,7 @@ async function getPracticeTest(token: string, lessonId: string) {
   });
   if (!res.ok) {
     if (res.status === 404) return null; // Test not generated yet
-    throw new Error('Failed to fetch test');
+    throw new Error(`Failed to fetch test: ${res.status}`);
   }
   return res.json();
 }

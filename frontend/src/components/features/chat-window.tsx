@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { useChat } from '@/hooks/use-chat';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -14,10 +14,7 @@ export function ChatWindow() {
     sessions, 
     currentSessionId, 
     isSending, 
-    isClearing, 
     sendMessage, 
-    clearHistory, 
-    switchSession 
   } = useChat();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);

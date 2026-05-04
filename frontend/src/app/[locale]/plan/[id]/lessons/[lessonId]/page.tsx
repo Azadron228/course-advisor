@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
 import { cookies } from 'next/headers';
-import { Award, CheckCircle2, RefreshCcw, ExternalLink, Video, BookOpen, Globe, ArrowLeft } from 'lucide-react';
+import { Award, RefreshCcw, ExternalLink, Video, BookOpen, Globe, ArrowLeft } from 'lucide-react';
 import { LearningPlan } from '@/components/features/plan-stepper';
 
 // Simple fetch function for server components
@@ -148,40 +148,42 @@ export default async function LessonPage({
           )}
 
           {/* Knowledge Check */}
-          <div className="mt-16 p-8 bg-surface rounded-2xl border border-border shadow-sm flex flex-col items-center justify-center text-center space-y-6">
-            <h2 className="text-2xl font-bold">Knowledge Check</h2>
-            
-            {lesson.score !== null && lesson.score !== undefined ? (
-              <div className="space-y-6 w-full max-w-md mx-auto">
-                <div className="flex flex-col items-center gap-4 p-6 bg-success/5 rounded-3xl border border-success/20">
-                  <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center text-success shadow-inner">
-                    <Award className="w-10 h-10" />
+          {!lesson.is_external && (
+            <div className="mt-16 p-8 bg-surface rounded-2xl border border-border shadow-sm flex flex-col items-center justify-center text-center space-y-6">
+              <h2 className="text-2xl font-bold">Knowledge Check</h2>
+              
+              {lesson.score !== null && lesson.score !== undefined ? (
+                <div className="space-y-6 w-full max-w-md mx-auto">
+                  <div className="flex flex-col items-center gap-4 p-6 bg-success/5 rounded-3xl border border-success/20">
+                    <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center text-success shadow-inner">
+                      <Award className="w-10 h-10" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-black text-success">{lesson.score}%</div>
+                      <div className="text-sm font-bold text-success/60 uppercase tracking-widest">Mastery Score</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-3xl font-black text-success">{lesson.score}%</div>
-                    <div className="text-sm font-bold text-success/60 uppercase tracking-widest">Mastery Score</div>
-                  </div>
+                  <p className="text-muted font-medium">You&apos;ve successfully completed this lesson&apos;s knowledge check!</p>
+                  <Link 
+                    href={`/${locale}/plan/${id}/lessons/${lessonId}/test`}
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-surface border border-border text-foreground rounded-xl font-bold hover:bg-muted/10 transition-all shadow-sm"
+                  >
+                    <RefreshCcw className="w-4 h-4" /> Retake Practice Test
+                  </Link>
                 </div>
-                <p className="text-muted font-medium">You've successfully completed this lesson's knowledge check!</p>
-                <Link 
-                  href={`/${locale}/plan/${id}/lessons/${lessonId}/test`}
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-surface border border-border text-foreground rounded-xl font-bold hover:bg-muted/10 transition-all shadow-sm"
-                >
-                  <RefreshCcw className="w-4 h-4" /> Retake Practice Test
-                </Link>
-              </div>
-            ) : (
-              <>
-                <p className="text-muted max-w-sm mx-auto">Test your understanding of this material with a quick AI-generated practice test.</p>
-                <Link 
-                  href={`/${locale}/plan/${id}/lessons/${lessonId}/test`}
-                  className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-                >
-                  Start Practice Test
-                </Link>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <p className="text-muted max-w-sm mx-auto">Test your understanding of this material with a quick AI-generated practice test.</p>
+                  <Link 
+                    href={`/${locale}/plan/[id]/lessons/${lessonId}/test`}
+                    className="px-8 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                  >
+                    Start Practice Test
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
