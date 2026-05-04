@@ -1,7 +1,4 @@
-import json
-import re
 import logging
-from dataclasses import dataclass
 from typing import List
 from pydantic import BaseModel
 from llama_index.core.program import LLMTextCompletionProgram
@@ -20,12 +17,6 @@ logger = logging.getLogger(__name__)
 class GlobalAnalysis(BaseModel):
     skill_gap_analysis: SkillGapAnalysis
     learning_path: List[LearningPathStep]
-
-
-@dataclass
-class AnalysisDeps:
-    student: Student
-    courses: List[Course]
 
 
 async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str) -> GlobalAnalysis:
@@ -55,7 +46,29 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         f"Student Current Skills: {current_skills}\n\n"
         f"Available Internal Courses:\n{available_courses}\n\n"
         f"User Goal and Context: {goal_msg}\n\n"
-        "Output ONLY valid JSON matching the schema."
+        "Output ONLY valid JSON matching the schema. Example format:\n"
+        "{\n"
+        '  "skill_gap_analysis": {\n'
+        '    "overall_gap_score": 0.5,\n'
+        '    "domain_breakdown": [\n'
+        '      {"domain": "Programming", "gap_score": 0.3, "missing_skills": ["Python", "Algorithms"]}\n'
+        '    ],\n'
+        '    "critical_skills": ["Python"]\n'
+        '  },\n'
+        '  "learning_path": [\n'
+        '    {\n'
+        '      "order": 1,\n'
+        '      "title": "Introduction to Computer Science",\n'
+        '      "description": "Learn the basics of computer science using internal course 101.",\n'
+        '      "resource_id": "101",\n'
+        '      "is_external": false,\n'
+        '      "status": "current",\n'
+        '      "materials": [\n'
+        '        {"title": "Python Basics", "description": "Official documentation for Python.", "url": "https://python.org", "type": "documentation"}\n'
+        '      ]\n'
+        '    }\n'
+        '  ]\n'
+        "}"
     )
 
     program = LLMTextCompletionProgram.from_defaults(
@@ -65,23 +78,9 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         verbose=True,
     )
 
-    return await program.acall()
-
-
-def parse_global_analysis(text: str) -> GlobalAnalysis:
-    # This is kept for backward compatibility if needed, but we should prefer generate_global_analysis
     try:
-        # LlamaIndex sometimes prefixes with 'assistant: ' or wraps in markdown
-        json_text = text
-        if text.startswith("assistant: "):
-            json_text = text[len("assistant: "):]
-        
-        match = re.search(r"\{.*\}", json_text, re.DOTALL)
-        if match:
-            data = json.loads(match.group())
-        else:
-            data = json.loads(json_text)
-        return GlobalAnalysis(**data)
+        return await program.acall()
     except Exception as e:
-        logger.error(f"Failed to parse GlobalAnalysis. Error: {e}. Text: {text}")
-        raise ValueError(f"Could not parse GlobalAnalysis: {text}") from e
+        logger.error(f"Global analysis generation failed: {e}")
+        # Log more info if possible
+        raise

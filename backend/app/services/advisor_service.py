@@ -86,6 +86,12 @@ class AdvisorService:
         try:
             parsed = await generate_global_analysis(llm, student, courses, goal_msg)
             logger.info(f"Successfully generated analysis for {goal}")
+            
+            # Ensure the first step is 'current' so it's not locked
+            if parsed.learning_path:
+                # Sort by order just in case the LLM didn't
+                parsed.learning_path.sort(key=lambda x: x.order)
+                parsed.learning_path[0].status = "current"
         except Exception as gen_err:
             logger.error(f"AI Generation failed: {gen_err}")
             raise

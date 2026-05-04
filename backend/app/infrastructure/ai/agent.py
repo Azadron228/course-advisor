@@ -12,6 +12,7 @@ from llama_index.core.tools import FunctionTool
 from app.domain.recommendation.entities import ModelProvider, Student, LearningPlan
 from app.domain.catalog.entities import Course
 from app.domain.identity.entities import User
+from app.api.v1.schemas.auth import UserPublic
 from app.core.config import settings
 from tavily import TavilyClient
 
@@ -116,11 +117,9 @@ def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReAc
         f"Output MUST be ONLY a valid JSON object with the fields: score, reasoning, tags."
     )
 
-    from typing import Any
     return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
 
 
-from app.api.v1.schemas.auth import UserPublic
 
 
 def get_advisor_agent(
@@ -164,7 +163,6 @@ def get_advisor_agent(
         "Do not include your internal thoughts or tool calls in the final response to the student."
     )
 
-    from typing import Any
     return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
 
 

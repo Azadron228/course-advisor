@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
-from app.api.deps import get_db
+from app.api.deps import get_db, get_container
 from app.infrastructure.db.models import Base, UserORM
 from app.core.security import get_password_hash, create_access_token
 
@@ -45,7 +45,34 @@ def client(db):
         finally:
             pass
     
+    def override_get_container():
+        import punq
+        from sqlalchemy.orm import Session
+        from app.infrastructure.db.repositories.course_repository import CourseRepository
+        from app.infrastructure.db.repositories.user_repository import UserRepository
+        from app.infrastructure.db.repositories.profile_repository import ProfileRepository
+        from app.infrastructure.db.repositories.plan_repository import PlanRepository
+        from app.infrastructure.db.repositories.chat_repository import ChatRepository
+        from app.infrastructure.cache.redis_chat import RedisChatHistory
+        from app.domain.recommendation.scoring import ScoringService
+        from app.infrastructure.ai.rag import RAGScorer
+        from app.services.advisor_service import AdvisorService
+
+        container = punq.Container()
+        container.register(Session, instance=db)
+        container.register(CourseRepository)
+        container.register(UserRepository)
+        container.register(ProfileRepository)
+        container.register(PlanRepository)
+        container.register(ChatRepository)
+        container.register(RedisChatHistory)
+        container.register(RAGScorer)
+        container.register(ScoringService)
+        container.register(AdvisorService)
+        return container
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_container] = override_get_container
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

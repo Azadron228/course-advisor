@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from typing import Any, Dict
 
 from app.api.deps import get_db, get_current_active_user, get_arq_pool
 from arq.connections import ArqRedis

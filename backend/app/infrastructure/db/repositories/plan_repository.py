@@ -1,5 +1,4 @@
 from typing import Optional, List
-from dataclasses import asdict
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from app.infrastructure.db.models import LearningPlanORM
@@ -88,7 +87,7 @@ class PlanRepository:
                 "resource_id": s.resource_id,
                 "is_external": s.is_external,
                 "status": s.status,
-                "materials": [asdict(m) for m in s.materials]
+                "materials": [m.model_dump() for m in s.materials]
             }
             for s in plan.steps
         ]
@@ -136,7 +135,7 @@ class PlanRepository:
                 "resource_id": s.resource_id,
                 "is_external": s.is_external,
                 "status": s.status,
-                "materials": [asdict(m) for m in s.materials]
+                "materials": [m.model_dump() for m in s.materials]
             }
             for s in plan.steps
         ]

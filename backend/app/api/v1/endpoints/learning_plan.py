@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
-from app.api.deps import get_current_active_user, get_advisor_service, get_service
+from app.api.deps import get_current_active_user, get_advisor_service, get_service, get_arq_pool
 from app.domain.identity.entities import User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
@@ -58,24 +58,23 @@ async def update_learning_plan_step(
         raise HTTPException(status_code=400, detail="Status is required")
 
     # Update the specific step status
-    updated_steps = []
-    found = False
-    for step in plan.steps:
+    updated_steps = sorted(plan.steps, key=lambda x: x.order)
+    found_idx = -1
+    for i, step in enumerate(updated_steps):
         if step.order == step_order:
-            # Create updated step
-            from dataclasses import replace
-            updated_step = replace(step, status=new_status)
-            updated_steps.append(updated_step)
-            found = True
-        else:
-            updated_steps.append(step)
+            updated_steps[i] = step.model_copy(update={"status": new_status})
+            found_idx = i
+            break
             
-    if not found:
+    if found_idx == -1:
         raise HTTPException(status_code=404, detail="Step not found")
-        
-    from dataclasses import replace
-    updated_plan = replace(plan, steps=updated_steps)
     
-    if current_user.id is None:
-        raise HTTPException(status_code=401, detail="User ID not found")
+    # Auto-unlock next step if completed
+    if new_status == "completed" and found_idx + 1 < len(updated_steps):
+        next_step = updated_steps[found_idx + 1]
+        if next_step.status == "upcoming":
+            updated_steps[found_idx + 1] = next_step.model_copy(update={"status": "current"})
+        
+    updated_plan = plan.model_copy(update={"steps": updated_steps})
+    
     return plan_repo.update_plan(current_user.id, updated_plan)

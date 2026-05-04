@@ -60,14 +60,21 @@ export function useChat() {
   // Combined messages: history + new local messages
   const messages = [...historyMessages, ...localMessages];
 
-  const clearHistory = useCallback(async () => {
+  const clearHistory = useCallback(async (chatId: number) => {
     setIsClearing(true);
     try {
-      await apiClient.delete('/recommendations/chat/history');
-      queryClient.setQueryData(['chat-history', currentSessionId], []);
-      queryClient.setQueryData(['chat-sessions'], []);
-      setLocalMessages([]);
-      setCurrentSessionId(null);
+      const url = `/recommendations/chat/history?chat_id=${chatId}`;
+      await apiClient.delete(url);
+      
+      // Invalidate the sessions list
+      queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
+      
+      // If we cleared the current session, clean up local state
+      if (currentSessionId === chatId) {
+        queryClient.setQueryData(['chat-history', chatId], []);
+        setLocalMessages([]);
+        setCurrentSessionId(null);
+      }
     } catch (err) {
       console.error('Failed to clear chat history:', err);
       throw err;

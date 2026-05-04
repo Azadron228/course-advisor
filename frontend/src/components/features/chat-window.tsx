@@ -58,27 +58,41 @@ export function ChatWindow() {
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {sessions.map((session) => (
-            <button
-              key={session.id}
-              onClick={() => switchSession(session.id)}
-              className={cn(
-                "w-full p-3 rounded-xl text-left text-sm transition-all flex items-start gap-3 group",
-                currentSessionId === session.id
-                  ? "bg-primary/10 text-primary font-semibold border border-border dark:border-primary/20 shadow-sm"
-                  : "text-muted hover:bg-muted/10 hover:shadow-sm hover:border-border border border-transparent"
-              )}
-            >
-              <MessageSquare size={16} className={cn(
-                "mt-0.5 shrink-0",
-                currentSessionId === session.id ? "text-primary" : "text-muted group-hover:text-primary"
-              )} />
-              <div className="truncate">
-                <div className="truncate">{session.title}</div>
-                <div className="text-[10px] text-muted font-normal mt-0.5">
-                  {new Date(session.updated_at).toLocaleDateString()}
+            <div key={session.id} className="relative group/session">
+              <button
+                key={session.id}
+                onClick={() => switchSession(session.id)}
+                className={cn(
+                  "w-full p-3 rounded-xl text-left text-sm transition-all flex items-start gap-3 group",
+                  currentSessionId === session.id
+                    ? "bg-primary/10 text-primary font-semibold border border-border dark:border-primary/20 shadow-sm"
+                    : "text-muted hover:bg-muted/10 hover:shadow-sm hover:border-border border border-transparent"
+                )}
+              >
+                <MessageSquare size={16} className={cn(
+                  "mt-0.5 shrink-0",
+                  currentSessionId === session.id ? "text-primary" : "text-muted group-hover:text-primary"
+                )} />
+                <div className="truncate pr-6">
+                  <div className="truncate">{session.title}</div>
+                  <div className="text-[10px] text-muted font-normal mt-0.5">
+                    {new Date(session.updated_at).toLocaleDateString()}
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(tChat('clearHistory') + '?')) {
+                    clearHistory(session.id);
+                  }
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted opacity-0 group-hover/session:opacity-100 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all z-10"
+                title={tChat('clearHistory')}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           ))}
           {sessions.length === 0 && (
             <div className="text-center py-8 px-4">
@@ -111,25 +125,6 @@ export function ChatWindow() {
               <Sparkles size={12} className="text-primary" />
               {tCommon('aiPowered')}
             </div>
-            
-            <button
-              onClick={() => {
-                if (confirm(tChat('clearHistory') + '?')) {
-                  clearHistory();
-                }
-              }}
-              disabled={(sessions.length === 0 && messages.length === 0) || isClearing}
-              className={cn(
-                "p-2 rounded-lg transition-all flex items-center gap-2 text-xs font-medium",
-                (sessions.length === 0 && messages.length === 0) || isClearing
-                  ? "text-muted/30 cursor-not-allowed"
-                  : "text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-              )}
-              title={tChat('clearHistory')}
-            >
-              {isClearing ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-              <span className="hidden lg:inline">{tChat('clearHistory')}</span>
-            </button>
           </div>
         </div>
 

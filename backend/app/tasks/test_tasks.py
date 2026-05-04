@@ -4,7 +4,6 @@ from sqlalchemy import select
 from app.infrastructure.db.session import SessionLocal
 from app.infrastructure.db.models import CourseMaterialORM, PracticeTestORM
 from datetime import datetime, timezone
-import os
 
 try:
     from llama_index.llms.openai import OpenAI

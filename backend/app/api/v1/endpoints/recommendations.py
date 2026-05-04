@@ -1,7 +1,7 @@
 import logging
 import re
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from app.api.v1.schemas.recommendations import (
@@ -296,12 +296,14 @@ async def enqueue_recommendation(
 
 @router.delete("/chat/history")
 async def clear_chat_history_endpoint(
+    chat_id: int = Query(..., description="The chat session ID to clear."),
     current_user: User = Depends(get_current_active_user),
     chat_history: RedisChatHistory = Depends(get_chat_history_service),
     chat_repo: ChatRepository = Depends(get_chat_repository),
 ):
-    await chat_history.clear_history(current_user.email)
     if current_user.id is None:
         raise HTTPException(status_code=401, detail="User ID not found")
-    chat_repo.clear_user_sessions(current_user.id)
+        
+    chat_repo.delete_session(current_user.id, chat_id)
+    await chat_history.clear_history(current_user.email)
     return {"status": "success"}

@@ -25,7 +25,7 @@ class RAGScorer:
         pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
 
         job = await pool.enqueue_job(
-            "run_agent_task", asdict(student), asdict(course), provider.value
+            "run_agent_task", student.model_dump(), asdict(course), provider.value
         )
         if job is None:
             await pool.close()
