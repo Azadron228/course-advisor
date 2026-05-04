@@ -27,7 +27,9 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
     
     available_courses = ""
     for c in courses:
-        available_courses += f"- {c.subject_name} (Course ID: {c.id}): {c.description}\n"
+        # Truncate description to 300 chars to avoid overwhelming the LLM and hitting token limits
+        desc = c.description[:300] + "..." if len(c.description) > 300 else c.description
+        available_courses += f"- {c.subject_name} (Course ID: {c.id}): {desc}\n"
         if c.materials:
             available_courses += "  Available Lessons:\n"
             for m in c.materials:
@@ -84,15 +86,31 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         if start != -1 and end != -1:
             raw_output = raw_output[start:end+1]
         
-        # 3. Basic cleanup for common LLM JSON mistakes (optional, but safer)
-        # Handle trailing commas in objects or arrays
-        raw_output = re.sub(r",\s*([}\]])", r"\1", raw_output)
+        # 3. Final cleanup - remove any non-printable characters that might break the parser
+        # but keep newlines and common whitespace
+        raw_output = "".join(c for c in raw_output if ord(c) >= 32 or c in "\n\r\t")
         
-        return parser.parse(raw_output)
+        try:
+            return parser.parse(raw_output)
+        except Exception as e:
+            # If standard parser fails, try one more cleanup for common trailing commas
+            # but only at the very end of objects/arrays (less aggressive)
+            clean_output = re.sub(r",\s*\}", "}", raw_output)
+            clean_output = re.sub(r",\s*\]", "]", clean_output)
+            return parser.parse(clean_output)
         
     except Exception as e:
         logger.error(f"Global analysis generation failed: {e}")
         if 'raw_output' in locals():
-            logger.error(f"Raw Output: {raw_output}")
+            logger.error(f"Raw Output Length: {len(raw_output)}")
+            logger.error(f"Raw Output (first 500): {raw_output[:500]}")
+            logger.error(f"Raw Output (last 500): {raw_output[-500:]}")
+            # Write to a predictable temp file for the agent to read
+            try:
+                with open("/tmp/last_failed_json.json", "w") as f:
+                    f.write(raw_output)
+                logger.info("Saved failed JSON to /tmp/last_failed_json.json")
+            except:
+                pass
         raise
 

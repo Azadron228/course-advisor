@@ -13,6 +13,52 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+async def generate_lesson_content(ctx, lesson_id: int):
+    with SessionLocal() as db:
+        lesson = db.execute(select(LessonORM).where(LessonORM.id == lesson_id)).scalar_one_or_none()
+        if not lesson:
+            logger.warning(f"No lesson found for lesson_id {lesson_id}")
+            return
+        
+        # Only generate if content is missing and it's not an internal material (or if explicit generation requested)
+        if lesson.content:
+            logger.info(f"Lesson {lesson_id} already has content. Skipping generation.")
+            # Still trigger test generation just in case
+            await ctx['redis'].enqueue_job("generate_practice_test", lesson_id)
+            return
+
+        prompt = f"""You are an expert academic educator. Generate a comprehensive, high-quality, and easy-to-understand lesson based on the following title and description.
+The lesson should be structured with clear headings (using Markdown), include key concepts, practical examples, and a summary.
+
+Title: {lesson.title}
+Description: {lesson.description}
+
+Requirement: Provide ONLY the lesson content in Markdown format.
+"""
+        try:
+            if OpenAI:
+                llm = OpenAI(model="gpt-4o", temperature=0.3)
+                response = await llm.acomplete(prompt)
+                content = response.text.strip()
+            else:
+                client = openai.AsyncOpenAI()
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.3
+                )
+                content = response.choices[0].message.content.strip()
+
+            lesson.content = content
+            db.commit()
+            logger.info(f"Generated content for lesson {lesson_id}")
+
+            # Now that content exists, trigger practice test generation
+            await ctx['redis'].enqueue_job("generate_practice_test", lesson_id)
+            
+        except Exception as e:
+            logger.error(f"Error generating content for lesson {lesson_id}: {e}")
+
 async def generate_practice_test(ctx, lesson_id: int):
     with SessionLocal() as db:
         test = db.execute(select(PracticeTestORM).where(PracticeTestORM.lesson_id == lesson_id)).scalar_one_or_none()

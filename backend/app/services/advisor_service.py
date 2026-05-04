@@ -174,8 +174,9 @@ class AdvisorService:
             # repository will handle mapping Lesson entities back to LessonORM, overwriting existing ones for THIS plan
             final_plan = self.plan_repo.update_plan(user.id, saved_plan)
 
-            # 6. Copy scores to the new lessons and enqueue practice test generation
+            # 6. Copy scores to the new lessons and enqueue background tasks
             for step in final_plan.steps:
+                # 6.1 Check for existing scores and copy them (for internal material matches)
                 if not step.is_external and step.resource_id:
                     try:
                         original_material_id = int(step.resource_id)
@@ -199,12 +200,19 @@ class AdvisorService:
                             )
                             self.plan_repo.db.add(new_score)
                             logger.info(f"Copied score {existing_score.score}% to new lesson {step.id}")
-
-                        if arq_pool:
-                            await arq_pool.enqueue_job("generate_practice_test", step.id)
-                            logger.info(f"Enqueued practice test generation for lesson {step.id}")
                     except (ValueError, TypeError):
-                        continue
+                        pass
+
+                # 6.2 Enqueue background work (Content Generation or Practice Tests)
+                if arq_pool:
+                    if step.content:
+                        # Content already exists (e.g. copied from internal material)
+                        await arq_pool.enqueue_job("generate_practice_test", step.id)
+                        logger.info(f"Enqueued practice test generation for lesson {step.id}")
+                    else:
+                        # No content found (e.g. gap filler step or external step)
+                        await arq_pool.enqueue_job("generate_lesson_content", step.id)
+                        logger.info(f"Enqueued AI content generation for lesson {step.id}")
             
             self.plan_repo.db.commit()
             return final_plan

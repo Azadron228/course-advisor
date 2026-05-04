@@ -83,12 +83,12 @@ async def get_step_test(
     if not lesson:
         raise HTTPException(status_code=404, detail="Step not found")
     
-    if lesson.is_external or not lesson.material_id:
-        raise HTTPException(status_code=400, detail="External steps do not have practice tests")
+    if lesson.is_external and not lesson.content:
+        raise HTTPException(status_code=400, detail="External steps without generated content do not have practice tests")
 
     test = db.execute(select(PracticeTestORM).where(PracticeTestORM.lesson_id == lesson.id)).scalar_one_or_none()
     if not test:
-        await arq_pool.enqueue_job("generate_practice_test", lesson.material_id)
+        await arq_pool.enqueue_job("generate_practice_test", lesson.id)
         raise HTTPException(status_code=404, detail="Test not generated yet. Generation triggered.")
     return test
 
@@ -108,8 +108,8 @@ def submit_step_test(
     if not lesson:
         raise HTTPException(status_code=404, detail="Step not found")
     
-    if lesson.is_external or not lesson.material_id:
-        raise HTTPException(status_code=400, detail="External steps do not have practice tests")
+    if lesson.is_external and not lesson.content:
+        raise HTTPException(status_code=400, detail="External steps without generated content do not have practice tests")
 
     existing_score = db.execute(
         select(UserTestScoreORM)
