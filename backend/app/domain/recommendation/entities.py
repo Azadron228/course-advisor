@@ -65,13 +65,15 @@ class LearningMaterial(BaseModel):
     type: str = "article"  # e.g., video, article, course, documentation
 
 
-class LearningPathStep(BaseModel):
+class Lesson(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    id: Optional[int] = None
     order: int
     title: str
     description: str
     resource_id: Optional[str] = None
     is_external: bool = False
+    external_url: Optional[str] = None
     status: str = "upcoming"
     materials: List[LearningMaterial] = Field(default_factory=list)
     score: Optional[int] = None
@@ -88,7 +90,7 @@ class LearningPlan(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = None
     goal: str
-    steps: List[LearningPathStep] = Field(default_factory=list)
+    steps: List[Lesson] = Field(default_factory=list)
     is_active: bool = True
     skill_level: str = "Beginner"
     learning_style: str = "Practical"
@@ -113,7 +115,7 @@ class RecommendationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     results: List[RecommendationResult] = Field(default_factory=list)
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
-    learning_path: List[LearningPathStep] = Field(default_factory=list)
+    learning_path: List[Lesson] = Field(default_factory=list)
 
 
 class ChatMessage(BaseModel):
