@@ -106,9 +106,9 @@ class PlanRepository:
             self.db.add(lesson)
         
         self.db.commit()
-        self.db.refresh(db_plan)
-
-        return self._to_domain(db_plan)
+        
+        # Re-fetch with lessons to be sure
+        return self.get_by_id(user_id, db_plan.id)
 
     def update_plan(self, user_id: int, plan: LearningPlan) -> LearningPlan:
         o = self.db.scalar(
@@ -127,11 +127,9 @@ class PlanRepository:
         o.study_time = plan.study_time
         o.interests = plan.interests
 
-        # Simple approach: clear and recreate lessons
-        # In a real app we might want to diff them to preserve IDs if possible
-        for lesson in o.lessons:
-            self.db.delete(lesson)
-        
+        # Clear existing lessons for THIS plan
+        from sqlalchemy import delete
+        self.db.execute(delete(LessonORM).where(LessonORM.plan_id == o.id))
         self.db.flush()
 
         for s in plan.steps:
@@ -149,8 +147,7 @@ class PlanRepository:
             self.db.add(lesson)
 
         self.db.commit()
-        self.db.refresh(o)
-        return self._to_domain(o)
+        return self.get_by_id(user_id, o.id)
 
     def deactivate_all_plans(self, user_id: int):
         self.db.execute(

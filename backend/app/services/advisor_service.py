@@ -98,7 +98,17 @@ class AdvisorService:
 
         # 4. Persist the new plan
         try:
-            new_plan = LearningPlan(
+            # Prepare cloning and score copying BEFORE final creation to be more efficient
+            # However, we need the plan_id for CourseMaterial cloning...
+            # We'll stick to create then update, but ensure it's handled cleanly.
+            
+            if user.id is None:
+                raise ValueError("User ID cannot be None")
+
+            self.plan_repo.deactivate_all_plans(user.id)
+            
+            # Initial create to get the ID for material linking
+            initial_plan = LearningPlan(
                 id=None,
                 goal=goal,
                 steps=parsed.learning_path,
@@ -108,12 +118,7 @@ class AdvisorService:
                 study_time=study_time,
                 interests=interests,
             )
-
-            if user.id is None:
-                raise ValueError("User ID cannot be None")
-
-            self.plan_repo.deactivate_all_plans(user.id)
-            saved_plan = self.plan_repo.create_plan(user.id, new_plan)
+            saved_plan = self.plan_repo.create_plan(user.id, initial_plan)
             logger.info(f"Successfully saved learning plan {saved_plan.id}")
 
             # 5. Clone materials and specialized lessons for this plan
@@ -135,6 +140,7 @@ class AdvisorService:
                                 status="pending",
                                 created_at="" # Set by DB
                             )
+                            # Passing saved_plan.id ensures the cloned material is linked to THIS plan
                             saved_clone = self.course_repo.add_material(clone, plan_id=saved_plan.id)
                             
                             # Update step to point to the clone
@@ -172,7 +178,7 @@ class AdvisorService:
                 
                 updated_steps.append(step)
 
-            # Update plan with cloned resource IDs
+            # Update plan with cloned resource IDs and refined status
             # Ensure the first non-completed step is 'current'
             found_current = False
             for step in updated_steps:
@@ -184,12 +190,12 @@ class AdvisorService:
                         step.status = "upcoming"
             
             saved_plan.steps = updated_steps
-            # repository will handle mapping Lesson entities back to LessonORM
-            self.plan_repo.update_plan(user.id, saved_plan)
+            # repository will handle mapping Lesson entities back to LessonORM, overwriting existing ones for THIS plan
+            final_plan = self.plan_repo.update_plan(user.id, saved_plan)
 
             # 6. Enqueue practice test generation for all cloned steps
             if arq_pool:
-                for step in saved_plan.steps:
+                for step in final_plan.steps:
                     if not step.is_external and step.resource_id:
                         try:
                             material_id = int(step.resource_id)
@@ -198,7 +204,7 @@ class AdvisorService:
                         except (ValueError, TypeError):
                             continue
 
-            return saved_plan
+            return final_plan
         except Exception as db_err:
             logger.error(f"Failed to persist learning plan: {db_err}")
             raise

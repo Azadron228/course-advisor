@@ -80,3 +80,35 @@ def test_lesson_status_update(db: Session):
     # Verify
     db.refresh(lesson)
     assert lesson.status == "completed"
+
+def test_lesson_isolation_between_plans(db: Session):
+    repo = PlanRepository(db)
+    
+    # 1. Create two plans
+    plan1 = LearningPlan(goal="Plan 1", steps=[Lesson(order=1, title="L1", description="D1")], is_active=True)
+    plan2 = LearningPlan(goal="Plan 2", steps=[Lesson(order=1, title="L2", description="D2")], is_active=False)
+    
+    saved_plan1 = repo.create_plan(user_id=1, plan=plan1)
+    saved_plan2 = repo.create_plan(user_id=1, plan=plan2)
+    
+    assert len(saved_plan1.steps) == 1
+    assert len(saved_plan2.steps) == 1
+    
+    # 2. Update Plan 1
+    updated_plan1 = saved_plan1.model_copy(update={
+        "steps": [
+            Lesson(order=1, title="L1 Updated", description="D1"),
+            Lesson(order=2, title="L1 New", description="D1")
+        ]
+    })
+    repo.update_plan(user_id=1, plan=updated_plan1)
+    
+    # 3. Verify Plan 1 has 2 lessons and Plan 2 STILL has 1 lesson
+    fetched_plan1 = repo.get_by_id(user_id=1, plan_id=saved_plan1.id)
+    fetched_plan2 = repo.get_by_id(user_id=1, plan_id=saved_plan2.id)
+    
+    assert len(fetched_plan1.steps) == 2
+    assert fetched_plan1.steps[0].title == "L1 Updated"
+    
+    assert len(fetched_plan2.steps) == 1
+    assert fetched_plan2.steps[0].title == "L2"
