@@ -54,12 +54,34 @@ class LearningPlanORM(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     goal: Mapped[str] = mapped_column(String, nullable=False)
-    steps: Mapped[dict] = mapped_column(JSON, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     skill_level: Mapped[str] = mapped_column(String, nullable=False, default="Beginner")
     learning_style: Mapped[str] = mapped_column(String, nullable=False, default="Practical")
     study_time: Mapped[int] = mapped_column(default=10)
     interests: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
+
+    # New relationship
+    lessons: Mapped[List["LessonORM"]] = relationship(
+        "LessonORM", back_populates="plan", cascade="all, delete-orphan", order_by="LessonORM.order"
+    )
+
+
+class LessonORM(Base):
+    __tablename__ = "lessons"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    plan_id: Mapped[int] = mapped_column(ForeignKey("learning_plans.id", ondelete="CASCADE"), nullable=False)
+    material_id: Mapped[Optional[int]] = mapped_column(ForeignKey("course_materials.id", ondelete="SET NULL"), nullable=True)
+    order: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="upcoming")
+    is_external: Mapped[bool] = mapped_column(default=False)
+    external_url: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    additional_resources: Mapped[List[dict]] = mapped_column(JSON, nullable=False, default=list)
+
+    plan: Mapped["LearningPlanORM"] = relationship("LearningPlanORM", back_populates="lessons")
+    material: Mapped[Optional["CourseMaterialORM"]] = relationship("CourseMaterialORM")
 
 
 class CourseORM(Base):
