@@ -41,6 +41,7 @@ export function Sidebar() {
         </Link>
         <button
           onClick={toggleSidebar}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-muted hover:bg-muted/10 transition-colors"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
