@@ -2,7 +2,7 @@ import json
 import logging
 from sqlalchemy import select
 from app.infrastructure.db.session import SessionLocal
-from app.infrastructure.db.models import CourseMaterialORM, PracticeTestORM
+from app.infrastructure.db.models import CourseMaterialORM, PracticeTestORM, LessonORM
 from datetime import datetime, timezone
 
 try:
@@ -13,14 +13,20 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-async def generate_practice_test(ctx, material_id: int):
+async def generate_practice_test(ctx, lesson_id: int):
     with SessionLocal() as db:
-        test = db.execute(select(PracticeTestORM).where(PracticeTestORM.material_id == material_id)).scalar_one_or_none()
+        test = db.execute(select(PracticeTestORM).where(PracticeTestORM.lesson_id == lesson_id)).scalar_one_or_none()
         if test:
             return
         
-        material = db.execute(select(CourseMaterialORM).where(CourseMaterialORM.id == material_id)).scalar_one_or_none()
+        lesson = db.execute(select(LessonORM).where(LessonORM.id == lesson_id)).scalar_one_or_none()
+        if not lesson or not lesson.material_id:
+            logger.warning(f"No lesson or material found for lesson_id {lesson_id}")
+            return
+        
+        material = db.execute(select(CourseMaterialORM).where(CourseMaterialORM.id == lesson.material_id)).scalar_one_or_none()
         if not material:
+            logger.warning(f"No material found for material_id {lesson.material_id}")
             return
         
         content = material.content
@@ -61,12 +67,12 @@ Text:
                 
             test_content = json.loads(json_str)
             new_test = PracticeTestORM(
-                material_id=material_id,
+                lesson_id=lesson_id,
                 content=test_content,
                 created_at=datetime.now(timezone.utc)
             )
             db.add(new_test)
             db.commit()
-            logger.info(f"Generated practice test for material {material_id}")
+            logger.info(f"Generated practice test for lesson {lesson_id}")
         except Exception as e:
-            logger.error(f"Error generating test for material {material_id}: {e}")
+            logger.error(f"Error generating test for lesson {lesson_id}: {e}")

@@ -1,11 +1,18 @@
 'use client';
 
-import { LearningPlan } from '@/components/features/plan-stepper';
 import { ChevronRight, BookOpen, Zap } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 
-export function PlanList({ plans }: { plans: LearningPlan[] }) {
+export interface LearningPlanSummary {
+  id: number;
+  goal: string;
+  is_active: boolean;
+  last_interacted_at: string;
+  step_count: number;
+}
+
+export function PlanList({ plans }: { plans: LearningPlanSummary[] }) {
   const t = useTranslations('Plan');
 
   return (
@@ -47,7 +54,7 @@ export function PlanList({ plans }: { plans: LearningPlan[] }) {
                 </h3>
                 <div className="flex flex-wrap gap-4 text-xs font-semibold text-muted">
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted/10 text-muted">
-                    {t('stepsCount', { count: plan.steps.length })}
+                    {t('stepsCount', { count: plan.step_count })}
                   </span>
                 </div>
               </div>

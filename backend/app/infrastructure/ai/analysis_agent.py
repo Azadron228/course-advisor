@@ -1,7 +1,9 @@
 import logging
+import json
+import re
 from typing import List
 from pydantic import BaseModel
-from llama_index.core.program import LLMTextCompletionProgram
+from llama_index.core.output_parsers import PydanticOutputParser
 from llama_index.core.llms import LLM
 
 from app.domain.recommendation.entities import (
@@ -32,6 +34,8 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
                 available_courses += f"    * {m.filename} (Lesson ID: {m.id})\n"
     available_courses = available_courses.strip()
 
+    parser = PydanticOutputParser(GlobalAnalysis)
+    
     prompt_template_str = (
         "You are a senior academic strategist. Your goal is to provide a comprehensive "
         "skill gap analysis and a structured learning path for a student based on their "
@@ -53,41 +57,40 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         f"Student Current Skills: {current_skills}\n\n"
         f"Available Internal Courses:\n{available_courses}\n\n"
         f"User Goal and Context: {goal_msg}\n\n"
-        "Output ONLY valid JSON matching the schema. Example format:\n"
-        "{\n"
-        '  "skill_gap_analysis": {\n'
-        '    "overall_gap_score": 0.5,\n'
-        '    "domain_breakdown": [\n'
-        '      {"domain": "Programming", "gap_score": 0.3, "missing_skills": ["Python", "Algorithms"]}\n'
-        '    ],\n'
-        '    "critical_skills": ["Python"]\n'
-        '  },\n'
-        '  "learning_path": [\n'
-        '    {\n'
-        '      "order": 1,\n'
-        '      "title": "Introduction to Computer Science",\n'
-        '      "description": "Learn the basics of computer science using internal course 101.",\n'
-        '      "resource_id": "101",\n'
-        '      "is_external": false,\n'
-        '      "status": "current",\n'
-        '      "materials": [\n'
-        '        {"title": "Python Basics", "description": "Official documentation for Python.", "url": "https://python.org", "type": "documentation"}\n'
-        '      ]\n'
-        '    }\n'
-        '  ]\n'
-        "}"
-    )
-
-    program = LLMTextCompletionProgram.from_defaults(
-        output_cls=GlobalAnalysis,
-        llm=llm,
-        prompt_template_str=prompt_template_str,
-        verbose=True,
+        "STRICT JSON RULES:\n"
+        "1. Output ONLY valid JSON matching the schema.\n"
+        "2. NO markdown formatting, NO ```json blocks.\n"
+        "3. NO trailing commas in lists or objects.\n"
+        "4. ALL double quotes within strings MUST be escaped as \\\".\n"
+        "5. The output must be exactly ONE JSON object.\n\n"
+        "Schema:\n"
+        f"{parser.format('')}\n"
     )
 
     try:
-        return await program.acall()
+        response = await llm.acomplete(prompt_template_str)
+        raw_output = response.text.strip()
+        
+        # Robust JSON extraction
+        # 1. Remove markdown code blocks if present
+        raw_output = re.sub(r"^```json\s*", "", raw_output, flags=re.MULTILINE)
+        raw_output = re.sub(r"```\s*$", "", raw_output, flags=re.MULTILINE)
+        
+        # 2. Find the first '{' and last '}'
+        start = raw_output.find('{')
+        end = raw_output.rfind('}')
+        if start != -1 and end != -1:
+            raw_output = raw_output[start:end+1]
+        
+        # 3. Basic cleanup for common LLM JSON mistakes (optional, but safer)
+        # Handle trailing commas in objects or arrays
+        raw_output = re.sub(r",\s*([}\]])", r"\1", raw_output)
+        
+        return parser.parse(raw_output)
+        
     except Exception as e:
         logger.error(f"Global analysis generation failed: {e}")
-        # Log more info if possible
+        if 'raw_output' in locals():
+            logger.error(f"Raw Output: {raw_output}")
         raise
+

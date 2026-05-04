@@ -65,7 +65,7 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
         api_key = settings.OPENAI_API_KEY
         if not api_key or api_key == "sk-placeholder-key" or api_key == "sk-dummy":
             raise ValueError("OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key.")
-        return OpenAI(model="gpt-5.4-nano", api_key=api_key)
+        return OpenAI(model="gpt-5.4-nano", api_key=api_key, max_tokens=4096)
 
     raise ValueError(f"Unsupported model provider: {provider}")
 

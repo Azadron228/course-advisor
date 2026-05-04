@@ -1,10 +1,9 @@
 import { cookies } from 'next/headers';
-import { LearningPlan } from '@/components/features/plan-stepper';
-import { PlanList } from '@/components/features/plan-list';
+import { PlanList, LearningPlanSummary } from '@/components/features/plan-list';
 import { redirect } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
 
-async function getLearningPlans(token: string): Promise<LearningPlan[]> {
+async function getLearningPlans(token: string): Promise<LearningPlanSummary[]> {
   const response = await fetch(`${API_BASE_URL}/learning-plan/`, {
     headers: { 'Authorization': `Bearer ${token}` },
     next: { revalidate: 0 }

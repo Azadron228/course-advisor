@@ -64,10 +64,10 @@ export function PlanStepper({ plan }: PlanStepperProps) {
   };
 
   const handleViewResource = (step: LearningPathStep) => {
-    if (step.is_external && step.resource_id) {
-       window.open(step.resource_id, '_blank');
-    } else if (step.resource_id && plan.id) {
-       router.push(`/${locale}/plan/${plan.id}/lessons/${step.resource_id}`);
+    if (step.is_external && step.external_url) {
+       window.open(step.external_url, '_blank');
+    } else if (step.id && plan.id) {
+       router.push(`/${locale}/plan/${plan.id}/lessons/${step.id}?order=${step.order}`);
     }
   };
 
@@ -192,31 +192,15 @@ export function PlanStepper({ plan }: PlanStepperProps) {
                 
                 {!isCompleted && !isCurrent ? (
                    <div className="text-[10px] font-bold text-muted/40 uppercase tracking-widest">Locked</div>
-                ) : step.is_external ? (
-                  <button
-                    onClick={() => handleViewResource(step)}
-                    className={cn(
-                      "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md",
-                      isCompleted ? "bg-success/10 text-success hover:bg-success/20" :
-                      "bg-primary text-white hover:bg-primary/90 hover:translate-x-1"
-                    )}
-                  >
-                    {isCompleted ? 'Review' : 'Start Lesson'}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
                 ) : (
                   <button
-                    onClick={() => {
-                      if (step.resource_id && plan.id) {
-                        router.push(`/${locale}/plan/${plan.id}/lessons/${step.resource_id}?order=${step.order}`);
-                      }
-                    }}
-                    disabled={!step.resource_id || !plan.id}
+                    onClick={() => handleViewResource(step)}
+                    disabled={(!step.id && !step.external_url) || !plan.id}
                     className={cn(
                       "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md",
                       isCompleted ? "bg-success/10 text-success hover:bg-success/20" :
                       "bg-primary text-white hover:bg-primary/90 hover:translate-x-1",
-                      (!step.resource_id || !plan.id) && "opacity-50 cursor-not-allowed"
+                      ((!step.id && !step.external_url) || !plan.id) && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {isCompleted ? 'Review' : 'Start Lesson'}

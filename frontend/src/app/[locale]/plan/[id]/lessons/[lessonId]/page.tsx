@@ -52,10 +52,10 @@ export default async function LessonPage({
     notFound();
   }
 
-  // Find the specific step in the plan for this lesson
+  // Find the specific step in the plan for this lesson using the lesson's unique ID
   const currentStep = plan?.steps.find(s => 
-    (order && s.order === parseInt(order)) || 
-    (!order && s.resource_id === lessonId)
+    s.id === parseInt(lessonId) || 
+    (order && s.order === parseInt(order))
   );
 
   // Background trigger for test generation
