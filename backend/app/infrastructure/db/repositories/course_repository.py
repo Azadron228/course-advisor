@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.db.models import CourseORM, CourseMaterialORM, CourseMaterialChunkORM
 from app.domain.catalog.entities import Course, CourseMaterial, CourseMaterialChunk
 import json
+from typing import List, Optional
 
 
 class CourseRepository:
@@ -88,9 +89,10 @@ class CourseRepository:
             self.db.commit()
 
     # Materials management
-    def add_material(self, material: CourseMaterial) -> CourseMaterial:
+    def add_material(self, material: CourseMaterial, plan_id: Optional[int] = None) -> CourseMaterial:
         m_orm = CourseMaterialORM(
             course_id=material.course_id,
+            plan_id=plan_id,
             filename=material.filename,
             content=material.content,
             status=material.status,

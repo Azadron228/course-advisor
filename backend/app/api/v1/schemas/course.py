@@ -21,6 +21,11 @@ class CourseMaterialPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CourseMaterialDetail(CourseMaterialPublic):
+    content: str
+    score: Optional[int] = None
+
+
 class CourseBase(BaseModel):
     subject_name: str
     description: str

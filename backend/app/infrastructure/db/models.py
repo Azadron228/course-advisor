@@ -81,6 +81,7 @@ class CourseMaterialORM(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
+    plan_id: Mapped[Optional[int]] = mapped_column(ForeignKey("learning_plans.id", ondelete="CASCADE"), nullable=True)
     filename: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String, default="pending")  # pending, analyzed, error

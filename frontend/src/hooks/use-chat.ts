@@ -30,7 +30,7 @@ export function useChat() {
     queryKey: ['chat-sessions'],
     queryFn: async () => {
       try {
-        return await apiClient.get<ChatSession[]>('/recommendations/chat/sessions');
+        return await apiClient.get<ChatSession[]>('/chat/sessions');
       } catch (error) {
         console.error('Failed to fetch chat sessions:', error);
         return [];
@@ -44,7 +44,7 @@ export function useChat() {
     queryFn: async () => {
       if (!currentSessionId) return [];
       try {
-        const detail = await apiClient.get<{ messages: Message[] }>(`/recommendations/chat/sessions/${currentSessionId}`);
+        const detail = await apiClient.get<{ messages: Message[] }>(`/chat/sessions/${currentSessionId}`);
         return detail.messages;
       } catch (error) {
         console.error('Failed to fetch chat history:', error);
@@ -64,8 +64,7 @@ export function useChat() {
   const clearHistory = useCallback(async (chatId: number) => {
     setIsClearing(true);
     try {
-      const url = `/recommendations/chat/history?chat_id=${chatId}`;
-      await apiClient.delete(url);
+      await apiClient.delete(`/chat/${chatId}`);
       
       // Invalidate the sessions list
       queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
@@ -106,7 +105,7 @@ export function useChat() {
 
       // 3. Start streaming
       await apiClient.stream(
-        '/recommendations/chat',
+        '/chat',
         { message: content, session_id: currentSessionId },
         (chunk) => {
           // Check if chunk is a JSON object containing session_id (some backends might send it as first chunk)
@@ -134,7 +133,7 @@ export function useChat() {
       
       // If it was a new session, we need to find it and set it as current
       if (!currentSessionId) {
-        const updatedSessions = await apiClient.get<ChatSession[]>('/recommendations/chat/sessions');
+        const updatedSessions = await apiClient.get<ChatSession[]>('/chat/sessions');
         if (updatedSessions.length > 0) {
           setCurrentSessionId(updatedSessions[0].id);
         }

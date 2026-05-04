@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2 } from 'lucide-r
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
+import Cookies from 'js-cookie';
 
 interface Question {
   question: string;
@@ -53,10 +54,14 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
       try {
         const finalScore = score + (selectedOption === currentQuestion.correct_answer_index ? 1 : 0);
         const percentage = Math.round((finalScore / questions.length) * 100);
+        const token = Cookies.get('token');
         
         await fetch(`${API_BASE_URL}/lessons/${lessonId}/test/submit`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ score: percentage })
         });
       } catch (e) {

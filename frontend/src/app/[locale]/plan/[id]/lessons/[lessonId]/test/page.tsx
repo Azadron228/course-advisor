@@ -1,10 +1,12 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { PracticeTestUI } from '@/components/features/practice-test-ui';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
+import { cookies } from 'next/headers';
 
-async function getPracticeTest(lessonId: string) {
+async function getPracticeTest(token: string, lessonId: string) {
   const res = await fetch(`${API_BASE_URL}/lessons/${lessonId}/test`, {
+    headers: { 'Authorization': `Bearer ${token}` },
     cache: 'no-store'
   });
   if (!res.ok) {
@@ -20,7 +22,13 @@ export default async function PracticeTestPage({
   params: { locale: string; id: string; lessonId: string }
 }) {
   const { locale, id, lessonId } = await params;
-  const testData = await getPracticeTest(lessonId);
+  
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (!token) redirect('/login');
+
+  const testData = await getPracticeTest(token, lessonId);
 
   if (!testData) {
     return (

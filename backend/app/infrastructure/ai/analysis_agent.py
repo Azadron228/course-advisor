@@ -22,9 +22,15 @@ class GlobalAnalysis(BaseModel):
 async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str) -> GlobalAnalysis:
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)
-    available_courses = "\n".join(
-        [f"- {c.subject_name} (ID: {c.id}): {c.description}" for c in courses]
-    )
+    
+    available_courses = ""
+    for c in courses:
+        available_courses += f"- {c.subject_name} (Course ID: {c.id}): {c.description}\n"
+        if c.materials:
+            available_courses += "  Available Lessons:\n"
+            for m in c.materials:
+                available_courses += f"    * {m.filename} (Lesson ID: {m.id})\n"
+    available_courses = available_courses.strip()
 
     prompt_template_str = (
         "You are a senior academic strategist. Your goal is to provide a comprehensive "
@@ -34,6 +40,7 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         "2. Domain Scores: Provide a 0-1 gap score per domain.\n"
         "3. Learning Path: Suggest a logical sequence of internal university courses to achieve the goal.\n"
         "   - INTERNAL FIRST: If an internal course (from the list below) covers a needed skill, you MUST use it.\n"
+        "   - RESOURCE ID: For internal steps, you MUST provide the specific Lesson ID (e.g., '1', '5') as 'resource_id'. Pick the most relevant lesson from the course.\n"
         "   - NO EXTERNAL COURSES: Do NOT recommend courses from Coursera, Udemy, edX, or other platforms.\n"
         "   - SUPPLEMENTARY MATERIALS: EVERY step involving an internal course MUST include 1-2 high-quality "
         "     external materials (official documentation, YouTube videos, or technical articles) as extra help.\n"

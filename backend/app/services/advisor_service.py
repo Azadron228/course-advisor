@@ -9,7 +9,7 @@ from app.domain.recommendation.entities import (
     ModelProvider,
     LearningPlan,
 )
-from app.domain.catalog.entities import Course
+from app.domain.catalog.entities import Course, CourseMaterial
 from app.domain.identity.entities import User
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
@@ -116,7 +116,77 @@ class AdvisorService:
             saved_plan = self.plan_repo.create_plan(user.id, new_plan)
             logger.info(f"Successfully saved learning plan {saved_plan.id}")
 
-            # 5. Enqueue practice test generation for all internal steps
+            # 5. Clone materials and specialized lessons for this plan
+            updated_steps = []
+            for step in saved_plan.steps:
+                if not step.is_external and step.resource_id:
+                    try:
+                        # step.resource_id currently holds the template material ID (from AI selection)
+                        original_material_id = int(step.resource_id)
+                        original_material = self.course_repo.get_material(original_material_id)
+                        
+                        if original_material:
+                            # Create a clone
+                            clone = CourseMaterial(
+                                id=0, # Will be set by DB
+                                course_id=original_material.course_id,
+                                filename=f"{goal[:30]} - {original_material.filename}",
+                                content=original_material.content,
+                                status="pending",
+                                created_at="" # Set by DB
+                            )
+                            saved_clone = self.course_repo.add_material(clone, plan_id=saved_plan.id)
+                            
+                            # Update step to point to the clone
+                            step.resource_id = str(saved_clone.id)
+                            logger.info(f"Cloned material {original_material_id} to {saved_clone.id} for plan {saved_plan.id}")
+
+                            # Copy score if it exists for the original material
+                            from app.infrastructure.db.models import UserTestScoreORM
+                            from sqlalchemy import select
+                            from datetime import datetime, timezone
+                            
+                            existing_score = self.plan_repo.db.execute(
+                                select(UserTestScoreORM)
+                                .where(UserTestScoreORM.user_id == user.id)
+                                .where(UserTestScoreORM.material_id == original_material_id)
+                            ).scalar_one_or_none()
+                            
+                            if existing_score:
+                                new_score = UserTestScoreORM(
+                                    user_id=user.id,
+                                    material_id=saved_clone.id,
+                                    score=existing_score.score,
+                                    attempts=existing_score.attempts,
+                                    completed_at=existing_score.completed_at
+                                )
+                                self.plan_repo.db.add(new_score)
+                                self.plan_repo.db.commit()
+                                logger.info(f"Copied score {existing_score.score}% from material {original_material_id} to clone {saved_clone.id}")
+                                
+                                # Mark step as completed if it was already passed
+                                if existing_score.score >= 70: # Assuming 70 is pass
+                                    step.status = "completed"
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Failed to clone material for step {step.title}: {e}")
+                
+                updated_steps.append(step)
+
+            # Update plan with cloned resource IDs
+            # Ensure the first non-completed step is 'current'
+            found_current = False
+            for step in updated_steps:
+                if step.status != "completed":
+                    if not found_current:
+                        step.status = "current"
+                        found_current = True
+                    else:
+                        step.status = "upcoming"
+            
+            saved_plan.steps = updated_steps
+            self.plan_repo.update_plan(user.id, saved_plan)
+
+            # 6. Enqueue practice test generation for all cloned steps
             if arq_pool:
                 for step in saved_plan.steps:
                     if not step.is_external and step.resource_id:
@@ -211,6 +281,13 @@ class AdvisorService:
             
             analysis_data = parsed.skill_gap_analysis
             learning_path = parsed.learning_path
+
+            # Sort and Resolve IDs for recommendation path too
+            if learning_path:
+                learning_path.sort(key=lambda x: x.order)
+                
+                # Make the first one current so it's not locked in preview
+                learning_path[0].status = "current"
         except Exception as e:
             logger.error(f"Global analysis failed: {e}")
 
