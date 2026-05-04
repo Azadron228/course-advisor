@@ -100,45 +100,30 @@ class AdvisorService:
             logger.error(f"AI Generation failed: {gen_err}")
             raise
 
-        # 4. Persist the new plan
+        # 4. Populate lessons with content and check for existing scores BEFORE creating the plan
         try:
-            # Prepare cloning and score copying BEFORE final creation to be more efficient
-            # However, we need the plan_id for CourseMaterial cloning...
-            # We'll stick to create then update, but ensure it's handled cleanly.
-            
             if user.id is None:
                 raise ValueError("User ID cannot be None")
 
             self.plan_repo.deactivate_all_plans(user.id)
             
-            # Initial create to get the ID for material linking
-            initial_plan = LearningPlan(
-                id=None,
-                goal=final_title,
-                steps=parsed.learning_path,
-                is_active=True,
-                skill_level=skill_level,
-                learning_style=learning_style,
-                study_time=study_time,
-                interests=interests,
-            )
-            saved_plan = self.plan_repo.create_plan(user.id, initial_plan)
-            logger.info(f"Successfully saved learning plan {saved_plan.id}")
-
-            # 5. Populate lessons with content and check for existing scores
-            updated_steps = []
-            for step in saved_plan.steps:
+            # Populate lessons with content and check for existing scores
+            for step in parsed.learning_path:
                 if not step.is_external and step.resource_id:
                     try:
-                        # step.resource_id currently holds the template material ID (from AI selection)
-                        original_material_id = int(step.resource_id)
+                        import re
+                        # Extract first integer from step.resource_id
+                        match = re.search(r'\d+', str(step.resource_id))
+                        if not match:
+                            raise ValueError(f"Could not extract integer from resource_id: {step.resource_id}")
+                        
+                        original_material_id = int(match.group())
                         original_material = self.course_repo.get_material(original_material_id)
                         
                         if original_material:
-                            # Copy content directly to the step
-                            step.content = original_material.content
-                            logger.info(f"Copied content from material {original_material_id} to step {step.title}")
-
+                            # We no longer copy content from original_material to step.content
+                            # so that AI can generate it for EVERY step.
+                            
                             # Check if user already passed this material in ANY previous lesson
                             from app.infrastructure.db.models import UserTestScoreORM, LessonORM
                             from sqlalchemy import select
@@ -156,13 +141,10 @@ class AdvisorService:
                                 logger.info(f"Marked step {step.title} as completed based on previous score {existing_score.score}%")
                     except (ValueError, TypeError) as e:
                         logger.warning(f"Failed to process material for step {step.title}: {e}")
-                
-                updated_steps.append(step)
 
-            # Update plan with content and refined status
             # Ensure the first non-completed step is 'current'
             found_current = False
-            for step in updated_steps:
+            for step in parsed.learning_path:
                 if step.status != "completed":
                     if not found_current:
                         step.status = "current"
@@ -170,17 +152,32 @@ class AdvisorService:
                     else:
                         step.status = "upcoming"
             
-            saved_plan.steps = updated_steps
-            # repository will handle mapping Lesson entities back to LessonORM, overwriting existing ones for THIS plan
-            final_plan = self.plan_repo.update_plan(user.id, saved_plan)
+            # Initial create
+            initial_plan = LearningPlan(
+                id=None,
+                goal=final_title,
+                steps=parsed.learning_path,
+                is_active=True,
+                skill_level=skill_level,
+                learning_style=learning_style,
+                study_time=study_time,
+                interests=interests,
+            )
+            saved_plan = self.plan_repo.create_plan(user.id, initial_plan)
+            logger.info(f"Successfully saved learning plan {saved_plan.id}")
 
-            # 6. Copy scores to the new lessons and enqueue background tasks
-            for step in final_plan.steps:
-                # 6.1 Check for existing scores and copy them (for internal material matches)
+            # 5. Copy scores to the new lessons
+            for step in saved_plan.steps:
+                # 5.1 Check for existing scores and copy them (for internal material matches)
                 if not step.is_external and step.resource_id:
                     try:
-                        original_material_id = int(step.resource_id)
+                        import re
+                        match = re.search(r'\d+', str(step.resource_id))
+                        if not match:
+                            continue
+                        original_material_id = int(match.group())
                         from app.infrastructure.db.models import UserTestScoreORM, LessonORM
+                        from sqlalchemy import select
                         
                         existing_score = self.plan_repo.db.execute(
                             select(UserTestScoreORM)
@@ -202,20 +199,9 @@ class AdvisorService:
                             logger.info(f"Copied score {existing_score.score}% to new lesson {step.id}")
                     except (ValueError, TypeError):
                         pass
-
-                # 6.2 Enqueue background work (Content Generation or Practice Tests)
-                if arq_pool:
-                    if step.content:
-                        # Content already exists (e.g. copied from internal material)
-                        await arq_pool.enqueue_job("generate_practice_test", step.id)
-                        logger.info(f"Enqueued practice test generation for lesson {step.id}")
-                    else:
-                        # No content found (e.g. gap filler step or external step)
-                        await arq_pool.enqueue_job("generate_lesson_content", step.id)
-                        logger.info(f"Enqueued AI content generation for lesson {step.id}")
             
             self.plan_repo.db.commit()
-            return final_plan
+            return saved_plan
         except Exception as db_err:
             logger.error(f"Failed to persist learning plan: {db_err}")
             raise

@@ -1,6 +1,26 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch, AsyncMock
+from app.infrastructure.ai.analysis_agent import GlobalAnalysis
+from app.domain.recommendation.entities import Lesson, SkillGapAnalysis, LearningMaterial
 
-def test_plan_summary_list(client: TestClient, admin_token_headers):
+@patch("app.services.advisor_service.generate_global_analysis", new_callable=AsyncMock)
+def test_plan_summary_list(mock_gen, client: TestClient, admin_token_headers):
+    # Mock AI response
+    mock_gen.return_value = GlobalAnalysis(
+        title="Test Plan",
+        skill_gap_analysis=SkillGapAnalysis(overall_gap_score=0.5, domain_breakdown=[], critical_skills=[]),
+        learning_path=[
+            Lesson(
+                order=1,
+                title="Lesson 1",
+                description="Desc",
+                is_external=False,
+                status="current",
+                materials=[]
+            )
+        ]
+    )
+
     # Generate a plan first to ensure we have data
     client.post("/api/v1/learning-plan/generate", 
         json={
