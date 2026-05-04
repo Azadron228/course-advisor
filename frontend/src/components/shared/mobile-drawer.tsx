@@ -3,29 +3,19 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { X, GraduationCap } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  MessageSquare, 
-  User
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/hooks/use-layout-store';
+import { STUDENT_NAV_ITEMS, ADMIN_NAV_ITEMS } from '@/lib/navigation';
+import { NavItems } from './nav-items';
+import { ChatSidebarHistory } from '../features/chat-sidebar-history';
 
 export function MobileDrawer() {
-  const t = useTranslations('Navigation');
   const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const { isMobileDrawerOpen, setMobileDrawerOpen } = useLayoutStore();
 
-  const navItems = [
-    { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
-    { name: t('learningPlan'), href: '/plan', icon: BookOpen },
-    { name: t('aiAdvisor'), href: '/chat', icon: MessageSquare },
-    { name: t('profile'), href: '/profile', icon: User },
-  ];
+  const isAdmin = pathname.includes('/admin');
+  const isChatPage = pathname.includes('/chat');
 
   // Close drawer when route changes
   useEffect(() => {
@@ -43,8 +33,8 @@ export function MobileDrawer() {
       />
       
       {/* Drawer */}
-      <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-surface shadow-2xl animate-in slide-in-from-left duration-300 border-r border-border">
-        <div className="flex items-center justify-between h-16 px-6 border-b border-border">
+      <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-surface shadow-2xl animate-in slide-in-from-left duration-300 border-r border-border flex flex-col">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 dark:shadow-none">
               <GraduationCap size={20} />
@@ -61,34 +51,21 @@ export function MobileDrawer() {
           </button>
         </div>
 
-        <nav className="px-4 py-6 space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-xl transition-all group",
-                  isActive 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted hover:bg-input hover:text-foreground"
-                )}
-              >
-                <Icon 
-                  size={22} 
-                  className={cn(
-                    "transition-colors",
-                    isActive ? "text-primary" : "text-muted group-hover:text-foreground"
-                  )} 
-                />
-                <span className="font-semibold">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <NavItems 
+            items={isAdmin ? ADMIN_NAV_ITEMS : STUDENT_NAV_ITEMS} 
+            onItemClick={() => setMobileDrawerOpen(false)}
+          />
+          
+          {isChatPage && (
+            <div className="mt-8 pt-8 border-t border-border">
+              <h3 className="px-4 text-xs font-semibold text-muted uppercase tracking-wider mb-4">
+                Chat History
+              </h3>
+              <ChatSidebarHistory isCollapsed={false} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
