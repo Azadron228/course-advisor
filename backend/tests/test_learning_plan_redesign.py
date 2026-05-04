@@ -37,7 +37,7 @@ def test_plan_detail_no_materials(client: TestClient, admin_token_headers):
     if plan["steps"]:
         assert "materials" not in plan["steps"][0]
 
-def test_lesson_detail_with_materials(client: TestClient, admin_token_headers):
+def test_step_detail_with_materials(client: TestClient, admin_token_headers):
     r_list = client.get("/api/v1/learning-plan/", headers=admin_token_headers)
     plans = r_list.json()
     if not plans: return
@@ -47,8 +47,9 @@ def test_lesson_detail_with_materials(client: TestClient, admin_token_headers):
     plan = r_plan.json()
     if not plan["steps"]: return
 
-    lesson_id = plan["steps"][0]["id"]
-    r = client.get(f"/api/v1/learning-plan/{plan_id}/lessons/{lesson_id}", headers=admin_token_headers)
+    step_order = plan["steps"][0]["order"]
+    r = client.get(f"/api/v1/learning-plan/{plan_id}/steps/{step_order}", headers=admin_token_headers)
     assert r.status_code == 200
     lesson = r.json()
     assert "materials" in lesson
+    assert "content" in lesson

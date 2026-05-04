@@ -118,6 +118,7 @@ class LessonSummary(BaseModel):
 class LessonDetail(LessonSummary):
     materials: List[LearningMaterial]
     external_url: Optional[str] = None
+    content: Optional[str] = None
 
 
 class LearningPlan(BaseModel):
