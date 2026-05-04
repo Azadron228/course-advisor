@@ -90,7 +90,8 @@ class LearningMaterial(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class LearningPathStep(BaseModel):
+class Lesson(BaseModel):
+    id: Optional[int] = None
     order: int
     title: str
     description: str
@@ -105,7 +106,7 @@ class LearningPathStep(BaseModel):
 class LearningPlan(BaseModel):
     id: Optional[int]
     goal: str
-    steps: List[LearningPathStep]
+    steps: List[Lesson]
     is_active: bool = True
     skill_level: str = "Beginner"
     learning_style: str = "Practical"
@@ -117,7 +118,7 @@ class LearningPlan(BaseModel):
 class RecommendationResponse(BaseModel):
     results: List[RecommendationResult] = Field(default_factory=list)
     skill_gap_analysis: Optional[SkillGapAnalysis] = None
-    learning_path: List[LearningPathStep] = Field(default_factory=list)
+    learning_path: List[Lesson] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 

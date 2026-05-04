@@ -86,46 +86,69 @@ def submit_test(
     
     db.commit()
 
-    # Auto-update learning plan status
-    from app.infrastructure.db.models import LearningPlanORM
-    plan = db.execute(
+    # Auto-update learning plan status via new relational structure
+    from app.infrastructure.db.models import LearningPlanORM, LessonORM
+    from sqlalchemy.orm import selectinload
+    
+    plan = db.scalar(
         select(LearningPlanORM)
+        .options(selectinload(LearningPlanORM.lessons))
         .where(LearningPlanORM.user_id == current_user.id)
         .where(LearningPlanORM.is_active == True)
-    ).scalar_one_or_none()
+    )
     
     if plan:
-        steps = list(plan.steps)
-        # Sort steps by order to ensure next step logic is correct
-        steps.sort(key=lambda x: x.get("order", 0))
-        
+        # Lessons are already ordered by 'order' due to relationship configuration
         found = False
-        for i, step in enumerate(steps):
-            if not step.get("is_external") and step.get("resource_id") == str(material_id):
-                steps[i]["status"] = "completed"
+        for i, lesson in enumerate(plan.lessons):
+            if lesson.material_id == material_id:
+                lesson.status = "completed"
                 found = True
                 
                 # Unlock all following external steps until the next internal one
                 next_idx = i + 1
-                while next_idx < len(steps):
-                    # Always set the very next step to 'current' if it's upcoming
-                    if steps[next_idx].get("status") == "upcoming":
-                        steps[next_idx]["status"] = "current"
+                while next_idx < len(plan.lessons):
+                    next_lesson = plan.lessons[next_idx]
                     
-                    # If this next step is internal, we stop (it remains 'current' but locked)
-                    if not steps[next_idx].get("is_external"):
+                    # Always set the very next step to 'current' if it's upcoming
+                    if next_lesson.status == "upcoming":
+                        next_lesson.status = "current"
+                    
+                    # If this next step is internal, we stop (it remains 'current')
+                    if not next_lesson.is_external:
                         break
                     
                     # If it's external, we mark it as completed and keep moving
-                    # because external steps don't have tests/lessons to 'finish' in our app
-                    steps[next_idx]["status"] = "completed"
+                    next_lesson.status = "completed"
                     next_idx += 1
                 break
         
         if found:
-            # Re-assign to trigger SQLAlchemy JSON update
-            plan.steps = steps
-            db.add(plan)
             db.commit()
 
     return {"message": "Score saved successfully"}
+
+
+class LessonStatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/{lesson_id}/status")
+def update_lesson_status(
+    lesson_id: int,
+    update: LessonStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: UserORM = Depends(get_current_active_user),
+):
+    from app.infrastructure.db.models import LessonORM, LearningPlanORM
+    lesson = db.scalar(
+        select(LessonORM)
+        .join(LearningPlanORM)
+        .where(LessonORM.id == lesson_id)
+        .where(LearningPlanORM.user_id == current_user.id)
+    )
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    lesson.status = update.status
+    db.commit()
+    return {"message": "Status updated"}

@@ -15,11 +15,13 @@ export interface LearningMaterial {
 }
 
 export interface LearningPathStep {
+  id: number | null;
   order: number;
   title: string;
   description: string;
   resource_id: string | null;
   is_external: boolean;
+  external_url?: string;
   status: 'completed' | 'current' | 'upcoming';
   materials: LearningMaterial[];
   score?: number | null;
