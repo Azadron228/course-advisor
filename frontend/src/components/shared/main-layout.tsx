@@ -4,6 +4,7 @@ import { usePathname } from '@/i18n/routing';
 import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { MobileDrawer } from './mobile-drawer';
+import { cn } from '@/lib/utils';
 
 const PUBLIC_ROUTES = ['/login', '/register', '/'];
 
@@ -18,13 +19,15 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  const isChatPage = pathname === '/chat';
+
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopNav />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+          <div className={cn("mx-auto h-full", isChatPage ? "max-w-none" : "max-w-7xl")}>
             {children}
           </div>
         </main>

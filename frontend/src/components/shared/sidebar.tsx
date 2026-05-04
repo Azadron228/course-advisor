@@ -14,12 +14,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLayoutStore } from '@/hooks/use-layout-store';
+import { ChatSidebarHistory } from '../features/chat-sidebar-history';
 
 export function Sidebar() {
   const t = useTranslations('Navigation');
   const tCommon = useTranslations('Common');
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useLayoutStore();
+
+  const isChatPage = pathname.includes('/chat');
 
   const navItems = [
     { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard },
@@ -53,44 +56,51 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <nav className="px-3 py-4 space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href === '/chat' && isChatPage);
+            const Icon = item.icon;
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
-                isActive 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-muted hover:bg-muted/10 hover:text-foreground"
-              )}
-            >
-              <Icon 
-                size={20} 
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
                 className={cn(
-                  "flex-shrink-0 transition-colors",
-                  isActive ? "text-primary" : "text-muted group-hover:text-foreground"
-                )} 
-              />
-              {!isCollapsed && (
-                <span className="text-sm font-semibold whitespace-nowrap">
-                  {item.name}
-                </span>
-              )}
-              {isCollapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-surface text-foreground text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-border">
-                  {item.name}
-                </div>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative",
+                  isActive 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-muted hover:bg-muted/10 hover:text-foreground"
+                )}
+              >
+                <Icon 
+                  size={20} 
+                  className={cn(
+                    "flex-shrink-0 transition-colors",
+                    isActive ? "text-primary" : "text-muted group-hover:text-foreground"
+                  )} 
+                />
+                {!isCollapsed && (
+                  <span className="text-sm font-semibold whitespace-nowrap">
+                    {item.name}
+                  </span>
+                )}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-surface text-foreground text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg border border-border">
+                    {item.name}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
+        {isChatPage && !isCollapsed && (
+          <div className="flex-1 flex flex-col min-h-0 border-t border-border pt-4 overflow-hidden">
+            <ChatSidebarHistory isCollapsed={isCollapsed} />
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

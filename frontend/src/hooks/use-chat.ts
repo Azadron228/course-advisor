@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useChatStore } from './use-chat-store';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -20,7 +21,7 @@ export interface ChatSession {
 
 export function useChat() {
   const queryClient = useQueryClient();
-  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const { currentSessionId, setCurrentSessionId } = useChatStore();
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

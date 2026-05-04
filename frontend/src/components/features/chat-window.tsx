@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles, Trash2, Plus, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { useChat } from '@/hooks/use-chat';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -44,64 +44,7 @@ export function ChatWindow() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full max-w-6xl mx-auto bg-surface rounded-2xl shadow-xl shadow-primary/5 border border-border overflow-hidden">
-      {/* Sidebar - Chat History */}
-      <div className="w-64 border-r border-border bg-surface/50 flex flex-col hidden md:flex">
-        <div className="p-4 border-b border-border">
-          <button
-            onClick={() => switchSession(null)}
-            className="w-full py-2.5 px-4 bg-surface border border-border rounded-xl text-sm font-bold text-primary shadow-sm hover:shadow-md hover:border-primary/50 transition-all flex items-center justify-center gap-2"
-          >
-            <Plus size={18} />
-            {tChat('newChat')}
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          {sessions.map((session) => (
-            <div key={session.id} className="relative group/session">
-              <button
-                key={session.id}
-                onClick={() => switchSession(session.id)}
-                className={cn(
-                  "w-full p-3 rounded-xl text-left text-sm transition-all flex items-start gap-3 group",
-                  currentSessionId === session.id
-                    ? "bg-primary/10 text-primary font-semibold border border-border dark:border-primary/20 shadow-sm"
-                    : "text-muted hover:bg-muted/10 hover:shadow-sm hover:border-border border border-transparent"
-                )}
-              >
-                <MessageSquare size={16} className={cn(
-                  "mt-0.5 shrink-0",
-                  currentSessionId === session.id ? "text-primary" : "text-muted group-hover:text-primary"
-                )} />
-                <div className="truncate pr-6">
-                  <div className="truncate">{session.title}</div>
-                  <div className="text-[10px] text-muted font-normal mt-0.5">
-                    {new Date(session.updated_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm(tChat('clearHistory') + '?')) {
-                    clearHistory(session.id);
-                  }
-                }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted opacity-0 group-hover/session:opacity-100 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all z-10"
-                title={tChat('clearHistory')}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
-          {sessions.length === 0 && (
-            <div className="text-center py-8 px-4">
-              <p className="text-xs text-muted font-medium">{tChat('noHistory')}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <div className="flex h-[calc(100vh-8rem)] w-full bg-surface rounded-2xl shadow-xl shadow-primary/5 border border-border overflow-hidden">
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="px-6 py-4 border-b border-border bg-gradient-to-r from-background to-primary/5 flex items-center justify-between">
@@ -115,15 +58,8 @@ export function ChatWindow() {
             <div className="min-w-0">
               <h2 className="font-bold text-foreground tracking-tight flex items-center gap-2 truncate">
                 <span className="truncate">{currentSessionId ? sessions.find(s => s.id === currentSessionId)?.title : tChat('title')}</span>
-                <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] bg-primary/20 text-primary font-bold uppercase tracking-wider">{tCommon('beta')}</span>
               </h2>
               <p className="text-xs text-primary/70 font-medium truncate">{tChat('companion')}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border text-[11px] font-semibold text-primary shadow-sm">
-              <Sparkles size={12} className="text-primary" />
-              {tCommon('aiPowered')}
             </div>
           </div>
         </div>
