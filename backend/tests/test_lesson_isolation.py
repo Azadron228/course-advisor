@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from app.infrastructure.db.models import CourseORM, CourseMaterialORM, LearningPlanORM, LessonORM, PracticeTestORM, UserTestScoreORM
+from app.infrastructure.db.models import CourseORM, CourseMaterialORM, LessonORM, PracticeTestORM
 from app.infrastructure.ai.analysis_agent import GlobalAnalysis
 from app.domain.recommendation.entities import Lesson, SkillGapAnalysis, LearningMaterial
 
@@ -175,7 +175,7 @@ def test_generate_plan_copies_previous_scores(mock_gen, client: TestClient, admi
         headers=admin_token_headers
     )
     plan_a_id = response.json()["id"]
-    lesson_a1_id = db.execute(select(LessonORM.id).where(LessonORM.plan_id == plan_a_id)).scalar()
+    db.execute(select(LessonORM.id).where(LessonORM.plan_id == plan_a_id)).scalar()
     
     # 2. Submit a high score for Plan A Lesson 1
     client.post(f"/api/v1/learning-plan/{plan_a_id}/steps/1/test/submit", json={"score": 90}, headers=admin_token_headers)

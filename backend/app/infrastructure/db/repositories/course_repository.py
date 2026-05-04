@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.db.models import CourseORM, CourseMaterialORM, CourseMaterialChunkORM
 from app.domain.catalog.entities import Course, CourseMaterial, CourseMaterialChunk
 import json
-from typing import List, Optional
+from typing import Optional
 
 
 class CourseRepository:

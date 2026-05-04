@@ -179,3 +179,4 @@ class PlanGenerateRequest(BaseModel):
     study_time: int
     interests: List[str]
     transcript: Optional[List[TranscriptEntry]] = None
+    language: Optional[str] = "en"

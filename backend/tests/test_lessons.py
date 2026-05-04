@@ -1,5 +1,4 @@
-from app.infrastructure.db.models import LearningPlanORM, LessonORM, CourseMaterialORM
-from datetime import datetime, timezone
+from app.infrastructure.db.models import LearningPlanORM, LessonORM
 from sqlalchemy.orm import Session
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.domain.recommendation.entities import LearningPlan, Lesson

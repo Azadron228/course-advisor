@@ -9,7 +9,7 @@ from app.domain.recommendation.entities import (
     ModelProvider,
     LearningPlan,
 )
-from app.domain.catalog.entities import Course, CourseMaterial
+from app.domain.catalog.entities import Course
 from app.domain.identity.entities import User
 from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
@@ -75,6 +75,7 @@ class AdvisorService:
         learning_style = request.learning_style if request else "Practical"
         study_time = request.study_time if request else 10
         interests = request.interests if request else []
+        language = request.language if request and hasattr(request, 'language') else "en"
 
         goal_msg = (
             f"Goal: {goal}. "
@@ -84,8 +85,11 @@ class AdvisorService:
         
         logger.info(f"Generating learning plan for goal: {goal}")
         try:
-            parsed = await generate_global_analysis(llm, student, courses, goal_msg)
+            parsed = await generate_global_analysis(llm, student, courses, goal_msg, language)
             logger.info(f"Successfully generated analysis for {goal}")
+            
+            # Use AI generated title if available
+            final_title = parsed.title if hasattr(parsed, 'title') else goal
             
             # Ensure the first step is 'current' so it's not locked
             if parsed.learning_path:
@@ -110,7 +114,7 @@ class AdvisorService:
             # Initial create to get the ID for material linking
             initial_plan = LearningPlan(
                 id=None,
-                goal=goal,
+                goal=final_title,
                 steps=parsed.learning_path,
                 is_active=True,
                 skill_level=skill_level,
@@ -214,6 +218,7 @@ class AdvisorService:
         courses: Optional[List[Course]] = None,
         preference: Optional[UserPreference] = None,
         provider: ModelProvider = ModelProvider.AUTO,
+        language: str = "en",
     ) -> RecommendationResponse:
         results = []
 
@@ -283,7 +288,7 @@ class AdvisorService:
         try:
             llm = get_model(provider)
             goal_msg = f"Recommendation interests: {', '.join(preference.interest_tags)}"
-            parsed = await generate_global_analysis(llm, student, courses, goal_msg)
+            parsed = await generate_global_analysis(llm, student, courses, goal_msg, language)
             
             analysis_data = parsed.skill_gap_analysis
             learning_path = parsed.learning_path

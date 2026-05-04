@@ -1,5 +1,4 @@
 import logging
-import json
 import re
 from typing import List
 from pydantic import BaseModel
@@ -17,11 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class GlobalAnalysis(BaseModel):
+    title: str
     skill_gap_analysis: SkillGapAnalysis
     learning_path: List[Lesson]
 
 
-async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str) -> GlobalAnalysis:
+async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str, language: str = "en") -> GlobalAnalysis:
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)
     
@@ -40,9 +40,11 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         "You are a senior academic strategist. Your goal is to provide a comprehensive "
         "skill gap analysis and a structured learning path for a student based on their "
         "transcript and a list of available courses.\n\n"
-        "1. Skill Gap Map: Identify missing skills and group them by domain.\n"
-        "2. Domain Scores: Provide a 0-1 gap score per domain.\n"
-        "3. Learning Path: Suggest a logical sequence of internal university courses to achieve the goal.\n"
+        f"OUTPUT LANGUAGE: You MUST provide all text content (titles, descriptions, reasoning) in the following language: {language}.\n\n"
+        "1. TITLE: Generate a catchy, professional, and specific title for this learning plan based on the user's goal.\n"
+        "2. Skill Gap Map: Identify missing skills and group them by domain.\n"
+        "3. Domain Scores: Provide a 0-1 gap score per domain.\n"
+        "4. Learning Path: Suggest a logical sequence of internal university courses to achieve the goal.\n"
         "   - INTERNAL FIRST: If an internal course (from the list below) covers a needed skill, you MUST use it.\n"
         "   - RESOURCE ID: For internal steps, you MUST provide the specific Lesson ID (e.g., '1', '5') as 'resource_id'. Pick the most relevant lesson from the course.\n"
         "   - NO EXTERNAL COURSES: Do NOT recommend courses from Coursera, Udemy, edX, or other platforms.\n"

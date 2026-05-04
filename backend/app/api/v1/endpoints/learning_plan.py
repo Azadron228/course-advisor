@@ -5,7 +5,7 @@ from app.api.deps import get_current_active_user, get_advisor_service, get_servi
 from app.domain.identity.entities import User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
-from app.infrastructure.db.models import LearningPlanORM, LessonORM, PracticeTestORM, UserTestScoreORM
+from app.infrastructure.db.models import LearningPlanORM, PracticeTestORM, UserTestScoreORM
 from app.api.v1.schemas.recommendations import (
     LearningPlan, 
     PlanGenerateRequest, 
@@ -144,8 +144,8 @@ def submit_step_test(
     
     if plan:
         found_idx = -1
-        for i, l in enumerate(plan.lessons):
-            if l.id == lesson.id:
+        for i, lesson_orm in enumerate(plan.lessons):
+            if lesson_orm.id == lesson.id:
                 found_idx = i
                 break
         

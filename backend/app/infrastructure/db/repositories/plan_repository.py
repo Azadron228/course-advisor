@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, selectinload
 from app.infrastructure.db.models import LearningPlanORM, LessonORM, UserTestScoreORM
 from app.domain.recommendation.entities import LearningPlan, Lesson, LearningMaterial
+
+if TYPE_CHECKING:
+    from app.api.v1.schemas.recommendations import LearningPlanSummary, LearningPlanDetail, LessonDetail
 
 
 class PlanRepository:
@@ -12,7 +15,7 @@ class PlanRepository:
 
     def _to_domain(self, o: LearningPlanORM) -> LearningPlan:
         # Collect lesson IDs for scores
-        lesson_ids = [l.id for l in o.lessons]
+        lesson_ids = [lesson.id for lesson in o.lessons]
         
         scores_map = {}
         if lesson_ids:
@@ -28,19 +31,19 @@ class PlanRepository:
             goal=o.goal,
             steps=[
                 Lesson(
-                    id=l.id,
-                    order=l.order,
-                    title=l.title,
-                    description=l.description,
-                    resource_id=str(l.material_id) if l.material_id else None,
-                    is_external=l.is_external,
-                    external_url=l.external_url,
-                    content=l.content,
-                    status=l.status,
-                    materials=[LearningMaterial(**m) for m in l.additional_resources],
-                    score=scores_map.get(l.id)
+                    id=lesson.id,
+                    order=lesson.order,
+                    title=lesson.title,
+                    description=lesson.description,
+                    resource_id=str(lesson.material_id) if lesson.material_id else None,
+                    is_external=lesson.is_external,
+                    external_url=lesson.external_url,
+                    content=lesson.content,
+                    status=lesson.status,
+                    materials=[LearningMaterial(**m) for m in lesson.additional_resources],
+                    score=scores_map.get(lesson.id)
                 ) 
-                for l in o.lessons
+                for lesson in o.lessons
             ],
             is_active=o.is_active,
             skill_level=o.skill_level,
@@ -218,7 +221,7 @@ class PlanRepository:
             return None
             
         # Collect lesson IDs for scores
-        lesson_ids = [l.id for l in o.lessons]
+        lesson_ids = [lesson.id for lesson in o.lessons]
         scores_map = {}
         if lesson_ids:
             scores = self.db.execute(
@@ -235,28 +238,28 @@ class PlanRepository:
             last_interacted_at=o.last_interacted_at,
             steps=[
                 LessonSummary(
-                    id=l.id,
-                    order=l.order,
-                    title=l.title,
-                    description=l.description,
-                    status=l.status,
-                    is_external=l.is_external,
-                    score=scores_map.get(l.id)
+                    id=lesson.id,
+                    order=lesson.order,
+                    title=lesson.title,
+                    description=lesson.description,
+                    status=lesson.status,
+                    is_external=lesson.is_external,
+                    score=scores_map.get(lesson.id)
                 )
-                for l in o.lessons
+                for lesson in o.lessons
             ]
         )
 
     def get_lesson_with_materials(self, user_id: int, plan_id: int, lesson_id: int) -> Optional[LessonDetail]:
         from app.api.v1.schemas.recommendations import LessonDetail, LearningMaterial
-        l = self.db.scalar(
+        lesson_orm = self.db.scalar(
             select(LessonORM)
             .join(LearningPlanORM)
             .where(LessonORM.id == lesson_id)
             .where(LessonORM.plan_id == plan_id)
             .where(LearningPlanORM.user_id == user_id)
         )
-        if not l:
+        if not lesson_orm:
             return None
 
         score = None
@@ -268,16 +271,16 @@ class PlanRepository:
         score = score_rec.score if score_rec else None
 
         return LessonDetail(
-            id=l.id,
-            order=l.order,
-            title=l.title,
-            description=l.description,
-            status=l.status,
-            is_external=l.is_external,
-            external_url=l.external_url,
-            content=l.content,
+            id=lesson_orm.id,
+            order=lesson_orm.order,
+            title=lesson_orm.title,
+            description=lesson_orm.description,
+            status=lesson_orm.status,
+            is_external=lesson_orm.is_external,
+            external_url=lesson_orm.external_url,
+            content=lesson_orm.content,
             score=score,
-            materials=[LearningMaterial(**m) for m in l.additional_resources]
+            materials=[LearningMaterial(**m) for m in lesson_orm.additional_resources]
         )
 
     def get_lesson_by_order(self, user_id: int, plan_id: int, order: int) -> Optional[LessonORM]:

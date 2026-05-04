@@ -120,8 +120,8 @@ def submit_lesson_test(
     
     if plan:
         found_idx = -1
-        for i, l in enumerate(plan.lessons):
-            if l.id == lesson.id:
+        for i, lesson_orm in enumerate(plan.lessons):
+            if lesson_orm.id == lesson.id:
                 found_idx = i
                 break
         
@@ -178,8 +178,8 @@ async def update_lesson(
         )
         if plan:
             found_idx = -1
-            for i, l in enumerate(plan.lessons):
-                if l.id == lesson.id:
+            for i, lesson_orm in enumerate(plan.lessons):
+                if lesson_orm.id == lesson.id:
                     found_idx = i
                     break
             

@@ -1,6 +1,4 @@
-import pytest
 from fastapi.testclient import TestClient
-from app.main import app
 
 def test_plan_summary_list(client: TestClient, admin_token_headers):
     # Generate a plan first to ensure we have data
@@ -27,7 +25,8 @@ def test_plan_summary_list(client: TestClient, admin_token_headers):
 def test_plan_detail_no_materials(client: TestClient, admin_token_headers):
     r_list = client.get("/api/v1/learning-plan/", headers=admin_token_headers)
     plans = r_list.json()
-    if not plans: return
+    if not plans:
+        return
 
     plan_id = plans[0]["id"]
     r = client.get(f"/api/v1/learning-plan/{plan_id}", headers=admin_token_headers)
@@ -40,12 +39,14 @@ def test_plan_detail_no_materials(client: TestClient, admin_token_headers):
 def test_step_detail_with_materials(client: TestClient, admin_token_headers):
     r_list = client.get("/api/v1/learning-plan/", headers=admin_token_headers)
     plans = r_list.json()
-    if not plans: return
+    if not plans:
+        return
 
     plan_id = plans[0]["id"]
     r_plan = client.get(f"/api/v1/learning-plan/{plan_id}", headers=admin_token_headers)
     plan = r_plan.json()
-    if not plan["steps"]: return
+    if not plan["steps"]:
+        return
 
     step_order = plan["steps"][0]["order"]
     r = client.get(f"/api/v1/learning-plan/{plan_id}/steps/{step_order}", headers=admin_token_headers)
