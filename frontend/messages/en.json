@@ -122,6 +122,7 @@
     "dashboard": "Dashboard",
     "learningPlan": "Learning Plan",
     "aiAdvisor": "AI Advisor",
+    "chatHistory": "Chat History",
     "profile": "Profile"
   },
   "Admin": {
