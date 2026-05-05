@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, selectinload
-from app.infrastructure.db.models import LearningPlanORM, LessonORM, UserTestScoreORM
+from app.infrastructure.db.models import LearningPlanORM, LessonORM, UserTestScoreORM, PracticeTestORM
 from app.domain.recommendation.entities import LearningPlan, Lesson, LearningMaterial
 
 if TYPE_CHECKING:
@@ -177,6 +177,21 @@ class PlanRepository:
         return self.db.scalar(
             select(LessonORM).where(LessonORM.id == lesson_id)
         )
+
+    def get_practice_test(self, lesson_id: int) -> Optional[PracticeTestORM]:
+        return self.db.scalar(
+            select(PracticeTestORM).where(PracticeTestORM.lesson_id == lesson_id)
+        )
+
+    def create_practice_test(self, lesson_id: int, content: dict) -> PracticeTestORM:
+        db_test = PracticeTestORM(
+            lesson_id=lesson_id,
+            content=content
+        )
+        self.db.add(db_test)
+        self.db.commit()
+        self.db.refresh(db_test)
+        return db_test
 
     def get_all_summaries(self, user_id: int) -> List[LearningPlanSummary]:
         from sqlalchemy import func
