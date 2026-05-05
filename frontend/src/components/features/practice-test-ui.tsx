@@ -1,5 +1,8 @@
 'use client';
 
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { useState } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,7 +39,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
 
   const handleCheck = () => {
     if (selectedOption === null || isAnswered) return;
-    
+
     setIsAnswered(true);
     if (selectedOption === currentQuestion.correct_answer_index) {
       setScore(prev => prev + 1);
@@ -55,10 +58,10 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
         const finalScore = score + (selectedOption === currentQuestion.correct_answer_index ? 1 : 0);
         const percentage = Math.round((finalScore / questions.length) * 100);
         const token = Cookies.get('token');
-        
+
         await fetch(`${API_BASE_URL}/lessons/${lessonId}/test/submit`, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -86,15 +89,15 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
         </div>
         <h2 className="text-2xl font-bold">Test Completed!</h2>
         <p className="text-muted">You answered {score} out of {questions.length} questions correctly.</p>
-        
+
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-surface border border-border text-foreground rounded-xl font-medium hover:bg-muted/10 transition-colors"
           >
             <RefreshCcw size={18} /> Retake Test
           </button>
-          <Link 
+          <Link
             href={`/${locale}/plan/${planId}/lessons/${lessonId}`}
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
           >
@@ -110,7 +113,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
       {/* Progress */}
       <div className="flex items-center gap-4">
         <div className="flex-1 h-2 bg-surface rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-primary transition-all duration-500 ease-out"
             style={{ width: `${((currentIndex) / questions.length) * 100}%` }}
           />
@@ -123,14 +126,16 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
       {/* Question */}
       <div className="space-y-6">
         <h2 className="text-xl sm:text-2xl font-bold leading-tight">
-          {currentQuestion.question}
+          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+            {currentQuestion.question}
+          </ReactMarkdown>
         </h2>
-        
+
         <div className="space-y-3">
           {currentQuestion.options.map((option, idx) => {
             const isSelected = selectedOption === idx;
             const isCorrect = idx === currentQuestion.correct_answer_index;
-            
+
             let stateClasses = "border-border bg-surface hover:border-primary/50 cursor-pointer";
             if (isAnswered) {
               if (isCorrect) {
@@ -154,7 +159,11 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
                   stateClasses
                 )}
               >
-                <span className="font-medium">{option}</span>
+                <span className="font-medium">
+                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    {option}
+                  </ReactMarkdown>
+                </span>
                 {isAnswered && isCorrect && <CheckCircle2 className="w-5 h-5 text-success" />}
                 {isAnswered && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-destructive" />}
               </button>
@@ -174,7 +183,9 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
             )}
           </h4>
           <p className="text-muted leading-relaxed text-sm">
-            {currentQuestion.explanation}
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+              {currentQuestion.explanation}
+            </ReactMarkdown>
           </p>
         </div>
       )}

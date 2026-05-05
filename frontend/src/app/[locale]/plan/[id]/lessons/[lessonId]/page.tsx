@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { LessonSidebarChat } from '@/components/features/lesson-sidebar-chat';
+import { PracticeTestLoader } from '@/components/features/practice-test-loader';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -61,12 +62,6 @@ export default async function LessonPage({
     s.id === parseInt(lessonId) ||
     (order && s.order === parseInt(order))
   );
-
-  // Background trigger for test generation
-  fetch(`${API_BASE_URL}/lessons/${lessonId}/test`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-    cache: 'no-store'
-  }).catch(() => { });
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
@@ -152,6 +147,23 @@ export default async function LessonPage({
               {lesson.content}
             </ReactMarkdown>
           </div>
+
+          {/* Practice Test */}
+          {lesson.content && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">
+                  Practice Test
+                </h3>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="bg-surface border border-border rounded-3xl p-8">
+                <PracticeTestLoader planId={id} lessonId={lessonId} locale={locale} />
+              </div>
+            </div>
+          )}
 
 
         </div>
