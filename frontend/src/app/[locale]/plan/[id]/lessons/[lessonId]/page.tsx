@@ -40,7 +40,7 @@ export default async function LessonPage({
   // Await the params object before accessing properties
   const { locale, id, lessonId } = await params;
   const { order } = await searchParams;
-  
+
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
@@ -57,8 +57,8 @@ export default async function LessonPage({
   }
 
   // Find the specific step in the plan for this lesson using the lesson's unique ID
-  const currentStep = plan?.steps.find(s => 
-    s.id === parseInt(lessonId) || 
+  const currentStep = plan?.steps.find(s =>
+    s.id === parseInt(lessonId) ||
     (order && s.order === parseInt(order))
   );
 
@@ -66,7 +66,7 @@ export default async function LessonPage({
   fetch(`${API_BASE_URL}/lessons/${lessonId}/test`, {
     headers: { 'Authorization': `Bearer ${token}` },
     cache: 'no-store'
-  }).catch(() => {});
+  }).catch(() => { });
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
@@ -74,7 +74,7 @@ export default async function LessonPage({
       <div className="w-[70%] h-full overflow-y-auto p-8 border-r border-border scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-12">
           {/* Back to Plan */}
-          <Link 
+          <Link
             href={`/${locale}/plan/${id}`}
             className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary transition-colors group"
           >
@@ -94,44 +94,30 @@ export default async function LessonPage({
                 </span>
               </div>
             )}
-            
+
             <h1 className="text-4xl font-black tracking-tight text-foreground">
               {currentStep?.title || lesson.filename}
             </h1>
-            
+
             {currentStep?.description && (
               <p className="text-lg text-muted font-medium leading-relaxed border-l-4 border-primary/20 pl-6 py-2">
                 {currentStep.description}
               </p>
             )}
           </div>
-          
-          {/* Main Lesson Content */}
-
-<div className="prose prose-slate dark:prose-invert max-w-none 
-                prose-headings:font-bold prose-h1:text-3xl 
-                prose-p:text-foreground">
-  <ReactMarkdown 
-  remarkPlugins={[remarkGfm, remarkMath]}
-  rehypePlugins={[rehypeRaw, rehypeKatex]}
-  >
-    {lesson.content}
-  </ReactMarkdown>
-</div>
-
 
           {/* AI-Generated Supplementary Materials */}
-          {currentStep?.materials && currentStep.materials.length > 0 && (
+          {lesson?.materials && lesson.materials.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
-                <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">Supplementary Materials</h3>
+                <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">Материалы</h3>
                 <div className="h-px flex-1 bg-border" />
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {currentStep.materials.map((material, idx) => (
-                  <a 
+                {lesson.materials.map((material, idx) => (
+                  <a
                     key={idx}
                     href={material.url}
                     target="_blank"
@@ -140,9 +126,9 @@ export default async function LessonPage({
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                        {material.type === 'video' ? <Video className="w-4 h-4" /> : 
-                         material.type === 'documentation' ? <Globe className="w-4 h-4" /> : 
-                         <BookOpen className="w-4 h-4" />}
+                        {material.type === 'video' ? <Video className="w-4 h-4" /> :
+                          material.type === 'documentation' ? <Globe className="w-4 h-4" /> :
+                            <BookOpen className="w-4 h-4" />}
                       </div>
                       <ExternalLink className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
                     </div>
@@ -153,6 +139,21 @@ export default async function LessonPage({
               </div>
             </div>
           )}
+
+          {/* Main Lesson Content */}
+
+          <div className="prose prose-slate dark:prose-invert max-w-none 
+                prose-headings:font-bold prose-h1:text-3xl 
+                prose-p:text-foreground">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeRaw, rehypeKatex]}
+            >
+              {lesson.content}
+            </ReactMarkdown>
+          </div>
+
+
         </div>
       </div>
 
