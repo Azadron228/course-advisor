@@ -121,6 +121,19 @@ class LessonDetail(LessonSummary):
     content: Optional[str] = None
 
 
+class Question(BaseModel):
+    text: str
+    options: List[str]
+    correct_answer_index: int
+
+
+class PracticeTestResponse(BaseModel):
+    id: int
+    lesson_id: int
+    questions: List[Question]
+    model_config = ConfigDict(from_attributes=True)
+
+
 class LearningPlan(BaseModel):
     id: Optional[int]
     goal: str
