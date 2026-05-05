@@ -1,11 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
-from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import select
-from app.api.deps import get_current_active_user, get_advisor_service, get_service, get_arq_pool, get_db
+from app.api.deps import get_current_active_user, get_advisor_service, get_service, get_arq_pool
 from app.domain.identity.entities import User
 from app.services.advisor_service import AdvisorService
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
-from app.infrastructure.db.models import LearningPlanORM
 from app.api.v1.schemas.recommendations import (
     LearningPlan, 
     PlanGenerateRequest, 
@@ -14,8 +11,6 @@ from app.api.v1.schemas.recommendations import (
     LessonDetail
 )
 from typing import Dict, List
-from pydantic import BaseModel
-from datetime import datetime, timezone
 
 router = APIRouter()
 

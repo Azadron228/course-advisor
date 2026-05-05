@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { CheckCircle, Circle, Play, ExternalLink, Loader2, GraduationCap, ArrowRight, Award } from 'lucide-react';
-import { updateStepStatus } from '@/app/[locale]/plan/actions';
+import { CheckCircle, Play, ExternalLink, GraduationCap, ArrowRight, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
@@ -44,24 +42,9 @@ interface PlanStepperProps {
 
 export function PlanStepper({ plan }: PlanStepperProps) {
   const t = useTranslations('Plan');
-  const tCommon = useTranslations('Common');
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  const handleMarkComplete = async (order: number) => {
-    if (!plan.id) return;
-    setError(null);
-    startTransition(async () => {
-      try {
-        await updateStepStatus(plan.id!, order, 'completed');
-      } catch (err) {
-        setError(err instanceof Error ? err.message : tCommon('error'));
-      }
-    });
-  };
 
   const handleViewResource = (step: LearningPathStep) => {
     if (step.is_external && step.external_url) {
@@ -108,12 +91,6 @@ export function PlanStepper({ plan }: PlanStepperProps) {
           </div>
         </div>
       </div>
-
-      {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800">
-          {error}
-        </div>
-      )}
 
       {/* Lesson List */}
       <div className="space-y-4">

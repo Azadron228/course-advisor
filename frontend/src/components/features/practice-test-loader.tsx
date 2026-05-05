@@ -7,8 +7,19 @@ import { API_BASE_URL } from '@/lib/config';
 import Cookies from 'js-cookie';
 import { PracticeTestUI } from './practice-test-ui';
 
+interface Question {
+  question: string;
+  options: string[];
+  correct_answer_index: number;
+  explanation: string;
+}
+
+interface TestData {
+  questions: Question[];
+}
+
 export function PracticeTestLoader({ planId, lessonId, locale }: { planId: string, lessonId: string, locale: string }) {
-  const [testData, setTestData] = useState<any>(null);
+  const [testData, setTestData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 

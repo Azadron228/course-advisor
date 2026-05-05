@@ -87,7 +87,7 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
         
         try:
             return parser.parse(raw_output)
-        except Exception as e:
+        except Exception:
             # If standard parser fails, try one more cleanup for common trailing commas
             # but only at the very end of objects/arrays (less aggressive)
             clean_output = re.sub(r",\s*\}", "}", raw_output)
@@ -105,7 +105,7 @@ async def generate_global_analysis(llm: LLM, student: Student, courses: List[Cou
                 with open("/tmp/last_failed_json.json", "w") as f:
                     f.write(raw_output)
                 logger.info("Saved failed JSON to /tmp/last_failed_json.json")
-            except:
+            except Exception:
                 pass
         raise
 

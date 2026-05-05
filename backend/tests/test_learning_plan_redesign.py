@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from app.infrastructure.ai.analysis_agent import GlobalAnalysis
-from app.domain.recommendation.entities import Lesson, SkillGapAnalysis, LearningMaterial
+from app.domain.recommendation.entities import Lesson, SkillGapAnalysis
 
 @patch("app.services.advisor_service.generate_global_analysis", new_callable=AsyncMock)
 def test_plan_summary_list(mock_gen, client: TestClient, admin_token_headers):

@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTranslations } from 'next-intl';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export function LessonSidebarChat({ lessonId, lessonContent }: { lessonId: string, lessonContent: string }) {
+export function LessonSidebarChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);

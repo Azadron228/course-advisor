@@ -19,8 +19,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const isChatPage = pathname === '/chat';
-
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <Sidebar />

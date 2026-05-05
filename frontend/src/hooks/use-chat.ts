@@ -81,12 +81,12 @@ export function useChat() {
     } finally {
       setIsClearing(false);
     }
-  }, [queryClient, currentSessionId]);
+  }, [queryClient, currentSessionId, setCurrentSessionId]);
 
   const switchSession = useCallback((sessionId: number | null) => {
     setCurrentSessionId(sessionId);
     setLocalMessages([]);
-  }, []);
+  }, [setCurrentSessionId]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isSending) return;
@@ -149,7 +149,7 @@ export function useChat() {
     } finally {
       setIsSending(false);
     }
-  }, [isSending, queryClient, currentSessionId]);
+  }, [isSending, queryClient, currentSessionId, setCurrentSessionId]);
 
   return {
     messages,

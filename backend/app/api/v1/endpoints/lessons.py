@@ -15,7 +15,6 @@ try:
     from llama_index.llms.openai import OpenAI
 except ImportError:
     OpenAI = None
-    import openai
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

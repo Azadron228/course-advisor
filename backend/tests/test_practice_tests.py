@@ -113,7 +113,7 @@ def test_get_practice_test_unauthorized(client: TestClient, normal_user_token_he
 
 def test_get_practice_test_not_found(client: TestClient, normal_user_token_headers):
     response = client.get(
-        f"/api/v1/lessons/9999/test",
+        "/api/v1/lessons/9999/test",
         headers=normal_user_token_headers
     )
     assert response.status_code == 404
