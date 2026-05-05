@@ -65,9 +65,8 @@ export default async function LessonPage({
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
-      {/* Main Content (70%) */}
       <div className="w-[70%] h-full overflow-y-auto p-8 border-r border-border scroll-smooth">
-        <div className="max-w-3xl mx-auto space-y-12">
+        <div className="max-w-7xl mx-auto space-y-12">
           {/* Back to Plan */}
           <Link
             href={`/${locale}/plan/${id}`}

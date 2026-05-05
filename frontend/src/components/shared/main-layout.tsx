@@ -27,7 +27,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <TopNav />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className={cn("mx-auto h-full", isChatPage ? "max-w-none" : "max-w-7xl")}>
+          <div className={cn("mx-auto h-full", "max-w-screen-20xl")}>
             {children}
           </div>
         </main>
