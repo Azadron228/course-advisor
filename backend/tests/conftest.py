@@ -94,3 +94,21 @@ def admin_user(db):
 def admin_token_headers(admin_user):
     access_token = create_access_token(data={"sub": admin_user.email})
     return {"Authorization": f"Bearer {access_token}"}
+
+@pytest.fixture
+def normal_user(db):
+    user = UserORM(
+        email="user@example.com",
+        hashed_password=get_password_hash("password"),
+        full_name="Normal User",
+        is_admin=False,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@pytest.fixture
+def normal_user_token_headers(normal_user):
+    access_token = create_access_token(data={"sub": normal_user.email})
+    return {"Authorization": f"Bearer {access_token}"}
