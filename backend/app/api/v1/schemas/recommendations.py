@@ -194,3 +194,20 @@ class PlanGenerateRequest(BaseModel):
     interests: List[str]
     transcript: Optional[List[TranscriptEntry]] = None
     language: Optional[str] = "en"
+
+
+class TestSubmissionRequest(BaseModel):
+    answers: List[int]
+
+
+class TestSubmissionResultItem(BaseModel):
+    question_index: int
+    is_correct: bool
+    correct_answer_index: int
+    explanation: str
+
+
+class TestSubmissionResponse(BaseModel):
+    score: int
+    total: int
+    results: List[TestSubmissionResultItem]
