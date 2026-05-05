@@ -122,9 +122,10 @@ class LessonDetail(LessonSummary):
 
 
 class Question(BaseModel):
-    text: str
+    question: str
     options: List[str]
     correct_answer_index: int
+    explanation: str
 
 
 class PracticeTestResponse(BaseModel):

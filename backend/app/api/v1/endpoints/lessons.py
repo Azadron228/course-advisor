@@ -161,7 +161,11 @@ async def get_lesson_test(
     # 2. Check for existing test
     test_orm = plan_repo.get_practice_test(lesson_id)
     if test_orm:
-        return test_orm
+        return {
+            "id": test_orm.id,
+            "lesson_id": test_orm.lesson_id,
+            "questions": test_orm.content["questions"]
+        }
 
     # 3. Generate test if missing
     logger.info(f"Generating practice test for lesson {lesson_id}")
@@ -179,17 +183,19 @@ Strict Requirements:
 1. Generate exactly 5 multiple-choice questions.
 2. Each question must have 4 options.
 3. Provide the index of the correct answer (0-3).
-4. Use KaTeX/LaTeX for ALL mathematical expressions:
+4. Provide a brief explanation of why the answer is correct.
+5. Use KaTeX/LaTeX for ALL mathematical expressions:
    - Inline math: $x + y = z$
    - Block math: $$ \\frac{{x}}{{y}} $$
-5. Output ONLY a valid JSON array of question objects.
+6. Output ONLY a valid JSON array of question objects.
 
 JSON Schema:
 [
   {{
-    "text": "Question text here",
+    "question": "Question text here",
     "options": ["Option 0", "Option 1", "Option 2", "Option 3"],
-    "correct_answer_index": 0
+    "correct_answer_index": 0,
+    "explanation": "Explanation here"
   }},
   ...
 ]
@@ -221,7 +227,11 @@ JSON Schema:
         
         # Save to DB
         test_orm = plan_repo.create_practice_test(lesson_id, {"questions": questions})
-        return test_orm
+        return {
+            "id": test_orm.id,
+            "lesson_id": test_orm.lesson_id,
+            "questions": test_orm.content["questions"]
+        }
 
     except Exception as e:
         logger.error(f"Error generating test for lesson {lesson_id}: {e}")
