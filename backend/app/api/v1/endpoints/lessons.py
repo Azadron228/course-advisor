@@ -38,15 +38,25 @@ async def get_lesson_detail(
         
     if not lesson.content:
         logger.info(f"Generating content for lesson {lesson_id} in real time")
-        prompt = f"""You are an expert academic educator. Generate a comprehensive, high-quality, and easy-to-understand lesson based on the following title and description.
-The lesson should be structured with clear headings (using Markdown), include key concepts, practical examples, and a summary.
+        
+        prompt = f"""You are an expert academic educator. Generate a comprehensive, well-structured lesson in strict Markdown format.
+
+## Strict Formatting Rules:
+- Use `#` for title, `##` for sections, `###` for subsections
+- Use **bold** for key terms
+- Use bullet and numbered lists where appropriate
+- For ALL mathematical expressions use KaTeX/LaTeX syntax ONLY:
+  - Inline math: wrap in single dollar signs: $x + y = z$
+  - Block math: wrap in double dollar signs on their own line:
+    $$
+    \\frac{{x}}{{2}} + \\frac{{3}}{{4}} = \\frac{{2x+3}}{{4}}
+    $$
+- NEVER use [ ] or \\[ \\] for math — always use $ or $$
+- Do NOT wrap output in ```markdown``` or any code block
+- Start directly with the # title, no preamble
 
 Title: {lesson.title}
 Description: {lesson.description}
-
-Requirement: Provide ONLY the lesson content in Markdown format. 
-DO NOT wrap the response in markdown code blocks or backticks. 
-Start the response directly with the first heading (#).
 """
         try:
             if OpenAI:

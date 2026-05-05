@@ -3,6 +3,8 @@ import { LessonSidebarChat } from '@/components/features/lesson-sidebar-chat';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
 import { cookies } from 'next/headers';
@@ -110,7 +112,8 @@ export default async function LessonPage({
                 prose-headings:font-bold prose-h1:text-3xl 
                 prose-p:text-foreground">
   <ReactMarkdown 
-    remarkPlugins={[remarkGfm]} 
+  remarkPlugins={[remarkGfm, remarkMath]}
+  rehypePlugins={[rehypeRaw, rehypeKatex]}
   >
     {lesson.content}
   </ReactMarkdown>
