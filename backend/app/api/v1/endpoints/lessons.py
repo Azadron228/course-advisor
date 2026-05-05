@@ -4,7 +4,13 @@ from sqlalchemy import select
 from app.api.deps import get_current_active_user, get_service, get_db
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.infrastructure.db.models import LearningPlanORM, LessonORM
-from app.api.v1.schemas.recommendations import LessonDetail, PracticeTestResponse
+from app.api.v1.schemas.recommendations import (
+    LessonDetail, 
+    PracticeTestResponse, 
+    TestSubmissionRequest, 
+    TestSubmissionResponse,
+    TestSubmissionResultItem
+)
 from app.domain.identity.entities import User
 from typing import Dict
 import logging
@@ -235,3 +241,54 @@ JSON Schema:
     except Exception as e:
         logger.error(f"Error generating test for lesson {lesson_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate practice test")
+
+@router.post("/{lesson_id}/test/submit", response_model=TestSubmissionResponse)
+async def submit_lesson_test(
+    lesson_id: int,
+    submission: TestSubmissionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    plan_repo: PlanRepository = Depends(get_service(PlanRepository))
+):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
+
+    # 1. Get lesson and check ownership
+    lesson = plan_repo.get_lesson(lesson_id)
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+
+    plan = plan_repo.get_by_id(current_user.id, lesson.plan_id)
+    if not plan:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # 2. Get the test
+    test_orm = plan_repo.get_practice_test(lesson_id)
+    if not test_orm:
+        raise HTTPException(status_code=404, detail="No practice test found for this lesson")
+
+    questions = test_orm.content["questions"]
+    results = []
+    correct_count = 0
+
+    for i, q in enumerate(questions):
+        submitted_idx = submission.answers[i] if i < len(submission.answers) else -1
+        is_correct = submitted_idx == q["correct_answer_index"]
+        if is_correct:
+            correct_count += 1
+        
+        results.append(TestSubmissionResultItem(
+            question_index=i,
+            is_correct=is_correct,
+            correct_answer_index=q["correct_answer_index"],
+            explanation=q["explanation"]
+        ))
+
+    # 3. Save score
+    plan_repo.save_test_score(current_user.id, lesson_id, correct_count)
+
+    return TestSubmissionResponse(
+        score=correct_count,
+        total=len(questions),
+        results=results
+    )

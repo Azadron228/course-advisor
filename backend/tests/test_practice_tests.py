@@ -117,3 +117,41 @@ def test_get_practice_test_not_found(client: TestClient, normal_user_token_heade
         headers=normal_user_token_headers
     )
     assert response.status_code == 404
+
+def test_submit_practice_test_success(client: TestClient, normal_user_token_headers, seeded_lesson, db):
+    # First generate a test
+    mock_response = AsyncMock()
+    mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        mock_openai.return_value = mock_llm
+        client.get(f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers)
+
+    # Submit answers
+    response = client.post(
+        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [0]}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["score"] == 1
+    assert data["total"] == 1
+    assert data["results"][0]["is_correct"] is True
+
+def test_submit_practice_test_unauthorized(client: TestClient, normal_user_token_headers, other_user_lesson):
+    response = client.post(
+        f"/api/v1/lessons/{other_user_lesson.id}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [0]}
+    )
+    assert response.status_code == 403
+
+def test_submit_practice_test_no_test(client: TestClient, normal_user_token_headers, seeded_lesson):
+    response = client.post(
+        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [0]}
+    )
+    assert response.status_code == 404
