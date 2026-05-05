@@ -44,7 +44,9 @@ The lesson should be structured with clear headings (using Markdown), include ke
 Title: {lesson.title}
 Description: {lesson.description}
 
-Requirement: Provide ONLY the lesson content in Markdown format.
+Requirement: Provide ONLY the lesson content in Markdown format. 
+DO NOT wrap the response in markdown code blocks or backticks. 
+Start the response directly with the first heading (#).
 """
         try:
             if OpenAI:

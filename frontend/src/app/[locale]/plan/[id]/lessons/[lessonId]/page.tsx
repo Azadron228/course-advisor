@@ -105,11 +105,17 @@ export default async function LessonPage({
           </div>
           
           {/* Main Lesson Content */}
-          <div className="bg-surface/30 rounded-3xl p-8 border border-border/50">
-            <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{lesson.content}</ReactMarkdown>
-            </div>
-          </div>
+
+<div className="prose prose-slate dark:prose-invert max-w-none 
+                prose-headings:font-bold prose-h1:text-3xl 
+                prose-p:text-foreground">
+  <ReactMarkdown 
+    remarkPlugins={[remarkGfm]} 
+  >
+    {lesson.content}
+  </ReactMarkdown>
+</div>
+
 
           {/* AI-Generated Supplementary Materials */}
           {currentStep?.materials && currentStep.materials.length > 0 && (
