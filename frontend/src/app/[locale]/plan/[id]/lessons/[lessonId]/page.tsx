@@ -106,10 +106,6 @@ export default async function LessonPage({
           
           {/* Main Lesson Content */}
           <div className="bg-surface/30 rounded-3xl p-8 border border-border/50">
-            <div className="flex items-center gap-2 mb-8 text-muted/60">
-              <BookOpen className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-tighter">Internal University Resource: {lesson.filename}</span>
-            </div>
             <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed">
               <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{lesson.content}</ReactMarkdown>
             </div>
