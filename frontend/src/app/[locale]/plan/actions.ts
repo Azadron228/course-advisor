@@ -98,3 +98,24 @@ export async function generatePlanAction(formData: FormData) {
   // Redirect to the new plan view
   redirect(`/plan/${newPlan.id}`);
 }
+
+export async function deletePlanAction(planId: number) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+
+  if (!token) throw new Error('Authentication required');
+
+  const response = await fetch(`${API_BASE_URL}/learning-plan/${planId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to delete plan');
+  }
+
+  revalidatePath('/plan');
+  revalidatePath('/dashboard');
+  return { success: true };
+}

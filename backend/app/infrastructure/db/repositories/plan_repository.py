@@ -300,3 +300,23 @@ class PlanRepository:
             .values(last_interacted_at=datetime.now(timezone.utc))
         )
         self.db.commit()
+
+    def delete_plan(self, user_id: int, plan_id: int) -> bool:
+        from sqlalchemy import delete
+        
+        # Check if exists and owned by user
+        plan = self.db.scalar(
+            select(LearningPlanORM)
+            .where(LearningPlanORM.id == plan_id)
+            .where(LearningPlanORM.user_id == user_id)
+        )
+        if not plan:
+            return False
+            
+        self.db.execute(
+            delete(LearningPlanORM)
+            .where(LearningPlanORM.id == plan_id)
+            .where(LearningPlanORM.user_id == user_id)
+        )
+        self.db.commit()
+        return True

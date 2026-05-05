@@ -41,6 +41,21 @@ async def get_plan_by_id(
         raise HTTPException(status_code=404, detail="Plan not found")
     return plan
 
+@router.delete("/{plan_id}", status_code=204)
+async def delete_learning_plan(
+    plan_id: int,
+    current_user: User = Depends(get_current_active_user),
+    plan_repo: PlanRepository = Depends(get_service(PlanRepository))
+):
+    if current_user.id is None:
+        raise HTTPException(status_code=401, detail="User ID not found")
+        
+    deleted = plan_repo.delete_plan(current_user.id, plan_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Learning plan not found")
+    
+    return None
+
 @router.get("/{plan_id}/steps/{step_order}", response_model=LessonDetail)
 async def get_step_detail(
     plan_id: int,
