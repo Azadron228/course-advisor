@@ -335,3 +335,29 @@ class PlanRepository:
         )
         self.db.commit()
         return True
+
+    def save_test_score(self, user_id: int, lesson_id: int, score: int) -> UserTestScoreORM:
+        from datetime import datetime, timezone
+        # Check if exists
+        existing = self.db.scalar(
+            select(UserTestScoreORM)
+            .where(UserTestScoreORM.user_id == user_id)
+            .where(UserTestScoreORM.lesson_id == lesson_id)
+        )
+        if existing:
+            existing.score = score
+            existing.attempts += 1
+            existing.completed_at = datetime.now(timezone.utc)
+            self.db.commit()
+            return existing
+        
+        new_score = UserTestScoreORM(
+            user_id=user_id,
+            lesson_id=lesson_id,
+            score=score,
+            attempts=1
+        )
+        self.db.add(new_score)
+        self.db.commit()
+        self.db.refresh(new_score)
+        return new_score
