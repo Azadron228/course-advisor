@@ -161,7 +161,7 @@ class UserTestScoreORM(Base):
     __tablename__ = "user_test_scores"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), nullable=False)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     attempts: Mapped[int] = mapped_column(Integer, default=1)
     completed_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
