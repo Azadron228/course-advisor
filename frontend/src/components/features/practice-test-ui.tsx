@@ -27,6 +27,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,6 +42,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
     if (selectedOption === null || isAnswered) return;
 
     setIsAnswered(true);
+    setUserAnswers(prev => [...prev, selectedOption]);
     if (selectedOption === currentQuestion.correct_answer_index) {
       setScore(prev => prev + 1);
     }
@@ -55,8 +57,6 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
       // Finished
       setIsSubmitting(true);
       try {
-        const finalScore = score + (selectedOption === currentQuestion.correct_answer_index ? 1 : 0);
-        const percentage = Math.round((finalScore / questions.length) * 100);
         const token = Cookies.get('token');
 
         await fetch(`${API_BASE_URL}/lessons/${lessonId}/test/submit`, {
@@ -65,7 +65,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ score: percentage })
+          body: JSON.stringify({ answers: userAnswers })
         });
       } catch (e) {
         console.error("Failed to submit score", e);

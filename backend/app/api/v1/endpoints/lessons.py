@@ -50,6 +50,7 @@ async def get_lesson_detail(
 
 ## Strict Formatting Rules:
 - Use `#` for title, `##` for sections, `###` for subsections
+- The main `#` title MUST be SHORT and MATCH the lesson title provided below.
 - Use **bold** for key terms
 - Use bullet and numbered lists where appropriate
 - For ALL mathematical expressions use KaTeX/LaTeX syntax ONLY:
