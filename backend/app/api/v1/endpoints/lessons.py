@@ -119,28 +119,12 @@ async def update_lesson(
     if not new_status:
         raise HTTPException(status_code=400, detail="Status is required")
 
-    lesson.status = new_status
-    
-    # Auto-unlock next step if completed
     if new_status == "completed":
-        plan = db.scalar(
-            select(LearningPlanORM)
-            .options(selectinload(LearningPlanORM.lessons))
-            .where(LearningPlanORM.id == lesson.plan_id)
-        )
-        if plan:
-            found_idx = -1
-            for i, lesson_orm in enumerate(plan.lessons):
-                if lesson_orm.id == lesson.id:
-                    found_idx = i
-                    break
-            
-            if found_idx != -1 and found_idx + 1 < len(plan.lessons):
-                next_lesson = plan.lessons[found_idx + 1]
-                if next_lesson.status == "upcoming":
-                    next_lesson.status = "current"
-        
-    db.commit()
+        plan_repo.complete_lesson(current_user.id, lesson_id)
+    else:
+        lesson.status = new_status
+        db.commit()
+    
     plan_repo.touch_plan(lesson.plan_id)
     return {"message": "Status updated"}
 
@@ -284,8 +268,12 @@ async def submit_lesson_test(
             explanation=q["explanation"]
         ))
 
-    # 3. Save score
-    plan_repo.save_test_score(current_user.id, lesson_id, correct_count)
+    # 3. Save score as percentage
+    score_percentage = int((correct_count / len(questions)) * 100) if questions else 0
+    plan_repo.save_test_score(current_user.id, lesson_id, score_percentage)
+    
+    # 4. Mark lesson as completed and unlock next one
+    plan_repo.complete_lesson(current_user.id, lesson_id)
 
     return TestSubmissionResponse(
         score=correct_count,

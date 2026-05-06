@@ -100,26 +100,26 @@ async def update_learning_plan_step(
     if not new_status:
         raise HTTPException(status_code=400, detail="Status is required")
 
-    # Update the specific step status
-    updated_steps = sorted(plan.steps, key=lambda x: x.order)
-    found_idx = -1
-    for i, step in enumerate(updated_steps):
-        if step.order == step_order:
-            updated_steps[i] = step.model_copy(update={"status": new_status})
-            found_idx = i
-            break
-            
-    if found_idx == -1:
-        raise HTTPException(status_code=404, detail="Step not found")
-    
-    # Auto-unlock next step if completed
-    if new_status == "completed" and found_idx + 1 < len(updated_steps):
-        next_step = updated_steps[found_idx + 1]
-        if next_step.status == "upcoming":
-            updated_steps[found_idx + 1] = next_step.model_copy(update={"status": "current"})
+    if new_status == "completed":
+        lesson_orm = plan_repo.get_lesson_by_order(current_user.id, plan_id, step_order)
+        if not lesson_orm:
+            raise HTTPException(status_code=404, detail="Step not found")
+        plan_repo.complete_lesson(current_user.id, lesson_orm.id)
+    else:
+        # Update the specific step status
+        updated_steps = sorted(plan.steps, key=lambda x: x.order)
+        found_idx = -1
+        for i, step in enumerate(updated_steps):
+            if step.order == step_order:
+                updated_steps[i] = step.model_copy(update={"status": new_status})
+                found_idx = i
+                break
+                
+        if found_idx == -1:
+            raise HTTPException(status_code=404, detail="Step not found")
         
-    updated_plan = plan.model_copy(update={"steps": updated_steps})
-    result = plan_repo.update_plan(current_user.id, updated_plan)
+        updated_plan = plan.model_copy(update={"steps": updated_steps})
+        plan_repo.update_plan(current_user.id, updated_plan)
     
     plan_repo.touch_plan(plan_id)
-    return result
+    return plan_repo.get_by_id(current_user.id, plan_id)

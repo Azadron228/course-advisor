@@ -155,3 +155,40 @@ def test_submit_practice_test_no_test(client: TestClient, normal_user_token_head
         json={"answers": [0]}
     )
     assert response.status_code == 404
+
+def test_submit_test_unlocks_next_lesson_and_saves_percentage(client: TestClient, normal_user_token_headers, db, normal_user):
+    # Setup: Plan with two lessons
+    plan = LearningPlanORM(user_id=normal_user.id, goal="Test Plan", is_active=True)
+    db.add(plan)
+    db.flush()
+    l1 = LessonORM(plan_id=plan.id, order=1, title="L1", description="D1", status="current")
+    l2 = LessonORM(plan_id=plan.id, order=2, title="L2", description="D2", status="upcoming")
+    db.add(l1)
+    db.add(l2)
+    db.commit()
+
+    # 1. Generate test for L1
+    mock_response = AsyncMock()
+    mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        mock_openai.return_value = mock_llm
+        client.get(f"/api/v1/lessons/{l1.id}/test", headers=normal_user_token_headers)
+
+    # 2. Submit test
+    response = client.post(
+        f"/api/v1/lessons/{l1.id}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [0]}
+    )
+    assert response.status_code == 200
+
+    # 3. Verify L1 completed, L2 current, and score is 100
+    response = client.get(f"/api/v1/learning-plan/{plan.id}", headers=normal_user_token_headers)
+    data = response.json()
+    steps = {s["id"]: s for s in data["steps"]}
+    
+    assert steps[l1.id]["status"] == "completed"
+    assert steps[l1.id]["score"] == 100
+    assert steps[l2.id]["status"] == "current"

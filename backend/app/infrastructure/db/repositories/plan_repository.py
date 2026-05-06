@@ -336,6 +336,39 @@ class PlanRepository:
         self.db.commit()
         return True
 
+    def complete_lesson(self, user_id: int, lesson_id: int) -> bool:
+        from sqlalchemy.orm import selectinload
+        lesson = self.db.scalar(select(LessonORM).where(LessonORM.id == lesson_id))
+        if not lesson:
+            return False
+            
+        # Check ownership
+        plan = self.db.scalar(
+            select(LearningPlanORM)
+            .options(selectinload(LearningPlanORM.lessons))
+            .where(LearningPlanORM.id == lesson.plan_id)
+            .where(LearningPlanORM.user_id == user_id)
+        )
+        if not plan:
+            return False
+            
+        lesson.status = "completed"
+        
+        # Auto-unlock next step
+        found_idx = -1
+        for i, l in enumerate(plan.lessons):
+            if l.id == lesson.id:
+                found_idx = i
+                break
+        
+        if found_idx != -1 and found_idx + 1 < len(plan.lessons):
+            next_lesson = plan.lessons[found_idx + 1]
+            if next_lesson.status == "upcoming":
+                next_lesson.status = "current"
+                
+        self.db.commit()
+        return True
+
     def save_test_score(self, user_id: int, lesson_id: int, score: int) -> UserTestScoreORM:
         from datetime import datetime, timezone
         # Check if exists
