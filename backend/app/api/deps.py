@@ -11,6 +11,7 @@ from app.api.v1.schemas.auth import TokenData
 from app.core.config import settings
 from app.core.container import get_container
 from app.services.advisor_service import AdvisorService
+from app.services.learning_plan_service import LearningPlanService
 from app.infrastructure.cache.redis_chat import RedisChatHistory
 from app.infrastructure.db.repositories.chat_repository import ChatRepository
 
@@ -26,6 +27,10 @@ def get_service(service_type: type):
 
 
 def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorService))):
+    return service
+
+
+def get_learning_plan_service(service: LearningPlanService = Depends(get_service(LearningPlanService))):
     return service
 
 
