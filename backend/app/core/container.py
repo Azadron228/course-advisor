@@ -12,6 +12,7 @@ from app.infrastructure.cache.redis_chat import RedisChatHistory
 from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.rag import RAGScorer
 from app.services.advisor_service import AdvisorService
+from app.services.learning_plan_service import LearningPlanService
 
 
 @lru_cache(1)
@@ -36,5 +37,6 @@ def get_container() -> punq.Container:
 
     # Application Services
     container.register(AdvisorService)
+    container.register(LearningPlanService)
 
     return container
