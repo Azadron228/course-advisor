@@ -13,6 +13,8 @@ from app.domain.recommendation.scoring import ScoringService
 from app.infrastructure.ai.rag import RAGScorer
 from app.services.advisor_service import AdvisorService
 from app.services.learning_plan_service import LearningPlanService
+from app.services.lesson_service import LessonService
+from app.services.chat_service import ChatService
 
 
 @lru_cache(1)
@@ -38,5 +40,7 @@ def get_container() -> punq.Container:
     # Application Services
     container.register(AdvisorService)
     container.register(LearningPlanService)
+    container.register(LessonService)
+    container.register(ChatService)
 
     return container

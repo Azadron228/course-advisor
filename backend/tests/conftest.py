@@ -57,6 +57,9 @@ def client(db):
         from app.domain.recommendation.scoring import ScoringService
         from app.infrastructure.ai.rag import RAGScorer
         from app.services.advisor_service import AdvisorService
+        from app.services.learning_plan_service import LearningPlanService
+        from app.services.lesson_service import LessonService
+        from app.services.chat_service import ChatService
 
         container = punq.Container()
         container.register(Session, instance=db)
@@ -69,6 +72,9 @@ def client(db):
         container.register(RAGScorer)
         container.register(ScoringService)
         container.register(AdvisorService)
+        container.register(LearningPlanService)
+        container.register(LessonService)
+        container.register(ChatService)
         return container
 
     app.dependency_overrides[get_db] = override_get_db

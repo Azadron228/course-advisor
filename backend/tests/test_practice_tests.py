@@ -60,7 +60,7 @@ def test_get_practice_test_success(client: TestClient, normal_user_token_headers
     mock_response = AsyncMock()
     mock_response.text = '[{"question": "What is Python?", "options": ["A snake", "A language", "Both", "None"], "correct_answer_index": 2, "explanation": "It is both."}]'
     
-    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.OpenAI") as mock_openai:
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
         mock_openai.return_value = mock_llm
@@ -81,7 +81,7 @@ def test_get_practice_test_persistence(client: TestClient, normal_user_token_hea
     mock_response = AsyncMock()
     mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
     
-    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.OpenAI") as mock_openai:
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
         mock_openai.return_value = mock_llm
@@ -122,7 +122,7 @@ def test_submit_practice_test_success(client: TestClient, normal_user_token_head
     # First generate a test
     mock_response = AsyncMock()
     mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
-    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.OpenAI") as mock_openai:
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
         mock_openai.return_value = mock_llm
@@ -170,7 +170,7 @@ def test_submit_test_unlocks_next_lesson_and_saves_percentage(client: TestClient
     # 1. Generate test for L1
     mock_response = AsyncMock()
     mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
-    with patch("app.api.v1.endpoints.lessons.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.OpenAI") as mock_openai:
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
         mock_openai.return_value = mock_llm

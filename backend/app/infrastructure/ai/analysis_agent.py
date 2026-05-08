@@ -21,6 +21,56 @@ class GlobalAnalysis(BaseModel):
     learning_path: List[Lesson]
 
 
+class InterestSuggestions(BaseModel):
+    interests: List[str]
+
+
+async def suggest_interests(llm: LLM, goal: str, language: str = "en") -> List[str]:
+    parser = PydanticOutputParser(InterestSuggestions)
+    
+    prompt_template_str = (
+        "You are an expert career advisor. Your goal is to suggest 5-8 relevant, specific, and professional interest tags "
+        "or specific topics that a student should focus on to achieve their career goal.\n\n"
+        f"USER CAREER GOAL: {goal}\n\n"
+        f"OUTPUT LANGUAGE: You MUST provide all tags in the following language: {language}.\n\n"
+        "1. TAGS: Generate 5-8 tags. Each tag should be 1-3 words long.\n"
+        "2. SPECIFICITY: Avoid generic tags like 'Programming' if the goal is 'React Developer'. Use 'State Management', 'Component Architecture', etc.\n\n"
+        "STRICT JSON RULES:\n"
+        "1. Output ONLY valid JSON matching the schema.\n"
+        "2. NO markdown formatting, NO ```json blocks.\n"
+        "Schema:\n"
+        f"{parser.format('')}\n"
+    )
+
+    try:
+        response = await llm.acomplete(prompt_template_str)
+        raw_output = response.text.strip()
+        
+        # Robust JSON extraction
+        raw_output = re.sub(r"^```json\s*", "", raw_output, flags=re.MULTILINE)
+        raw_output = re.sub(r"```\s*$", "", raw_output, flags=re.MULTILINE)
+        
+        start = raw_output.find('{')
+        end = raw_output.rfind('}')
+        if start != -1 and end != -1:
+            raw_output = raw_output[start:end+1]
+        
+        raw_output = "".join(c for c in raw_output if ord(c) >= 32 or c in "\n\r\t")
+        
+        try:
+            parsed = parser.parse(raw_output)
+            return parsed.interests
+        except Exception:
+            clean_output = re.sub(r",\s*\}", "}", raw_output)
+            clean_output = re.sub(r",\s*\]", "]", clean_output)
+            parsed = parser.parse(clean_output)
+            return parsed.interests
+            
+    except Exception as e:
+        logger.error(f"Interest suggestion failed: {e}")
+        return []
+
+
 async def generate_global_analysis(llm: LLM, student: Student, courses: List[Course], goal_msg: str, language: str = "en") -> GlobalAnalysis:
     transcript_summary = ", ".join([e.subject_name for e in student.transcript])
     current_skills = ", ".join(student.current_skills)

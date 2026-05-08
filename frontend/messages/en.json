@@ -88,7 +88,7 @@
     "defineGoals": "Define your goals and learning preferences.",
     "goalLabel": "What is your goal?",
     "goalPlaceholder": "e.g. Become a Senior Frontend Engineer focusing on React and AI.",
-    "interestsLabel": "Interests & Specific Topics",
+    "interestsLabel": "Topic List",
     "skillLevelLabel": "Current Skill Level",
     "validation": {
       "goalMinLength": "Goal must be at least 5 characters"
