@@ -10,7 +10,7 @@ from app.api.v1.schemas.recommendations import (
     ChatSession as ChatSessionSchema,
     ChatSessionDetail as ChatSessionDetailSchema,
 )
-from app.api.v1.schemas.auth import UserPublic as User
+from app.domain.identity.entities import User
 from app.services.chat_service import ChatService
 from app.api.deps import (
     get_current_active_user,
@@ -27,6 +27,8 @@ async def list_chat_sessions(
     current_user: User = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
 ):
+    if current_user.id is None:
+        return []
     return service.list_sessions(current_user.id)
 
 
@@ -36,6 +38,8 @@ async def get_chat_session(
     current_user: User = Depends(get_current_active_user),
     service: ChatService = Depends(get_chat_service),
 ):
+    if current_user.id is None:
+        return None
     session = service.get_session(current_user.id, session_id)
     return session
 
@@ -57,7 +61,9 @@ async def chat_with_advisor(
     service: ChatService = Depends(get_chat_service),
 ):
     if request.stream:
-        return StreamingResponse(service.stream_chat(current_user, request), media_type="text/event-stream")
+        return StreamingResponse(
+            service.stream_chat(current_user, request), media_type="text/event-stream"
+        )
 
     return await service.handle_chat(current_user, request)
 

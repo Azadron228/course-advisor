@@ -13,7 +13,9 @@ def get_client():
     if client is None:
         api_key = settings.OPENAI_API_KEY
         if not api_key or api_key == "sk-placeholder-key" or api_key == "your-openai-api-key-here":
-            raise ValueError("OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key.")
+            raise ValueError(
+                "OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key."
+            )
         client = OpenAI(api_key=api_key)
     return client
 

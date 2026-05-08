@@ -1,7 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import String, Integer, ForeignKey, Text, Float, JSON, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from pgvector.sqlalchemy import Vector
 from datetime import datetime, timezone
 
 
@@ -59,7 +58,9 @@ class LearningPlanORM(Base):
     learning_style: Mapped[str] = mapped_column(String, nullable=False, default="Practical")
     study_time: Mapped[int] = mapped_column(default=10)
     interests: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
-    last_interacted_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    last_interacted_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
 
     # New relationship
     lessons: Mapped[List["LessonORM"]] = relationship(
@@ -71,8 +72,9 @@ class LessonORM(Base):
     __tablename__ = "lessons"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    plan_id: Mapped[int] = mapped_column(ForeignKey("learning_plans.id", ondelete="CASCADE"), nullable=False)
-    material_id: Mapped[Optional[int]] = mapped_column(ForeignKey("course_materials.id", ondelete="SET NULL"), nullable=True)
+    plan_id: Mapped[int] = mapped_column(
+        ForeignKey("learning_plans.id", ondelete="CASCADE"), nullable=False
+    )
     order: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -83,52 +85,6 @@ class LessonORM(Base):
     additional_resources: Mapped[List[dict]] = mapped_column(JSON, nullable=False, default=list)
 
     plan: Mapped["LearningPlanORM"] = relationship("LearningPlanORM", back_populates="lessons")
-    material: Mapped[Optional["CourseMaterialORM"]] = relationship("CourseMaterialORM")
-
-
-class CourseORM(Base):
-    __tablename__ = "courses"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    subject_name: Mapped[str] = mapped_column(String, nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
-    skills_taught: Mapped[dict] = mapped_column(JSON, nullable=False)
-    embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536))
-
-    materials: Mapped[List["CourseMaterialORM"]] = relationship(
-        back_populates="course", cascade="all, delete-orphan"
-    )
-
-
-class CourseMaterialORM(Base):
-    __tablename__ = "course_materials"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
-    plan_id: Mapped[Optional[int]] = mapped_column(ForeignKey("learning_plans.id", ondelete="CASCADE"), nullable=True)
-    filename: Mapped[str] = mapped_column(String, nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(String, default="pending")  # pending, analyzed, error
-    total_chunks: Mapped[int] = mapped_column(Integer, default=0)
-    processed_chunks: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-    course: Mapped["CourseORM"] = relationship(back_populates="materials")
-    chunks: Mapped[List["CourseMaterialChunkORM"]] = relationship(
-        back_populates="material", cascade="all, delete-orphan"
-    )
-
-
-class CourseMaterialChunkORM(Base):
-    __tablename__ = "course_material_chunks"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    material_id: Mapped[int] = mapped_column(ForeignKey("course_materials.id", ondelete="CASCADE"), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    embedding: Mapped[List[float]] = mapped_column(Vector(1536), nullable=False)
-    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
-
-    material: Mapped["CourseMaterialORM"] = relationship(back_populates="chunks")
 
 
 class ChatSessionORM(Base):
@@ -152,16 +108,24 @@ class ChatMessageORM(Base):
 class PracticeTestORM(Base):
     __tablename__ = "practice_tests"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    lesson_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False
+    )
     content: Mapped[dict] = mapped_column(JSON, nullable=False)  # questions, options, answers
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class UserTestScoreORM(Base):
     __tablename__ = "user_test_scores"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False)
+    lesson_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False
+    )
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     attempts: Mapped[int] = mapped_column(Integer, default=1)
-    completed_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )

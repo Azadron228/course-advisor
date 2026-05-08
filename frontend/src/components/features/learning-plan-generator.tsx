@@ -36,15 +36,12 @@ export function LearningPlanGenerator() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isSubmitting) {
-      setLoadingProgress(0);
       interval = setInterval(() => {
         setLoadingProgress((prev) => {
           if (prev >= 95) return prev;
           return prev + (prev < 50 ? 5 : prev < 80 ? 2 : 0.5);
         });
       }, 200);
-    } else {
-      setLoadingProgress(0);
     }
     return () => clearInterval(interval);
   }, [isSubmitting]);
@@ -65,7 +62,7 @@ export function LearningPlanGenerator() {
 
   type FormValues = z.infer<typeof formSchema>;
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { skill_level: 'Beginner', learning_style: 'Practical', study_time: 10 }
   });
@@ -91,6 +88,7 @@ export function LearningPlanGenerator() {
   };
 
   const onSubmit = async (data: FormValues) => {
+    setLoadingProgress(0);
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append('goal', data.goal);

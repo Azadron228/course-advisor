@@ -176,11 +176,13 @@ class ModelProvider(str, Enum):
     OPENAI = "openai"
     AUTO = "auto"
 
+
 class SkillNode(BaseModel):
     id: str
     label: str
-    mastery_level: int # 0 to 100
+    mastery_level: int  # 0 to 100
     category: str
+
 
 class SkillMapResponse(BaseModel):
     nodes: List[SkillNode]

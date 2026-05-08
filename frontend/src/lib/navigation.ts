@@ -20,6 +20,5 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
 ];
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
-  { name: 'Courses', href: '/admin/courses', icon: BookOpen },
   { name: 'Users', href: '/admin/users', icon: Users },
 ];

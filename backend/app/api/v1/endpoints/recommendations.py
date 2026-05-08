@@ -44,13 +44,8 @@ async def get_recommendations(
         interest_tags=preference.interest_tags,
     )
 
-    # We still need all courses for recommendation
-    courses = advisor_service.course_repo.get_all()
-    if not courses:
-        return RecommendationResponseSchema(results=[])
-
     domain_response = await advisor_service.recommend(
-        student_domain, courses, preference_domain, provider=DomainModelProvider.AUTO
+        student_domain, [], preference_domain, provider=DomainModelProvider.AUTO
     )
 
     # Return domain response (FastAPI will convert dataclass to schema)

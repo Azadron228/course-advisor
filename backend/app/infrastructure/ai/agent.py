@@ -1,7 +1,6 @@
 import json
 import re
 import logging
-from dataclasses import dataclass
 from typing import List, Optional
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from llama_index.core.agent import ReActAgent
@@ -9,8 +8,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
 
-from app.domain.recommendation.entities import ModelProvider, Student, LearningPlan
-from app.domain.catalog.entities import Course
+from app.domain.recommendation.entities import ModelProvider, LearningPlan
 from app.domain.identity.entities import User
 from app.api.v1.schemas.auth import UserPublic
 from app.core.config import settings
@@ -35,7 +33,7 @@ class AgentRecommendation(BaseModel):
         validation_alias=AliasChoices(
             "reasoning", "conclusiveReasoning", "conclusive_reasoning", "reason"
         ),
-        description="Brief explanation of why this course was recommended",
+        description="Brief explanation of why this was recommended",
     )
     tags: List[str] = Field(
         default_factory=list,
@@ -50,12 +48,6 @@ class AgentRecommendation(BaseModel):
         return self
 
 
-@dataclass
-class AgentDeps:
-    student: Student
-    course: Course
-
-
 def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
     # Auto-detection logic - default to OpenAI
     if provider == ModelProvider.AUTO:
@@ -64,8 +56,10 @@ def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
     if provider == ModelProvider.OPENAI:
         api_key = settings.OPENAI_API_KEY
         if not api_key or api_key == "sk-placeholder-key" or api_key == "sk-dummy":
-            raise ValueError("OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key.")
-        return OpenAI(model="gpt-5.4-nano", api_key=api_key, max_tokens=8192)
+            raise ValueError(
+                "OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key."
+            )
+        return OpenAI(model="gpt-4o", api_key=api_key, max_tokens=8192)
 
     raise ValueError(f"Unsupported model provider: {provider}")
 
@@ -87,39 +81,6 @@ async def search_external_resources(query: str) -> str:
     except Exception as e:
         logger.error(f"Tavily search error: {e}")
         return f"Error searching for external resources: {str(e)}"
-
-
-def get_recommendation_agent(llm: LLM, student: Student, course: Course) -> ReActAgent:
-    tools = [FunctionTool.from_defaults(async_fn=search_external_resources)]
-
-    transcript_summary = ", ".join([e.subject_name for e in student.transcript])
-    current_skills = ", ".join(student.current_skills)
-    course_skills = ", ".join(course.skills_taught)
-    
-    system_prompt = (
-        f"You are a professional university advisor. "
-        f"Your task is to analyze a student's transcript and current skills "
-        f"against a specific course description, its taught skills, and supplementary materials. "
-        f"Provide a relevance score (0-1) in a field named 'score', "
-        f"a concise reasoning in a field named 'reasoning', "
-        f"and descriptive tags in a field named 'tags'.\n\n"
-        f"Student Transcript: {transcript_summary}\n"
-        f"Student Current Skills: {current_skills}\n"
-        f"Internal Course: {course.subject_name}\n"
-        f"Internal Course Description: {course.description}\n"
-        f"Skills Taught in Internal Course: {course_skills}\n"
-        f"Your primary goal is to promote this internal university course. "
-        f"If the student needs extra help or if the course covers advanced topics, "
-        f"you MUST use the 'search_external_resources' tool to find 1-2 high-quality "
-        f"supplementary materials (e.g., official documentation, YouTube tutorials, or technical blog posts). "
-        f"NEVER recommend external courses from platforms like Coursera or Udemy. "
-        f"Include the supplementary links in your reasoning to show how the student can succeed in this course.\n\n"
-        f"Output MUST be ONLY a valid JSON object with the fields: score, reasoning, tags."
-    )
-
-    return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
-
-
 
 
 def get_advisor_agent(
@@ -154,21 +115,19 @@ def get_advisor_agent(
         f"- Completed/Current Courses: {transcript_summary}\n"
         f"- Current Skills: {current_skills}\n"
         f"{plan_context}\n"
-        "When giving advice, prioritize the university's internal course catalog. "
-        "Only suggest external resources (documentation, videos, articles) as supplements to internal courses "
-        "or as temporary help for gaps not covered by our curriculum. "
+        "When giving advice, prioritize high-quality external resources (documentation, videos, articles). "
         "NEVER recommend external courses from platforms like Coursera or Udemy. "
         "Be professional, supportive, and comprehensive.\n\n"
         "IMPORTANT: You MUST always conclude your response with 'Final Answer: ' followed by your advice. "
         "Do not include your internal thoughts or tool calls in the final response to the student."
     )
 
-    return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt) # type: ignore
+    return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt)  # type: ignore
 
 
 def is_capable_model(llm: LLM) -> bool:
     model_name = getattr(llm, "model", getattr(llm, "model_name", ""))
-    capable_prefixes = ("gpt-5.4-nano", "claude")
+    capable_prefixes = ("gpt-4o", "claude")
     return any(p in model_name.lower() for p in capable_prefixes)
 
 

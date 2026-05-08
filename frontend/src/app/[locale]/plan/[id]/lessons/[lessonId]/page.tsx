@@ -166,7 +166,7 @@ export default async function LessonPage({
 
       {/* Sidebar Chat (30%) */}
       <div className="w-[30%] h-full bg-surface/50">
-        <LessonSidebarChat lessonId={databaseLessonId} lessonContent={lesson.content} />
+        <LessonSidebarChat />
       </div>
     </div>
   );

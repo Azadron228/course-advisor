@@ -10,33 +10,48 @@ import {
 import { DashboardSummary } from '@/components/features/dashboard-summary';
 import { API_BASE_URL } from '@/lib/config';
 
-interface DashboardResponse {
-  active_plan_title: string | null;
-  progress_percentage: number;
-  welcome_message: string;
+interface LearningPlanSummary {
+  id: number;
+  goal: string;
+  is_active: boolean;
+  last_interacted_at: string;
+  step_count: number;
+}
+
+interface UserProfile {
+  full_name: string | null;
   onboarding_completed: boolean;
 }
 
-async function getDashboardData(): Promise<DashboardResponse> {
+async function getDashboardData() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/dashboard/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      next: { revalidate: 0 } // Disable cache for dashboard to ensure real-time progress
-    });
+    const [plansRes, userRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/learning-plan/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        next: { revalidate: 0 }
+      }),
+      fetch(`${API_BASE_URL}/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        cache: 'no-store'
+      })
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch dashboard: ${response.statusText}`);
-    }
+    const plans: LearningPlanSummary[] = plansRes.ok ? await plansRes.json() : [];
+    const user: UserProfile = userRes.ok ? await userRes.json() : { full_name: null, onboarding_completed: true };
+    
+    const activePlan = plans.find(p => p.is_active);
 
-    return response.json();
+    return {
+      active_plan_title: activePlan?.goal || null,
+      progress_percentage: 0, // Mocked for now as it was in backend
+      welcome_message: `Welcome back, ${user.full_name || 'Student'}!`,
+      onboarding_completed: user.onboarding_completed
+    };
   } catch (error) {
     console.error('Dashboard data fetch error:', error);
-    // Return fallback data in case of error
     return {
       active_plan_title: null,
       progress_percentage: 0,

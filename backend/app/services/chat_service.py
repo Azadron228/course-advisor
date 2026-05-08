@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import List, Optional, Any, AsyncGenerator
+from typing import List, Optional, AsyncGenerator
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -25,6 +25,7 @@ from app.domain.identity.entities import User
 
 logger = logging.getLogger(__name__)
 
+
 class ChatService:
     def __init__(
         self,
@@ -32,7 +33,7 @@ class ChatService:
         chat_history: RedisChatHistory,
         profile_repo: ProfileRepository,
         plan_repo: PlanRepository,
-        db: Session
+        db: Session,
     ):
         self.chat_repo = chat_repo
         self.chat_history = chat_history
@@ -41,10 +42,14 @@ class ChatService:
         self.db = db
 
     def list_sessions(self, user_id: int) -> List[ChatSessionSchema]:
-        return self.chat_repo.list_sessions(user_id)
+        sessions = self.chat_repo.list_sessions(user_id)
+        return [ChatSessionSchema.model_validate(s) for s in sessions]
 
     def get_session(self, user_id: int, session_id: int) -> Optional[ChatSessionDetailSchema]:
-        return self.chat_repo.get_session(user_id, session_id)
+        session = self.chat_repo.get_session(user_id, session_id)
+        if not session:
+            return None
+        return ChatSessionDetailSchema.model_validate(session)
 
     async def delete_session(self, user: User, session_id: int):
         if user.id is None:
@@ -63,7 +68,9 @@ class ChatService:
 
         # Format context strings
         transcript_summary = (
-            ", ".join([f"{e.subject_name} (Credits: {e.credits}, Mark: {e.mark})" for e in transcript])
+            ", ".join(
+                [f"{e.subject_name} (Credits: {e.credits}, Mark: {e.mark})" for e in transcript]
+            )
             if transcript
             else "No transcript available."
         )
@@ -80,10 +87,10 @@ class ChatService:
             session = self.chat_repo.create_session(user.id, title)
             session_id = session.id
             await self.chat_history.clear_history(user.email)
-        
+
         if session_id is None:
-             raise HTTPException(status_code=400, detail="Session ID is required")
-        
+            raise HTTPException(status_code=400, detail="Session ID is required")
+
         session = self.chat_repo.get_session(user.id, session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Chat session not found")
@@ -103,11 +110,13 @@ class ChatService:
             learning_plan=active_plan,
         )
 
-        logger.info(f"Chat request from user {user.email} for session {session_id}: {request.message[:50]}...")
+        logger.info(
+            f"Chat request from user {user.email} for session {session_id}: {request.message[:50]}..."
+        )
 
         handler = agent.run(user_msg=request.message, chat_history=chat_messages)
         result = await handler
-        
+
         response_content = ""
         if isinstance(result, AgentOutput):
             response_content = str(result.response)
@@ -126,9 +135,12 @@ class ChatService:
 
         updated_session = self.chat_repo.get_session(user.id, session_id)
         if not updated_session:
-             raise HTTPException(status_code=404, detail="Session not found after message addition")
-        
-        history = [ChatMessage(role=m.role, content=m.content, created_at=m.created_at) for m in updated_session.messages]
+            raise HTTPException(status_code=404, detail="Session not found after message addition")
+
+        history = [
+            ChatMessage(role=m.role, content=m.content, created_at=m.created_at)
+            for m in updated_session.messages
+        ]
 
         return ChatResponse(response=response_content, history=history, session_id=session_id)
 
@@ -143,7 +155,9 @@ class ChatService:
 
         # Format context strings
         transcript_summary = (
-            ", ".join([f"{e.subject_name} (Credits: {e.credits}, Mark: {e.mark})" for e in transcript])
+            ", ".join(
+                [f"{e.subject_name} (Credits: {e.credits}, Mark: {e.mark})" for e in transcript]
+            )
             if transcript
             else "No transcript available."
         )
@@ -160,10 +174,10 @@ class ChatService:
             session = self.chat_repo.create_session(user.id, title)
             session_id = session.id
             await self.chat_history.clear_history(user.email)
-        
+
         if session_id is None:
-             raise HTTPException(status_code=400, detail="Session ID is required")
-        
+            raise HTTPException(status_code=400, detail="Session ID is required")
+
         session = self.chat_repo.get_session(user.id, session_id)
         if not session:
             raise HTTPException(status_code=404, detail="Chat session not found")
@@ -194,7 +208,7 @@ class ChatService:
 
                 delta = event.delta
                 full_response += delta
-                
+
                 if not final_answer_started:
                     if re.search(r"(?:^|\n)Final Answer:", full_response):
                         final_answer_started = True
@@ -204,7 +218,7 @@ class ChatService:
                             yield part
                 else:
                     yield delta
-        
+
         if not final_answer_started and full_response:
             clean_response = full_response
             if re.search(r"(?:^|\n)Final Answer:", clean_response):

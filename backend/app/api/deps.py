@@ -32,7 +32,9 @@ def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorSer
     return service
 
 
-def get_learning_plan_service(service: LearningPlanService = Depends(get_service(LearningPlanService))):
+def get_learning_plan_service(
+    service: LearningPlanService = Depends(get_service(LearningPlanService)),
+):
     return service
 
 

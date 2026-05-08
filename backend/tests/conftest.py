@@ -19,23 +19,26 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
 
+
 @pytest.fixture
 def db():
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
-    
+
     yield session
-    
+
     session.close()
     transaction.rollback()
     connection.close()
+
 
 @pytest.fixture
 def client(db):
@@ -44,18 +47,15 @@ def client(db):
             yield db
         finally:
             pass
-    
+
     def override_get_container():
         import punq
         from sqlalchemy.orm import Session
-        from app.infrastructure.db.repositories.course_repository import CourseRepository
         from app.infrastructure.db.repositories.user_repository import UserRepository
         from app.infrastructure.db.repositories.profile_repository import ProfileRepository
         from app.infrastructure.db.repositories.plan_repository import PlanRepository
         from app.infrastructure.db.repositories.chat_repository import ChatRepository
         from app.infrastructure.cache.redis_chat import RedisChatHistory
-        from app.domain.recommendation.scoring import ScoringService
-        from app.infrastructure.ai.rag import RAGScorer
         from app.services.advisor_service import AdvisorService
         from app.services.learning_plan_service import LearningPlanService
         from app.services.lesson_service import LessonService
@@ -63,14 +63,11 @@ def client(db):
 
         container = punq.Container()
         container.register(Session, instance=db)
-        container.register(CourseRepository)
         container.register(UserRepository)
         container.register(ProfileRepository)
         container.register(PlanRepository)
         container.register(ChatRepository)
         container.register(RedisChatHistory)
-        container.register(RAGScorer)
-        container.register(ScoringService)
         container.register(AdvisorService)
         container.register(LearningPlanService)
         container.register(LessonService)
@@ -82,6 +79,7 @@ def client(db):
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
 
 @pytest.fixture
 def admin_user(db):
@@ -96,10 +94,12 @@ def admin_user(db):
     db.refresh(user)
     return user
 
+
 @pytest.fixture
 def admin_token_headers(admin_user):
     access_token = create_access_token(data={"sub": admin_user.email})
     return {"Authorization": f"Bearer {access_token}"}
+
 
 @pytest.fixture
 def normal_user(db):
@@ -113,6 +113,7 @@ def normal_user(db):
     db.commit()
     db.refresh(user)
     return user
+
 
 @pytest.fixture
 def normal_user_token_headers(normal_user):

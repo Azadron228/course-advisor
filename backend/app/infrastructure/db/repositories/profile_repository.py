@@ -10,9 +10,7 @@ class ProfileRepository:
         self.db = db
 
     def get_skills(self, user_id: int) -> List[UserSkill]:
-        orms = self.db.scalars(
-            select(UserSkillORM).where(UserSkillORM.user_id == user_id)
-        ).all()
+        orms = self.db.scalars(select(UserSkillORM).where(UserSkillORM.user_id == user_id)).all()
         return [
             UserSkill(
                 skill_name=o.skill_name,
@@ -43,17 +41,13 @@ class ProfileRepository:
             select(UserTranscriptORM).where(UserTranscriptORM.user_id == user_id)
         ).all()
         return [
-            TranscriptEntry(
-                subject_name=o.subject_name, credits=o.credits, mark=o.mark
-            )
+            TranscriptEntry(subject_name=o.subject_name, credits=o.credits, mark=o.mark)
             for o in orms
         ]
 
     def set_transcript(self, user_id: int, entries: List[TranscriptEntry]):
         # Clear existing transcript
-        self.db.execute(
-            delete(UserTranscriptORM).where(UserTranscriptORM.user_id == user_id)
-        )
+        self.db.execute(delete(UserTranscriptORM).where(UserTranscriptORM.user_id == user_id))
 
         # Add new entries
         for e in entries:

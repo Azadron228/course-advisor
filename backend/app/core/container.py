@@ -3,14 +3,11 @@ from functools import lru_cache
 from sqlalchemy.orm import Session
 from app.infrastructure.db.session import SessionLocal
 
-from app.infrastructure.db.repositories.course_repository import CourseRepository
 from app.infrastructure.db.repositories.user_repository import UserRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.infrastructure.db.repositories.chat_repository import ChatRepository
 from app.infrastructure.cache.redis_chat import RedisChatHistory
-from app.domain.recommendation.scoring import ScoringService
-from app.infrastructure.ai.rag import RAGScorer
 from app.services.advisor_service import AdvisorService
 from app.services.learning_plan_service import LearningPlanService
 from app.services.lesson_service import LessonService
@@ -26,16 +23,14 @@ def get_container() -> punq.Container:
     # For punq, we can register a provider that calls SessionLocal()
     container.register(Session, factory=lambda: SessionLocal())
 
-    container.register(CourseRepository)
     container.register(UserRepository)
     container.register(ProfileRepository)
     container.register(PlanRepository)
     container.register(ChatRepository)
     container.register(RedisChatHistory)
-    container.register(RAGScorer)
 
     # Domain
-    container.register(ScoringService)
+    # container.register(ScoringService)
 
     # Application Services
     container.register(AdvisorService)
