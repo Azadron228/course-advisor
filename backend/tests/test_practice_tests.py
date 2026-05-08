@@ -50,12 +50,21 @@ def other_user_lesson(db):
 def test_get_practice_test_success(client: TestClient, normal_user_token_headers, seeded_lesson):
     # Mock LLM
     mock_response = AsyncMock()
-    mock_response.text = '[{"question": "What is Python?", "options": ["A snake", "A language", "Both", "None"], "correct_answer_index": 2, "explanation": "It is both."}]'
+    mock_response.text = '[{"type": "multiple_choice", "question": "What is Python?", "options": ["A snake", "A language", "Both", "None"], "correct_answer_index": 2, "explanation": "It is both."}]'
 
-    with patch("app.services.lesson_service.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
-        mock_openai.return_value = mock_llm
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_response.text))]
+        )
+        mock_openai.return_value = mock_client
 
         response = client.get(
             f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers
@@ -73,12 +82,21 @@ def test_get_practice_test_persistence(
 ):
     # Mock LLM
     mock_response = AsyncMock()
-    mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    mock_response.text = '[{"type": "multiple_choice", "question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
 
-    with patch("app.services.lesson_service.OpenAI") as mock_openai:
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
-        mock_openai.return_value = mock_llm
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_response.text))]
+        )
+        mock_openai.return_value = mock_client
 
         # First call
         response1 = client.get(
@@ -94,7 +112,10 @@ def test_get_practice_test_persistence(
         assert response1.json() == response2.json()
 
         # Ensure LLM called only once
-        assert mock_llm.acomplete.call_count == 1
+        if mock_llama_openai and mock_llama_openai.called:
+             assert mock_llm.acomplete.call_count == 1
+        else:
+             assert mock_client.chat.completions.create.call_count == 1
 
 
 def test_get_practice_test_unauthorized(
@@ -116,11 +137,22 @@ def test_submit_practice_test_success(
 ):
     # First generate a test
     mock_response = AsyncMock()
-    mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
-    with patch("app.services.lesson_service.OpenAI") as mock_openai:
+    mock_response.text = '[{"type": "multiple_choice", "question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
-        mock_openai.return_value = mock_llm
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_response.text))]
+        )
+        mock_openai.return_value = mock_client
+        
         client.get(f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers)
 
     # Submit answers
@@ -134,6 +166,52 @@ def test_submit_practice_test_success(
     assert data["score"] == 1
     assert data["total"] == 1
     assert data["results"][0]["is_correct"] is True
+
+
+def test_submit_practice_test_mixed_types(
+    client: TestClient, normal_user_token_headers, seeded_lesson, db
+):
+    # First generate a test with mixed types
+    mock_response = AsyncMock()
+    mock_json = """
+    [
+        {"type": "multiple_choice", "question": "MCQ", "options": ["O0", "O1", "O2", "O3"], "correct_answer_index": 1, "explanation": "E1"},
+        {"type": "short_answer", "question": "SAQ", "correct_answer_text": "Python", "explanation": "E2"},
+        {"type": "true_false", "question": "true_false", "options": ["True", "False"], "correct_answer_index": 0, "explanation": "E3"},
+        {"type": "fill_in_the_blank", "question": "FIB ____", "correct_answer_text": "is great", "explanation": "E4"}
+    ]
+    """
+    mock_response.text = mock_json
+
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_json))]
+        )
+        mock_openai.return_value = mock_client
+
+        response = client.get(f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers)
+        assert response.status_code == 200
+
+    # Submit answers
+    response = client.post(
+        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [1, "python ", 0, "IS GREAT"]},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["score"] == 4
+    assert data["total"] == 4
+    for i in range(4):
+        assert data["results"][i]["is_correct"] is True
 
 
 def test_submit_practice_test_unauthorized(
@@ -171,11 +249,22 @@ def test_submit_test_unlocks_next_lesson_and_saves_percentage(
 
     # 1. Generate test for L1
     mock_response = AsyncMock()
-    mock_response.text = '[{"question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
-    with patch("app.services.lesson_service.OpenAI") as mock_openai:
+    mock_response.text = '[{"type": "multiple_choice", "question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
         mock_llm = AsyncMock()
         mock_llm.acomplete.return_value = mock_response
-        mock_openai.return_value = mock_llm
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_response.text))]
+        )
+        mock_openai.return_value = mock_client
+        
         client.get(f"/api/v1/lessons/{l1.id}/test", headers=normal_user_token_headers)
 
     # 2. Submit test

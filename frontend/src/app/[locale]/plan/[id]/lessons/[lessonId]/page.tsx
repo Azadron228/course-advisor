@@ -59,6 +59,11 @@ export default async function LessonPage({
   const currentStep = lesson;
   const databaseLessonId = lesson.id.toString();
 
+  // Find if there is a next lesson
+  const currentStepIndex = plan?.steps.findIndex(s => s.order.toString() === stepOrder) ?? -1;
+  const nextStep = (currentStepIndex !== -1 && plan) ? plan.steps[currentStepIndex + 1] : null;
+  const nextStepOrder = nextStep?.order.toString();
+
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
       <div className="w-[70%] h-full overflow-y-auto p-8 border-r border-border scroll-smooth">
@@ -155,7 +160,13 @@ export default async function LessonPage({
               </div>
 
               <div className="bg-surface border border-border rounded-3xl p-8">
-                <PracticeTestLoader planId={id} lessonId={databaseLessonId} stepOrder={stepOrder} locale={locale} />
+                <PracticeTestLoader 
+                  planId={id} 
+                  lessonId={databaseLessonId} 
+                  stepOrder={stepOrder} 
+                  locale={locale}
+                  nextStepOrder={nextStepOrder}
+                />
               </div>
             </div>
           )}

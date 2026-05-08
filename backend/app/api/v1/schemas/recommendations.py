@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Union, Any
 from enum import Enum
 from datetime import datetime
 
@@ -121,10 +121,19 @@ class LessonDetail(LessonSummary):
     content: Optional[str] = None
 
 
+class QuestionType(str, Enum):
+    MULTIPLE_CHOICE = "multiple_choice"
+    SHORT_ANSWER = "short_answer"
+    TRUE_FALSE = "true_false"
+    FILL_IN_THE_BLANK = "fill_in_the_blank"
+
+
 class Question(BaseModel):
+    type: QuestionType = QuestionType.MULTIPLE_CHOICE
     question: str
-    options: List[str]
-    correct_answer_index: int
+    options: Optional[List[str]] = None
+    correct_answer_index: Optional[int] = None
+    correct_answer_text: Optional[str] = None
     explanation: str
 
 
@@ -199,13 +208,14 @@ class PlanGenerateRequest(BaseModel):
 
 
 class TestSubmissionRequest(BaseModel):
-    answers: List[int]
+    answers: List[Union[int, str, bool]]
 
 
 class TestSubmissionResultItem(BaseModel):
     question_index: int
     is_correct: bool
-    correct_answer_index: int
+    correct_answer_index: Optional[int] = None
+    correct_answer_text: Optional[str] = None
     explanation: str
 
 

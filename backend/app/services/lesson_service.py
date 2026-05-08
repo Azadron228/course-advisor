@@ -159,25 +159,27 @@ Lesson Description: {lesson.description}
 Lesson Content: {lesson_content}
 
 Strict Requirements:
-1. Generate exactly 5 multiple-choice questions.
-2. Each question must have 4 options.
-3. Provide the index of the correct answer (0-3).
-4. Provide a brief explanation of why the answer is correct.
-5. Use KaTeX/LaTeX for ALL mathematical expressions:
+1. Generate between 8 and 10 questions of various types:
+   - multiple_choice: 4 options, 1 correct index.
+   - short_answer: concise text answer (1-3 words).
+   - true_false: 2 options (True, False), 1 correct index.
+   - fill_in_the_blank: question with a "____" placeholder, concise text answer (1-3 words).
+2. Distribute types relatively evenly.
+3. Provide a brief explanation of why the answer is correct.
+4. Use KaTeX/LaTeX for ALL mathematical expressions:
    - Inline math: $x + y = z$
    - Block math: $$ \\frac{{x}}{{y}} $$
-6. Output ONLY a valid JSON array of question objects.
+5. Output ONLY a valid JSON array of question objects.
 
-JSON Schema:
-[
-  {{
-    "question": "Question text here",
-    "options": ["Option 0", "Option 1", "Option 2", "Option 3"],
-    "correct_answer_index": 0,
-    "explanation": "Explanation here"
-  }},
-  ...
-]
+JSON Schema for each object:
+{{
+  "type": "multiple_choice" | "short_answer" | "true_false" | "fill_in_the_blank",
+  "question": "Question text here",
+  "options": ["Option 0", "Option 1", ...] (for multiple_choice and true_false ONLY),
+  "correct_answer_index": index (for multiple_choice and true_false ONLY),
+  "correct_answer_text": "text" (for short_answer and fill_in_the_blank ONLY),
+  "explanation": "Explanation here"
+}}
 """
         try:
             if LlamaOpenAI:
@@ -244,8 +246,16 @@ JSON Schema:
         correct_count = 0
 
         for i, q in enumerate(questions):
-            submitted_idx = submission.answers[i] if i < len(submission.answers) else -1
-            is_correct = submitted_idx == q["correct_answer_index"]
+            submitted = submission.answers[i] if i < len(submission.answers) else None
+            is_correct = False
+            
+            q_type = q.get("type", "multiple_choice")
+            if q_type in ["multiple_choice", "true_false"]:
+                is_correct = submitted == q.get("correct_answer_index")
+            elif q_type in ["short_answer", "fill_in_the_blank"]:
+                if isinstance(submitted, str) and q.get("correct_answer_text"):
+                    is_correct = submitted.strip().lower() == q["correct_answer_text"].strip().lower()
+            
             if is_correct:
                 correct_count += 1
 
@@ -253,7 +263,8 @@ JSON Schema:
                 TestSubmissionResultItem(
                     question_index=i,
                     is_correct=is_correct,
-                    correct_answer_index=q["correct_answer_index"],
+                    correct_answer_index=q.get("correct_answer_index"),
+                    correct_answer_text=q.get("correct_answer_text"),
                     explanation=q["explanation"],
                 )
             )
