@@ -79,10 +79,6 @@ export function PlanStepper({ plan }: PlanStepperProps) {
         </div>
         
         <div className="flex gap-4">
-          <div className="px-5 py-3 bg-input rounded-2xl border border-border flex flex-col items-center justify-center min-w-[100px]">
-            <span className="text-[10px] font-bold text-muted uppercase">Level</span>
-            <span className="text-lg font-black text-foreground">{plan.skill_level}</span>
-          </div>
           <div className="px-5 py-3 bg-primary/10 rounded-2xl border border-primary/20 flex flex-col items-center justify-center min-w-[100px]">
             <span className="text-[10px] font-bold text-primary uppercase">Progress</span>
             <span className="text-lg font-black text-primary">
