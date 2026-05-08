@@ -21,7 +21,7 @@ interface TestData {
   questions: Question[];
 }
 
-export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId: string, lessonId: string, locale: string, testData: TestData }) {
+export function PracticeTestUI({ planId, lessonId, stepOrder, locale, testData }: { planId: string, lessonId: string, stepOrder: string, locale: string, testData: TestData }) {
   const questions = testData.questions || [];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -98,7 +98,7 @@ export function PracticeTestUI({ planId, lessonId, locale, testData }: { planId:
             <RefreshCcw size={18} /> Retake Test
           </button>
           <Link
-            href={`/${locale}/plan/${planId}/lessons/${lessonId}`}
+            href={`/${locale}/plan/${planId}/lessons/${stepOrder}`}
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
           >
             Back to Lesson

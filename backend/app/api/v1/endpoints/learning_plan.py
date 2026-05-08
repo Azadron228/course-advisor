@@ -50,7 +50,7 @@ async def delete_learning_plan(
     
     return None
 
-@router.get("/{plan_id}/steps/{step_order}", response_model=LessonDetail)
+@router.get("/{plan_id}/lessons/{step_order}", response_model=LessonDetail)
 async def get_step_detail(
     plan_id: int,
     step_order: int,
@@ -75,7 +75,7 @@ async def generate_learning_plan(
 ):
     return await service.generate_plan(current_user, request, arq_pool)
 
-@router.patch("/{plan_id}/steps/{step_order}", response_model=LearningPlan)
+@router.patch("/{plan_id}/lessons/{step_order}", response_model=LearningPlan)
 async def update_learning_plan_step(
     plan_id: int,
     step_order: int,

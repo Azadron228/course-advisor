@@ -18,7 +18,7 @@ interface TestData {
   questions: Question[];
 }
 
-export function PracticeTestLoader({ planId, lessonId, locale }: { planId: string, lessonId: string, locale: string }) {
+export function PracticeTestLoader({ planId, lessonId, stepOrder, locale }: { planId: string, lessonId: string, stepOrder: string, locale: string }) {
   const [testData, setTestData] = useState<TestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -77,5 +77,5 @@ export function PracticeTestLoader({ planId, lessonId, locale }: { planId: strin
     );
   }
 
-  return <PracticeTestUI planId={planId} lessonId={lessonId} locale={locale} testData={testData} />;
+  return <PracticeTestUI planId={planId} lessonId={lessonId} stepOrder={stepOrder} locale={locale} testData={testData} />;
 }

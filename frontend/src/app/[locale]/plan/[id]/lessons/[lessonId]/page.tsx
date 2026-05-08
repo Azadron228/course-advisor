@@ -13,8 +13,8 @@ import { ExternalLink, Video, BookOpen, Globe, ArrowLeft } from 'lucide-react';
 import { LearningPlan } from '@/components/features/plan-stepper';
 
 // Simple fetch function for server components
-async function getLesson(token: string, lessonId: string) {
-  const res = await fetch(`${API_BASE_URL}/lessons/${lessonId}`, {
+async function getLesson(token: string, planId: string, stepOrder: string) {
+  const res = await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}`, {
     headers: { 'Authorization': `Bearer ${token}` },
     cache: 'no-store'
   });
@@ -32,15 +32,13 @@ async function getLearningPlan(token: string, planId: string): Promise<LearningP
 }
 
 export default async function LessonPage({
-  params,
-  searchParams
+  params
 }: {
   params: { locale: string; id: string; lessonId: string };
-  searchParams: { order?: string };
 }) {
   // Await the params object before accessing properties
   const { locale, id, lessonId } = await params;
-  const { order } = await searchParams;
+  const stepOrder = lessonId; // lessonId in path is now stepOrder
 
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
@@ -49,7 +47,7 @@ export default async function LessonPage({
 
   // Fetch both lesson and plan in parallel
   const [lesson, plan] = await Promise.all([
-    getLesson(token, lessonId),
+    getLesson(token, id, stepOrder),
     getLearningPlan(token, id)
   ]);
 
@@ -57,11 +55,9 @@ export default async function LessonPage({
     notFound();
   }
 
-  // Find the specific step in the plan for this lesson using the lesson's unique ID
-  const currentStep = plan?.steps.find(s =>
-    s.id === parseInt(lessonId) ||
-    (order && s.order === parseInt(order))
-  );
+  // Use the fetched lesson directly
+  const currentStep = lesson;
+  const databaseLessonId = lesson.id.toString();
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
@@ -159,7 +155,7 @@ export default async function LessonPage({
               </div>
 
               <div className="bg-surface border border-border rounded-3xl p-8">
-                <PracticeTestLoader planId={id} lessonId={lessonId} locale={locale} />
+                <PracticeTestLoader planId={id} lessonId={databaseLessonId} stepOrder={stepOrder} locale={locale} />
               </div>
             </div>
           )}
@@ -170,7 +166,7 @@ export default async function LessonPage({
 
       {/* Sidebar Chat (30%) */}
       <div className="w-[30%] h-full bg-surface/50">
-        <LessonSidebarChat lessonId={lessonId} lessonContent={lesson.content} />
+        <LessonSidebarChat lessonId={databaseLessonId} lessonContent={lesson.content} />
       </div>
     </div>
   );
