@@ -170,3 +170,17 @@ class LearningPlanService:
 
         self.plan_repo.touch_plan(plan_id)
         return self.plan_repo.get_by_id(user_id, plan_id)
+
+    async def get_step_test(self, user: User, plan_id: int, step_order: int) -> Any:
+        lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
+        if not lesson_orm:
+            return None
+
+        return await self.lesson_service.get_practice_test(user, lesson_orm.id)
+
+    def submit_step_test(self, user: User, plan_id: int, step_order: int, submission: Any) -> Any:
+        lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
+        if not lesson_orm:
+            return None
+
+        return self.lesson_service.submit_test(user, lesson_orm.id, submission)
