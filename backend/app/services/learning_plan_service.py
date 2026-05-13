@@ -132,13 +132,14 @@ class LearningPlanService:
     def delete_plan(self, user_id: int, plan_id: int) -> bool:
         return self.plan_repo.delete_plan(user_id, plan_id)
 
-    def get_step_detail(self, user_id: int, plan_id: int, step_order: int) -> Any:
+    async def get_step_detail(self, user: User, plan_id: int, step_order: int) -> Any:
         # First find the lesson by order
-        lesson_orm = self.plan_repo.get_lesson_by_order(user_id, plan_id, step_order)
+        lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
         if not lesson_orm:
             return None
 
-        lesson = self.plan_repo.get_lesson_with_materials(user_id, plan_id, lesson_orm.id)
+        # Delegate to LessonService to handle content generation and full detail retrieval
+        lesson = await self.lesson_service.get_lesson_detail(user, lesson_orm.id)
         if not lesson:
             return None
 
@@ -152,26 +153,20 @@ class LearningPlanService:
         if not plan:
             return None
 
-        if new_status == "completed":
-            lesson_orm = self.plan_repo.get_lesson_by_order(user_id, plan_id, step_order)
-            if not lesson_orm:
-                return None
-            self.plan_repo.complete_lesson(user_id, lesson_orm.id)
-        else:
-            # Update the specific step status
-            updated_steps = sorted(plan.steps, key=lambda x: x.order)
-            found_idx = -1
-            for i, step in enumerate(updated_steps):
-                if step.order == step_order:
-                    updated_steps[i] = step.model_copy(update={"status": new_status})
-                    found_idx = i
-                    break
+        lesson_orm = self.plan_repo.get_lesson_by_order(user_id, plan_id, step_order)
+        if not lesson_orm:
+            return None
 
-            if found_idx == -1:
-                return None
+        # Create a mock user for LessonService (since it expects User object)
+        from app.domain.identity.entities import User as DomainUser
 
-            updated_plan = plan.model_copy(update={"steps": updated_steps})
-            self.plan_repo.update_plan(user_id, updated_plan)
+        user = DomainUser(
+            id=user_id, email="", hashed_password=""
+        )  # minimal user for status update
+
+        success = self.lesson_service.update_lesson_status(user, lesson_orm.id, new_status)
+        if not success:
+            return None
 
         self.plan_repo.touch_plan(plan_id)
         return self.plan_repo.get_by_id(user_id, plan_id)
