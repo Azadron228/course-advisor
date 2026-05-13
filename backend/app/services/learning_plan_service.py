@@ -11,6 +11,7 @@ from app.infrastructure.db.repositories.profile_repository import ProfileReposit
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.infrastructure.ai.agent import get_model
 from app.infrastructure.ai.analysis_agent import generate_global_analysis
+from app.services.lesson_service import LessonService
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,11 @@ class LearningPlanService:
         self,
         profile_repo: ProfileRepository,
         plan_repo: PlanRepository,
+        lesson_service: LessonService,
     ):
         self.profile_repo = profile_repo
         self.plan_repo = plan_repo
+        self.lesson_service = lesson_service
 
     async def generate_plan(
         self, user: User, request: Optional[Any] = None, arq_pool: Optional[Any] = None
