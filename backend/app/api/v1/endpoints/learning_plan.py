@@ -8,6 +8,9 @@ from app.api.v1.schemas.recommendations import (
     LearningPlanSummary,
     LearningPlanDetail,
     LessonDetail,
+    PracticeTestResponse,
+    TestSubmissionRequest,
+    TestSubmissionResponse,
 )
 from typing import Dict, List
 
@@ -64,11 +67,42 @@ async def get_step_detail(
     if current_user.id is None:
         raise HTTPException(status_code=401, detail="User ID not found")
 
-    lesson = service.get_step_detail(current_user.id, plan_id, step_order)
+    lesson = await service.get_step_detail(current_user, plan_id, step_order)
     if not lesson:
         raise HTTPException(status_code=404, detail="Step not found")
 
     return lesson
+
+
+@router.get("/{plan_id}/lessons/{step_order}/test", response_model=PracticeTestResponse)
+async def get_step_test(
+    plan_id: int,
+    step_order: int,
+    current_user: User = Depends(get_current_active_user),
+    service: LearningPlanService = Depends(get_learning_plan_service),
+):
+    test = await service.get_step_test(current_user, plan_id, step_order)
+    if not test:
+        raise HTTPException(
+            status_code=404, detail="Practice test not found or generation failed"
+        )
+    return test
+
+
+@router.post(
+    "/{plan_id}/lessons/{step_order}/test/submit", response_model=TestSubmissionResponse
+)
+async def submit_step_test(
+    plan_id: int,
+    step_order: int,
+    submission: TestSubmissionRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: LearningPlanService = Depends(get_learning_plan_service),
+):
+    result = service.submit_step_test(current_user, plan_id, step_order, submission)
+    if not result:
+        raise HTTPException(status_code=404, detail="Test submission failed or step not found")
+    return result
 
 
 @router.post("/generate", response_model=LearningPlan)
