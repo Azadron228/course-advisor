@@ -67,7 +67,7 @@ def test_get_practice_test_success(client: TestClient, normal_user_token_headers
         mock_openai.return_value = mock_client
 
         response = client.get(
-            f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers
         )
 
         assert response.status_code == 200
@@ -100,13 +100,13 @@ def test_get_practice_test_persistence(
 
         # First call
         response1 = client.get(
-            f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers
         )
         assert response1.status_code == 200
 
         # Second call
         response2 = client.get(
-            f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers
         )
         assert response2.status_code == 200
         assert response1.json() == response2.json()
@@ -122,13 +122,13 @@ def test_get_practice_test_unauthorized(
     client: TestClient, normal_user_token_headers, other_user_lesson
 ):
     response = client.get(
-        f"/api/v1/lessons/{other_user_lesson.id}/test", headers=normal_user_token_headers
+        f"/api/v1/learning-plan/{other_user_lesson.plan_id}/lessons/{other_user_lesson.order}/test", headers=normal_user_token_headers
     )
     assert response.status_code == 403
 
 
 def test_get_practice_test_not_found(client: TestClient, normal_user_token_headers):
-    response = client.get("/api/v1/lessons/9999/test", headers=normal_user_token_headers)
+    response = client.get("/api/v1/learning-plan/9999/lessons/1/test", headers=normal_user_token_headers)
     assert response.status_code == 404
 
 
@@ -153,11 +153,11 @@ def test_submit_practice_test_success(
         )
         mock_openai.return_value = mock_client
         
-        client.get(f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers)
+        client.get(f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers)
 
     # Submit answers
     response = client.post(
-        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/submit",
         headers=normal_user_token_headers,
         json={"answers": [0]},
     )
@@ -197,12 +197,12 @@ def test_submit_practice_test_mixed_types(
         )
         mock_openai.return_value = mock_client
 
-        response = client.get(f"/api/v1/lessons/{seeded_lesson.id}/test", headers=normal_user_token_headers)
+        response = client.get(f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers)
         assert response.status_code == 200
 
     # Submit answers
     response = client.post(
-        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/submit",
         headers=normal_user_token_headers,
         json={"answers": [1, "python ", 0, "IS GREAT"]},
     )
@@ -218,7 +218,7 @@ def test_submit_practice_test_unauthorized(
     client: TestClient, normal_user_token_headers, other_user_lesson
 ):
     response = client.post(
-        f"/api/v1/lessons/{other_user_lesson.id}/test/submit",
+        f"/api/v1/learning-plan/{other_user_lesson.plan_id}/lessons/{other_user_lesson.order}/test/submit",
         headers=normal_user_token_headers,
         json={"answers": [0]},
     )
@@ -227,7 +227,7 @@ def test_submit_practice_test_unauthorized(
 
 def test_submit_practice_test_no_test(client: TestClient, normal_user_token_headers, seeded_lesson):
     response = client.post(
-        f"/api/v1/lessons/{seeded_lesson.id}/test/submit",
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/submit",
         headers=normal_user_token_headers,
         json={"answers": [0]},
     )
@@ -265,11 +265,11 @@ def test_submit_test_unlocks_next_lesson_and_saves_percentage(
         )
         mock_openai.return_value = mock_client
         
-        client.get(f"/api/v1/lessons/{l1.id}/test", headers=normal_user_token_headers)
+        client.get(f"/api/v1/learning-plan/{plan.id}/lessons/{l1.order}/test", headers=normal_user_token_headers)
 
     # 2. Submit test
     response = client.post(
-        f"/api/v1/lessons/{l1.id}/test/submit",
+        f"/api/v1/learning-plan/{plan.id}/lessons/{l1.order}/test/submit",
         headers=normal_user_token_headers,
         json={"answers": [0]},
     )

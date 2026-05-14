@@ -32,20 +32,6 @@ def get_advisor_service(service: AdvisorService = Depends(get_service(AdvisorSer
     return service
 
 
-def get_learning_plan_service(
-    db: Session = Depends(get_db),
-    lesson_service: LessonService = Depends(get_lesson_service)
-) -> LearningPlanService:
-    from app.infrastructure.db.repositories.profile_repository import ProfileRepository
-    from app.infrastructure.db.repositories.plan_repository import PlanRepository
-
-    return LearningPlanService(
-        profile_repo=ProfileRepository(db),
-        plan_repo=PlanRepository(db),
-        lesson_service=lesson_service
-    )
-
-
 def get_lesson_service(service: LessonService = Depends(get_service(LessonService))):
     return service
 
@@ -69,6 +55,20 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_learning_plan_service(
+    db: Session = Depends(get_db),
+    lesson_service: LessonService = Depends(get_lesson_service)
+) -> LearningPlanService:
+    from app.infrastructure.db.repositories.profile_repository import ProfileRepository
+    from app.infrastructure.db.repositories.plan_repository import PlanRepository
+
+    return LearningPlanService(
+        profile_repo=ProfileRepository(db),
+        plan_repo=PlanRepository(db),
+        lesson_service=lesson_service
+    )
 
 
 async def get_arq_pool(request: Request):

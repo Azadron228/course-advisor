@@ -133,6 +133,14 @@ class LearningPlanService:
         return self.plan_repo.delete_plan(user_id, plan_id)
 
     async def get_step_detail(self, user: User, plan_id: int, step_order: int) -> Any:
+        # Check ownership to distinguish between 404 and 403
+        from app.infrastructure.db.models import LearningPlanORM
+        from sqlalchemy import select
+        plan_orm = self.plan_repo.db.scalar(select(LearningPlanORM).where(LearningPlanORM.id == plan_id))
+        if plan_orm and plan_orm.user_id != user.id:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=403, detail="Not authorized to access this plan")
+
         # First find the lesson by order
         lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
         if not lesson_orm:
@@ -149,6 +157,14 @@ class LearningPlanService:
     def update_plan_step(
         self, user_id: int, plan_id: int, step_order: int, new_status: str
     ) -> Optional[LearningPlan]:
+        from app.infrastructure.db.models import LearningPlanORM
+        from sqlalchemy import select
+        from fastapi import HTTPException
+
+        plan_orm = self.plan_repo.db.scalar(select(LearningPlanORM).where(LearningPlanORM.id == plan_id))
+        if plan_orm and plan_orm.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this plan")
+
         plan = self.plan_repo.get_by_id(user_id, plan_id)
         if not plan:
             return None
@@ -159,10 +175,7 @@ class LearningPlanService:
 
         # Create a mock user for LessonService (since it expects User object)
         from app.domain.identity.entities import User as DomainUser
-
-        user = DomainUser(
-            id=user_id, email="", hashed_password=""
-        )  # minimal user for status update
+        user = DomainUser(id=user_id, email="", hashed_password="") # minimal user for status update
 
         success = self.lesson_service.update_lesson_status(user, lesson_orm.id, new_status)
         if not success:
@@ -172,6 +185,14 @@ class LearningPlanService:
         return self.plan_repo.get_by_id(user_id, plan_id)
 
     async def get_step_test(self, user: User, plan_id: int, step_order: int) -> Any:
+        from app.infrastructure.db.models import LearningPlanORM
+        from sqlalchemy import select
+        from fastapi import HTTPException
+
+        plan_orm = self.plan_repo.db.scalar(select(LearningPlanORM).where(LearningPlanORM.id == plan_id))
+        if plan_orm and plan_orm.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this plan")
+
         lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
         if not lesson_orm:
             return None
@@ -179,8 +200,17 @@ class LearningPlanService:
         return await self.lesson_service.get_practice_test(user, lesson_orm.id)
 
     def submit_step_test(self, user: User, plan_id: int, step_order: int, submission: Any) -> Any:
+        from app.infrastructure.db.models import LearningPlanORM
+        from sqlalchemy import select
+        from fastapi import HTTPException
+
+        plan_orm = self.plan_repo.db.scalar(select(LearningPlanORM).where(LearningPlanORM.id == plan_id))
+        if plan_orm and plan_orm.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this plan")
+
         lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
         if not lesson_orm:
             return None
 
         return self.lesson_service.submit_test(user, lesson_orm.id, submission)
+

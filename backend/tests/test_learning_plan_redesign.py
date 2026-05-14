@@ -76,7 +76,7 @@ def test_step_detail_with_materials(client: TestClient, admin_token_headers):
 
     step_order = plan["steps"][0]["order"]
     r = client.get(
-        f"/api/v1/learning-plan/{plan_id}/steps/{step_order}", headers=admin_token_headers
+        f"/api/v1/learning-plan/{plan_id}/lessons/{step_order}", headers=admin_token_headers
     )
     assert r.status_code == 200
     lesson = r.json()
