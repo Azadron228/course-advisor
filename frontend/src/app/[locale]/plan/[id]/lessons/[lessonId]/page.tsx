@@ -57,7 +57,6 @@ export default async function LessonPage({
 
   // Use the fetched lesson directly
   const currentStep = lesson;
-  const databaseLessonId = lesson.id.toString();
 
   // Find if there is a next lesson
   const currentStepIndex = plan?.steps.findIndex(s => s.order.toString() === stepOrder) ?? -1;
@@ -162,7 +161,6 @@ export default async function LessonPage({
               <div className="bg-surface border border-border rounded-3xl p-8">
                 <PracticeTestLoader 
                   planId={id} 
-                  lessonId={databaseLessonId} 
                   stepOrder={stepOrder} 
                   locale={locale}
                   nextStepOrder={nextStepOrder}

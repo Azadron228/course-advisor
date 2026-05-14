@@ -27,14 +27,12 @@ interface TestData {
 
 export function PracticeTestUI({ 
   planId, 
-  lessonId, 
   stepOrder, 
   locale, 
   testData,
   nextStepOrder
 }: { 
   planId: string, 
-  lessonId: string, 
   stepOrder: string, 
   locale: string, 
   testData: TestData,
@@ -91,7 +89,7 @@ export function PracticeTestUI({
       try {
         const token = Cookies.get('token');
 
-        await fetch(`${API_BASE_URL}/lessons/${lessonId}/test/submit`, {
+        await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}/test/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

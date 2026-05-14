@@ -20,13 +20,11 @@ interface TestData {
 
 export function PracticeTestLoader({ 
   planId, 
-  lessonId, 
   stepOrder, 
   locale,
   nextStepOrder
 }: { 
   planId: string, 
-  lessonId: string, 
   stepOrder: string, 
   locale: string,
   nextStepOrder?: string
@@ -41,7 +39,7 @@ export function PracticeTestLoader({
     async function fetchTest() {
       try {
         const token = Cookies.get('token');
-        const res = await fetch(`${API_BASE_URL}/lessons/${lessonId}/test`, {
+        const res = await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}/test`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -70,7 +68,7 @@ export function PracticeTestLoader({
     return () => {
       mounted = false;
     };
-  }, [lessonId]);
+  }, [planId, stepOrder]);
 
   if (loading) {
     return (
@@ -92,7 +90,6 @@ export function PracticeTestLoader({
   return (
     <PracticeTestUI 
       planId={planId} 
-      lessonId={lessonId} 
       stepOrder={stepOrder} 
       locale={locale} 
       testData={testData}
