@@ -203,7 +203,7 @@ class PlanRepository:
         self.db.refresh(db_test)
         return db_test
 
-    def save_test_score(self, user_id: int, lesson_id: int, score: int):
+    def save_test_score(self, user_id: int, lesson_id: int, score: int, answers: list) -> None:
         # 1. Check if user already has a score for this lesson
         existing_score = self.db.scalar(
             select(UserTestScoreORM)
@@ -212,9 +212,9 @@ class PlanRepository:
         )
 
         if existing_score:
-            # 2. Update if higher or same
-            if score > existing_score.score:
-                existing_score.score = score
+            # 2. Always update score and answers for the latest attempt
+            existing_score.score = score
+            existing_score.answers = {"answers": answers}
             existing_score.attempts += 1
             existing_score.completed_at = datetime.now(timezone.utc)
         else:
@@ -223,11 +223,19 @@ class PlanRepository:
                 user_id=user_id,
                 lesson_id=lesson_id,
                 score=score,
+                answers={"answers": answers},
                 attempts=1,
             )
             self.db.add(new_score)
 
         self.db.commit()
+
+    def get_last_test_score(self, user_id: int, lesson_id: int) -> Optional[UserTestScoreORM]:
+        return self.db.scalar(
+            select(UserTestScoreORM)
+            .where(UserTestScoreORM.user_id == user_id)
+            .where(UserTestScoreORM.lesson_id == lesson_id)
+        )
 
     def complete_lesson(self, user_id: int, lesson_id: int):
         """Marks a lesson as completed and auto-unlocks the next one."""
