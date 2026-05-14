@@ -32,6 +32,15 @@ class LessonService:
         self.plan_repo = plan_repo
         self.db = db
 
+    def _grade_question(self, question: dict, submitted: Any) -> bool:
+        q_type = question.get("type", "multiple_choice")
+        if q_type in ["multiple_choice", "true_false"]:
+            return submitted == question.get("correct_answer_index")
+        elif q_type in ["short_answer", "fill_in_the_blank"]:
+            if isinstance(submitted, str) and question.get("correct_answer_text"):
+                return submitted.strip().lower() == question["correct_answer_text"].strip().lower()
+        return False
+
     async def get_lesson_detail(self, user: User, lesson_id: int) -> Optional[LessonDetail]:
         if user.id is None:
             raise HTTPException(status_code=401, detail="User ID not found")
@@ -139,20 +148,15 @@ Description: {lesson.description}
 
         # 2. Check for existing test
         test_orm = self.plan_repo.get_practice_test(lesson_id)
-        if test_orm:
-            return PracticeTestResponse(
-                id=test_orm.id,
-                lesson_id=test_orm.lesson_id,
-                questions=test_orm.content["questions"],
-            )
+        
+        if not test_orm:
+            # 3. Generate test if missing
+            logger.info(f"Generating practice test for lesson {lesson_id}")
 
-        # 3. Generate test if missing
-        logger.info(f"Generating practice test for lesson {lesson_id}")
+            # Get lesson content if it exists
+            lesson_content = lesson.content or ""
 
-        # Get lesson content if it exists
-        lesson_content = lesson.content or ""
-
-        prompt = f"""You are an expert educator. Generate a high-quality practice test for the following lesson.
+            prompt = f"""You are an expert educator. Generate a high-quality practice test for the following lesson.
     
 Lesson Title: {lesson.title}
 Lesson Description: {lesson.description}
@@ -181,45 +185,73 @@ JSON Schema for each object:
   "explanation": "Explanation here"
 }}
 """
-        try:
-            if LlamaOpenAI:
-                llm = LlamaOpenAI(model="gpt-4o", temperature=0.3)
-                response = await llm.acomplete(prompt)
-                content_str = response.text.strip() if response.text else ""
-            else:
-                import openai
+            try:
+                if LlamaOpenAI:
+                    llm = LlamaOpenAI(model="gpt-4o", temperature=0.3)
+                    response = await llm.acomplete(prompt)
+                    content_str = response.text.strip() if response.text else ""
+                else:
+                    import openai
 
-                client = openai.AsyncOpenAI()
-                response = await client.chat.completions.create(
-                    model="gpt-4o", messages=[{"role": "user", "content": prompt}], temperature=0.3
+                    client = openai.AsyncOpenAI()
+                    response = await client.chat.completions.create(
+                        model="gpt-4o", messages=[{"role": "user", "content": prompt}], temperature=0.3
+                    )
+                    content_str = (
+                        response.choices[0].message.content.strip()
+                        if response.choices[0].message.content
+                        else ""
+                    )
+
+                # Robust JSON extraction
+                content_str = re.sub(r"^```json\s*", "", content_str, flags=re.MULTILINE)
+                content_str = re.sub(r"```\s*$", "", content_str, flags=re.MULTILINE)
+                start = content_str.find("[")
+                end = content_str.rfind("]")
+                if start != -1 and end != -1:
+                    content_str = content_str[start : end + 1]
+
+                questions = json.loads(content_str)
+
+                # Save to DB
+                test_orm = self.plan_repo.create_practice_test(lesson_id, {"questions": questions})
+            except Exception as e:
+                logger.error(f"Error generating test for lesson {lesson_id}: {e}")
+                return None
+
+        # 4. Get last attempt if it exists
+        last_score = self.plan_repo.get_last_test_score(user.id, lesson_id)
+        last_attempt = None
+        if last_score and last_score.answers:
+            questions = test_orm.content["questions"]
+            prev_answers = last_score.answers.get("answers", [])
+            results = []
+            for i, q in enumerate(questions):
+                submitted = prev_answers[i] if i < len(prev_answers) else None
+                is_correct = self._grade_question(q, submitted)
+                results.append(
+                    TestSubmissionResultItem(
+                        question_index=i,
+                        is_correct=is_correct,
+                        user_answer=submitted,
+                        correct_answer_index=q.get("correct_answer_index"),
+                        correct_answer_text=q.get("correct_answer_text"),
+                        explanation=q["explanation"],
+                    )
                 )
-                content_str = (
-                    response.choices[0].message.content.strip()
-                    if response.choices[0].message.content
-                    else ""
-                )
-
-            # Robust JSON extraction
-            content_str = re.sub(r"^```json\s*", "", content_str, flags=re.MULTILINE)
-            content_str = re.sub(r"```\s*$", "", content_str, flags=re.MULTILINE)
-            start = content_str.find("[")
-            end = content_str.rfind("]")
-            if start != -1 and end != -1:
-                content_str = content_str[start : end + 1]
-
-            questions = json.loads(content_str)
-
-            # Save to DB
-            test_orm = self.plan_repo.create_practice_test(lesson_id, {"questions": questions})
-            return PracticeTestResponse(
-                id=test_orm.id,
-                lesson_id=test_orm.lesson_id,
-                questions=test_orm.content["questions"],
+            
+            last_attempt = TestSubmissionResponse(
+                score=int((last_score.score / 100) * len(questions)),
+                total=len(questions),
+                results=results
             )
 
-        except Exception as e:
-            logger.error(f"Error generating test for lesson {lesson_id}: {e}")
-            return None
+        return PracticeTestResponse(
+            id=test_orm.id,
+            lesson_id=test_orm.lesson_id,
+            questions=test_orm.content["questions"],
+            last_attempt=last_attempt
+        )
 
     def submit_test(
         self, user: User, lesson_id: int, submission: TestSubmissionRequest
@@ -247,14 +279,7 @@ JSON Schema for each object:
 
         for i, q in enumerate(questions):
             submitted = submission.answers[i] if i < len(submission.answers) else None
-            is_correct = False
-            
-            q_type = q.get("type", "multiple_choice")
-            if q_type in ["multiple_choice", "true_false"]:
-                is_correct = submitted == q.get("correct_answer_index")
-            elif q_type in ["short_answer", "fill_in_the_blank"]:
-                if isinstance(submitted, str) and q.get("correct_answer_text"):
-                    is_correct = submitted.strip().lower() == q["correct_answer_text"].strip().lower()
+            is_correct = self._grade_question(q, submitted)
             
             if is_correct:
                 correct_count += 1
@@ -263,6 +288,7 @@ JSON Schema for each object:
                 TestSubmissionResultItem(
                     question_index=i,
                     is_correct=is_correct,
+                    user_answer=submitted,
                     correct_answer_index=q.get("correct_answer_index"),
                     correct_answer_text=q.get("correct_answer_text"),
                     explanation=q["explanation"],
@@ -271,7 +297,7 @@ JSON Schema for each object:
 
         # 3. Save score as percentage
         score_percentage = int((correct_count / len(questions)) * 100) if questions else 0
-        self.plan_repo.save_test_score(user.id, lesson_id, score_percentage)
+        self.plan_repo.save_test_score(user.id, lesson_id, score_percentage, submission.answers)
 
         # 4. Mark lesson as completed and unlock next one
         self.plan_repo.complete_lesson(user.id, lesson_id)
