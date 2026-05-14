@@ -121,6 +121,21 @@ class LessonDetail(LessonSummary):
     content: Optional[str] = None
 
 
+class TestSubmissionResultItem(BaseModel):
+    question_index: int
+    is_correct: bool
+    user_answer: Optional[Union[int, str, bool]] = None
+    correct_answer_index: Optional[int] = None
+    correct_answer_text: Optional[str] = None
+    explanation: str
+
+
+class TestSubmissionResponse(BaseModel):
+    score: int
+    total: int
+    results: List[TestSubmissionResultItem]
+
+
 class QuestionType(str, Enum):
     MULTIPLE_CHOICE = "multiple_choice"
     SHORT_ANSWER = "short_answer"
@@ -141,6 +156,7 @@ class PracticeTestResponse(BaseModel):
     id: int
     lesson_id: int
     questions: List[Question]
+    last_attempt: Optional[TestSubmissionResponse] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -209,17 +225,3 @@ class PlanGenerateRequest(BaseModel):
 
 class TestSubmissionRequest(BaseModel):
     answers: List[Union[int, str, bool]]
-
-
-class TestSubmissionResultItem(BaseModel):
-    question_index: int
-    is_correct: bool
-    correct_answer_index: Optional[int] = None
-    correct_answer_text: Optional[str] = None
-    explanation: str
-
-
-class TestSubmissionResponse(BaseModel):
-    score: int
-    total: int
-    results: List[TestSubmissionResultItem]
