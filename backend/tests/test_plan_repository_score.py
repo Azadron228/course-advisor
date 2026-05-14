@@ -23,9 +23,10 @@ def test_save_test_score(db: Session):
 
     # Action: Save a score
     score_val = 85
-    saved_score = repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=score_val)
+    repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=score_val, answers=[])
 
     # Assert
+    saved_score = repo.get_last_test_score(user_id=user.id, lesson_id=lesson.id)
     assert saved_score.user_id == user.id
     assert saved_score.lesson_id == lesson.id
     assert saved_score.score == score_val
@@ -51,11 +52,12 @@ def test_update_test_score(db: Session):
     repo = PlanRepository(db)
 
     # Action 1: Save first score
-    repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=70)
+    repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=70, answers=[])
 
     # Action 2: Update score
-    updated_score = repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=90)
+    repo.save_test_score(user_id=user.id, lesson_id=lesson.id, score=90, answers=[])
 
     # Assert
+    updated_score = repo.get_last_test_score(user_id=user.id, lesson_id=lesson.id)
     assert updated_score.score == 90
     assert updated_score.attempts == 2
