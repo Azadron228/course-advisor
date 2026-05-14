@@ -126,6 +126,7 @@ class UserTestScoreORM(Base):
     )
     score: Mapped[int] = mapped_column(Integer, nullable=False)
     attempts: Mapped[int] = mapped_column(Integer, default=1)
+    answers: Mapped[dict] = mapped_column(JSON, nullable=True)  # Store user's submitted answers
     completed_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
