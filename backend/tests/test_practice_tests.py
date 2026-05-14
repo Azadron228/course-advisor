@@ -283,3 +283,48 @@ def test_submit_test_unlocks_next_lesson_and_saves_percentage(
     assert steps[l1.id]["status"] == "completed"
     assert steps[l1.id]["score"] == 100
     assert steps[l2.id]["status"] == "current"
+
+def test_practice_test_review_persistence(
+    client: TestClient, normal_user_token_headers, seeded_lesson, db
+):
+    # 1. Generate a test
+    mock_response = AsyncMock()
+    mock_response.text = '[{"type": "multiple_choice", "question": "Q1", "options": ["O1", "O2", "O3", "O4"], "correct_answer_index": 0, "explanation": "E1"}]'
+    
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai,          patch("openai.AsyncOpenAI") as mock_openai:
+        
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_response.text))]
+        )
+        mock_openai.return_value = mock_client
+        
+        client.get(f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers)
+
+    # 2. Submit answers
+    submit_response = client.post(
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/submit",
+        headers=normal_user_token_headers,
+        json={"answers": [0]},
+    )
+    assert submit_response.status_code == 200
+    submit_data = submit_response.json()
+    assert submit_data["results"][0]["user_answer"] == 0
+
+    # 3. Retrieve the test again and verify last_attempt is populated
+    response = client.get(
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test",
+        headers=normal_user_token_headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["last_attempt"] is not None
+    assert data["last_attempt"]["score"] == 1
+    assert data["last_attempt"]["total"] == 1
+    assert data["last_attempt"]["results"][0]["user_answer"] == 0
+    assert data["last_attempt"]["results"][0]["explanation"] == "E1"
