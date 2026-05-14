@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { useState } from 'react';
-import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2, ChevronLeft, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
@@ -23,6 +23,10 @@ interface Question {
 
 interface TestData {
   questions: Question[];
+  last_attempt?: {
+    score: number;
+    results: any[];
+  };
 }
 
 export function PracticeTestUI({ 
@@ -39,13 +43,16 @@ export function PracticeTestUI({
   nextStepOrder?: string
 }) {
   const questions = testData.questions || [];
+  const [viewMode, setViewMode] = useState<'test' | 'summary' | 'review'>(
+    testData.last_attempt ? 'summary' : 'test'
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [textAnswer, setTextAnswer] = useState<string>('');
   const [isAnswered, setIsAnswered] = useState(false);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(testData.last_attempt?.score || 0);
+  const [results, setResults] = useState<any>(testData.last_attempt?.results || []);
   const [userAnswers, setUserAnswers] = useState<(number | string)[]>([]);
-  const [isFinished, setIsFinished] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentQuestion = questions[currentIndex];
@@ -89,7 +96,7 @@ export function PracticeTestUI({
       try {
         const token = Cookies.get('token');
 
-        await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}/test/submit`, {
+        const res = await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}/test/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -97,10 +104,16 @@ export function PracticeTestUI({
           },
           body: JSON.stringify({ answers: userAnswers })
         });
+
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data.results);
+          setScore(data.score);
+          setViewMode('summary');
+        }
       } catch (e) {
         console.error("Failed to submit score", e);
       } finally {
-        setIsFinished(true);
         setIsSubmitting(false);
       }
     }
@@ -110,7 +123,7 @@ export function PracticeTestUI({
     return <div>No questions available.</div>;
   }
 
-  if (isFinished) {
+  if (viewMode === 'summary') {
     const percentage = Math.round((score / questions.length) * 100);
     return (
       <div className="text-center space-y-6 py-8">
@@ -122,7 +135,21 @@ export function PracticeTestUI({
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => setViewMode('review')}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-surface border border-border text-foreground rounded-xl font-medium hover:bg-muted/10 transition-colors"
+          >
+            <Eye size={18} /> Review Answers
+          </button>
+          <button
+            onClick={() => {
+              setCurrentIndex(0);
+              setSelectedOption(null);
+              setTextAnswer('');
+              setIsAnswered(false);
+              setScore(0);
+              setUserAnswers([]);
+              setViewMode('test');
+            }}
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-surface border border-border text-foreground rounded-xl font-medium hover:bg-muted/10 transition-colors"
           >
             <RefreshCcw size={18} /> Retake Test
@@ -133,6 +160,106 @@ export function PracticeTestUI({
           >
             {nextStepOrder ? 'Next Lesson' : 'Back to Plan'}
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewMode === 'review') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => setViewMode('summary')}
+            className="flex items-center gap-2 text-sm font-medium text-muted hover:text-foreground transition-colors"
+          >
+            <ChevronLeft size={16} /> Back to Summary
+          </button>
+          <h2 className="text-xl font-bold">Review Answers</h2>
+        </div>
+
+        <div className="space-y-8">
+          {results.map((result: any, idx: number) => {
+            const question = questions[result.question_index];
+            if (!question) return null;
+
+            const isMultipleChoice = question.type === 'multiple_choice' || question.type === 'true_false';
+            
+            let userAnsDisplay = result.user_answer;
+            let correctAnsDisplay = result.correct_answer_text;
+            
+            if (isMultipleChoice && typeof result.user_answer === 'number' && question.options) {
+              userAnsDisplay = question.options[result.user_answer];
+            }
+            if (isMultipleChoice && question.correct_answer_index !== undefined && question.options) {
+              correctAnsDisplay = question.options[question.correct_answer_index];
+            }
+
+            return (
+              <div key={idx} className="p-6 border border-border rounded-2xl bg-surface/50 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-muted/60">
+                      Question {idx + 1}
+                    </span>
+                    <h3 className="font-bold leading-tight">
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {question.question}
+                      </ReactMarkdown>
+                    </h3>
+                  </div>
+                  {result.is_correct ? (
+                    <span className="flex items-center gap-1 text-success text-sm font-bold shrink-0">
+                      <CheckCircle2 size={16} /> Correct
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-destructive text-sm font-bold shrink-0">
+                      <XCircle size={16} /> Incorrect
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-3 rounded-xl bg-muted/5 border border-border/50">
+                    <span className="text-[10px] font-bold uppercase text-muted block mb-1">Your Answer</span>
+                    <div className={cn("text-sm font-medium", result.is_correct ? "text-success" : "text-destructive")}>
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {String(userAnsDisplay || 'No answer')}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                  {!result.is_correct && (
+                    <div className="p-3 rounded-xl bg-success/5 border border-success/20">
+                      <span className="text-[10px] font-bold uppercase text-success block mb-1">Correct Answer</span>
+                      <div className="text-sm font-bold text-success">
+                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                          {String(correctAnsDisplay || result.correct_answer_text || 'Unknown')}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 bg-muted/10 rounded-xl">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted">Explanation</h4>
+                  <div className="text-sm text-muted leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      {result.explanation}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="pt-4 flex justify-center">
+          <button
+            onClick={() => setViewMode('summary')}
+            className="px-8 py-3 bg-primary text-white rounded-xl font-medium shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+          >
+            Back to Summary
+          </button>
         </div>
       </div>
     );

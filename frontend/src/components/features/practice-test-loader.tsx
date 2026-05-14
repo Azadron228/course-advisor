@@ -16,6 +16,10 @@ interface Question {
 
 interface TestData {
   questions: Question[];
+  last_attempt?: {
+    score: number;
+    results: any[];
+  };
 }
 
 export function PracticeTestLoader({ 
