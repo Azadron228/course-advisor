@@ -44,3 +44,19 @@ def test_learning_plan_orm_new_fields():
     assert plan.learning_style == "Practical"
     assert plan.study_time == 20
     assert plan.interests == ["frontend", "js"]
+
+from app.infrastructure.db.models import UserTestScoreORM
+
+def test_user_test_score_orm():
+    score = UserTestScoreORM(
+        user_id=1,
+        lesson_id=1,
+        score=85,
+        attempts=2,
+        answers={"answers": [0, "python", True]}
+    )
+    assert score.user_id == 1
+    assert score.lesson_id == 1
+    assert score.score == 85
+    assert score.attempts == 2
+    assert score.answers == {"answers": [0, "python", True]}
