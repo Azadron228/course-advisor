@@ -15,6 +15,7 @@ from app.api.v1.schemas.recommendations import (
     TestSubmissionResultItem,
 )
 from app.domain.identity.entities import User
+from app.infrastructure.ai.tavily_search import TavilySearch
 
 LlamaOpenAI: Any = None
 try:
@@ -31,6 +32,7 @@ class LessonService:
     def __init__(self, plan_repo: PlanRepository, db: Session):
         self.plan_repo = plan_repo
         self.db = db
+        self.search_client = TavilySearch()
 
     def _grade_question(self, question: dict, submitted: Any) -> bool:
         q_type = question.get("type", "multiple_choice")
@@ -55,6 +57,13 @@ class LessonService:
 
         if not lesson.content:
             logger.info(f"Generating content for lesson {lesson_id} in real time")
+            
+            language = plan.language if hasattr(plan, "language") else "en"
+            
+            # Use Tavily to get context
+            search_query = f"{lesson.title} {lesson.description}"
+            logger.info(f"Searching Tavily for: {search_query}")
+            search_context = await self.search_client.get_search_context(search_query)
 
             prompt = f"""You are an expert academic educator. Generate a comprehensive, well-structured lesson in strict Markdown format.
 
@@ -72,9 +81,12 @@ class LessonService:
 - NEVER use [ ] or \\[ \\] for math — always use $ or $$
 - Do NOT wrap output in ```markdown``` or any code block
 - Start directly with the # title, no preamble
+- OUTPUT LANGUAGE: You MUST provide all content in the following language: {language}.
 
 Title: {lesson.title}
 Description: {lesson.description}
+
+{search_context}
 """
             try:
                 if LlamaOpenAI:
@@ -155,6 +167,7 @@ Description: {lesson.description}
 
             # Get lesson content if it exists
             lesson_content = lesson.content or ""
+            language = plan.language if hasattr(plan, "language") else "en"
 
             prompt = f"""You are an expert educator. Generate a high-quality practice test for the following lesson.
     
@@ -174,6 +187,7 @@ Strict Requirements:
    - Inline math: $x + y = z$
    - Block math: $$ \\frac{{x}}{{y}} $$
 5. Output ONLY a valid JSON array of question objects.
+6. OUTPUT LANGUAGE: You MUST provide all text content (questions, options, explanations) in the following language: {language}.
 
 JSON Schema for each object:
 {{

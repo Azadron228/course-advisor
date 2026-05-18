@@ -97,6 +97,7 @@ class LearningPlan(BaseModel):
     learning_style: str = "Practical"
     study_time: int = 10
     interests: List[str] = Field(default_factory=list)
+    language: str = "en"
 
 
 class SkillNode(BaseModel):

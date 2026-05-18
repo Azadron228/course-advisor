@@ -65,6 +65,7 @@ class PlanRepository:
             learning_style=o.learning_style,
             study_time=o.study_time,
             interests=o.interests,
+            language=o.language,
         )
 
     def get_all_plans(self, user_id: int) -> List[LearningPlan]:
@@ -107,6 +108,7 @@ class PlanRepository:
             learning_style=plan.learning_style,
             study_time=plan.study_time,
             interests=plan.interests,
+            language=plan.language,
         )
         self.db.add(db_plan)
         self.db.flush()  # Get ID
@@ -149,6 +151,7 @@ class PlanRepository:
         o.learning_style = plan.learning_style
         o.study_time = plan.study_time
         o.interests = plan.interests
+        o.language = plan.language
 
         # Clear existing lessons for THIS plan
         self.db.execute(delete(LessonORM).where(LessonORM.plan_id == o.id))

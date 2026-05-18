@@ -12,12 +12,13 @@ from app.domain.recommendation.entities import ModelProvider, LearningPlan
 from app.domain.identity.entities import User
 from app.api.v1.schemas.auth import UserPublic
 from app.core.config import settings
-from tavily import TavilyClient
+from app.infrastructure.ai.tavily_search import TavilySearch
 
 logger = logging.getLogger(__name__)
 
 # Initialize Tavily client
 TAVILY_API_KEY = settings.TAVILY_API_KEY
+search_client = TavilySearch()
 
 
 class AgentRecommendation(BaseModel):
@@ -69,13 +70,11 @@ async def search_external_resources(query: str) -> str:
         return "External search is currently unavailable (API key missing)."
 
     try:
-        tavily = TavilyClient(api_key=TAVILY_API_KEY)
-        search_query = f"best {query} official documentation, youtube tutorials, and technical articles -site:coursera.org -site:udemy.com -site:edx.org"
-        response = tavily.search(query=search_query, search_depth="basic", max_results=3)
+        materials = await search_client.search_educational_materials(query, max_results=3)
 
         results = []
-        for res in response.get("results", []):
-            results.append(f"- [{res['title']}]({res['url']}): {res['content'][:200]}...")
+        for res in materials:
+            results.append(f"- [{res['title']}]({res['url']}): {res['description'][:200]}")
 
         return "\n".join(results) if results else "No external resources found."
     except Exception as e:

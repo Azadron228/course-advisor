@@ -58,6 +58,7 @@ class LearningPlanORM(Base):
     learning_style: Mapped[str] = mapped_column(String, nullable=False, default="Practical")
     study_time: Mapped[int] = mapped_column(default=10)
     interests: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
+    language: Mapped[str] = mapped_column(String, nullable=False, default="en")
     last_interacted_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )

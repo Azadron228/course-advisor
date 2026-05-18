@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from typing import List, Optional, Any
 
 from app.domain.identity.entities import User
@@ -6,6 +7,8 @@ from app.domain.recommendation.entities import (
     Student,
     ModelProvider,
     LearningPlan,
+    Lesson,
+    LearningMaterial,
 )
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
@@ -26,6 +29,24 @@ class LearningPlanService:
         self.profile_repo = profile_repo
         self.plan_repo = plan_repo
         self.lesson_service = lesson_service
+
+    async def _enrich_lesson_materials(self, lesson: Any):
+        """Fetches real educational materials for a lesson using Tavily."""
+        try:
+            # Only search if it's an external/AI lesson
+            if lesson.is_external:
+                # Use the search client from lesson_service
+                search_client = self.lesson_service.search_client
+                real_materials_data = await search_client.search_educational_materials(
+                    f"{lesson.title} {lesson.description}"
+                )
+                
+                if real_materials_data:
+                    lesson.materials = [
+                        LearningMaterial(**m) for m in real_materials_data
+                    ]
+        except Exception as e:
+            logger.error(f"Failed to enrich materials for lesson '{lesson.title}': {e}")
 
     async def generate_plan(
         self, user: User, request: Optional[Any] = None, arq_pool: Optional[Any] = None
@@ -77,11 +98,32 @@ class LearningPlanService:
             # Use AI generated title if available
             final_title = parsed.title if hasattr(parsed, "title") else goal
 
+            # Convert LessonPlanStep to domain Lesson
+            learning_path = []
+            for step in parsed.learning_path:
+                learning_path.append(
+                    Lesson(
+                        order=step.order,
+                        title=step.title,
+                        description=step.description,
+                        is_external=step.is_external,
+                        status="upcoming",
+                        materials=[],
+                    )
+                )
+
             # Ensure the first step is 'current' so it's not locked
-            if parsed.learning_path:
+            if learning_path:
                 # Sort by order just in case the LLM didn't
-                parsed.learning_path.sort(key=lambda x: x.order)
-                parsed.learning_path[0].status = "current"
+                learning_path.sort(key=lambda x: x.order)
+                learning_path[0].status = "current"
+                
+                # Enrich with real materials from Tavily in parallel
+                enrich_tasks = [
+                    self._enrich_lesson_materials(lesson) 
+                    for lesson in learning_path
+                ]
+                await asyncio.gather(*enrich_tasks)
         except Exception as gen_err:
             logger.error(f"AI Generation failed: {gen_err}")
             raise
@@ -92,7 +134,7 @@ class LearningPlanService:
 
             # Ensure the first non-completed step is 'current'
             found_current = False
-            for step in parsed.learning_path:
+            for step in learning_path:
                 if step.status != "completed":
                     if not found_current:
                         step.status = "current"
@@ -104,12 +146,13 @@ class LearningPlanService:
             initial_plan = LearningPlan(
                 id=None,
                 goal=final_title,
-                steps=parsed.learning_path,
+                steps=learning_path,
                 is_active=True,
                 skill_level=skill_level,
                 learning_style=learning_style,
                 study_time=study_time,
                 interests=interests,
+                language=language,
             )
             saved_plan = self.plan_repo.create_plan(user.id, initial_plan)
             logger.info(f"Successfully saved learning plan {saved_plan.id}")

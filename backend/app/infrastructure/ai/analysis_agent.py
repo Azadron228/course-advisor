@@ -9,15 +9,23 @@ from app.domain.recommendation.entities import (
     Student,
     SkillGapAnalysis,
     Lesson,
+    LearningMaterial,
 )
 
 logger = logging.getLogger(__name__)
 
 
+class LessonPlanStep(BaseModel):
+    order: int
+    title: str
+    description: str
+    is_external: bool = True
+
+
 class GlobalAnalysis(BaseModel):
     title: str
     skill_gap_analysis: SkillGapAnalysis
-    learning_path: List[Lesson]
+    learning_path: List[LessonPlanStep]
 
 
 class InterestSuggestions(BaseModel):
@@ -89,10 +97,7 @@ async def generate_global_analysis(
         "4. Learning Path: Suggest a logical sequence of learning steps to achieve the goal.\n"
         "   - LESSON TITLES: Each lesson title MUST be VERY SHORT and concise (2-4 words).\n"
         "   - ALL STEPS ARE EXTERNAL/AI-GENERATED: You must generate the steps yourself. Do not rely on internal university courses.\n"
-        "   - Set `is_external` to true for all steps.\n"
-        "   - SUPPLEMENTARY MATERIALS: EVERY step MUST include 1-2 high-quality "
-        "     external materials (official documentation, YouTube videos, or technical articles) as extra help.\n"
-        "   - Materials MUST have a 'title', a 'description' (2-3 sentences explaining what to learn), and a 'url'.\n\n"
+        "   - Set `is_external` to true for all steps.\n\n"
         "Always prioritize filling critical prerequisites and foundational skills first.\n\n"
         f"Student Transcript: {transcript_summary}\n"
         f"Student Current Skills: {current_skills}\n\n"
