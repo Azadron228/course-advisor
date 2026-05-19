@@ -12,6 +12,31 @@ import { cookies } from 'next/headers';
 import { ExternalLink, Video, BookOpen, Globe, ArrowLeft } from 'lucide-react';
 import { LearningPlan, LearningMaterial } from '@/components/features/plan-stepper';
 
+function getEmbedUrl(url: string) {
+  if (!url) return null;
+  const ytMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  const vimeoMatch = url.match(/(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return null;
+}
+
+function VideoPlayer({ url, title }: { url: string; title: string }) {
+  const embedUrl = getEmbedUrl(url);
+  if (!embedUrl) return null;
+  return (
+    <div className="aspect-video w-full overflow-hidden rounded-3xl border border-border shadow-2xl shadow-primary/5 bg-muted">
+      <iframe
+        src={embedUrl}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="h-full w-full"
+      />
+    </div>
+  );
+}
+
 // Simple fetch function for server components
 async function getLesson(token: string, planId: string, stepOrder: string) {
   const res = await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}`, {
@@ -63,6 +88,12 @@ export default async function LessonPage({
   const nextStep = (currentStepIndex !== -1 && plan) ? plan.steps[currentStepIndex + 1] : null;
   const nextStepOrder = nextStep?.order.toString();
 
+  const firstVideoIndex = lesson.materials?.findIndex((m: LearningMaterial) => m.type === 'video' && m.url && getEmbedUrl(m.url));
+  const firstVideo = firstVideoIndex !== -1 ? lesson.materials[firstVideoIndex] : null;
+  const otherMaterials = firstVideo 
+    ? lesson.materials.filter((_: any, idx: number) => idx !== firstVideoIndex)
+    : lesson.materials;
+
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
       <div className="w-[70%] h-full overflow-y-auto p-8 border-r border-border scroll-smooth">
@@ -98,10 +129,16 @@ export default async function LessonPage({
                 {currentStep.description}
               </p>
             )}
+
+            {firstVideo && (
+              <div className="pt-4">
+                <VideoPlayer url={firstVideo.url!} title={firstVideo.title} />
+              </div>
+            )}
           </div>
 
           {/* AI-Generated Supplementary Materials */}
-          {lesson?.materials && lesson.materials.length > 0 && (
+          {otherMaterials && otherMaterials.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
@@ -110,7 +147,7 @@ export default async function LessonPage({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {lesson.materials.map((material: LearningMaterial, idx: number) => (
+                {otherMaterials.map((material: LearningMaterial, idx: number) => (
                   <a
                     key={idx}
                     href={material.url}
