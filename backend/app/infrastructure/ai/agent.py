@@ -70,7 +70,8 @@ async def search_external_resources(query: str) -> str:
         return "External search is currently unavailable (API key missing)."
 
     try:
-        materials = await search_client.search_educational_materials(query, max_results=3)
+        # Increase results to provide more options
+        materials = await search_client.search_educational_materials(query, max_results=5)
 
         results = []
         for res in materials:
@@ -116,6 +117,8 @@ def get_advisor_agent(
         f"{plan_context}\n"
         "When giving advice, prioritize high-quality external resources (documentation, videos, articles). "
         "NEVER recommend external courses from platforms like Coursera or Udemy. "
+        "Search for materials in the user's preferred language, and if they are learning a new language, "
+        "provide resources in that language as well to aid their immersion. "
         "Be professional, supportive, and comprehensive.\n\n"
         "IMPORTANT: You MUST always conclude your response with 'Final Answer: ' followed by your advice. "
         "Do not include your internal thoughts or tool calls in the final response to the student."

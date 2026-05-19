@@ -30,7 +30,7 @@ class LearningPlanService:
         self.plan_repo = plan_repo
         self.lesson_service = lesson_service
 
-    async def _enrich_lesson_materials(self, lesson: Any):
+    async def _enrich_lesson_materials(self, lesson: Any, language: str = "en"):
         """Fetches real educational materials for a lesson using Tavily."""
         try:
             # Only search if it's an external/AI lesson
@@ -38,7 +38,8 @@ class LearningPlanService:
                 # Use the search client from lesson_service
                 search_client = self.lesson_service.search_client
                 real_materials_data = await search_client.search_educational_materials(
-                    f"{lesson.title} {lesson.description}"
+                    f"{lesson.title} {lesson.description}",
+                    language=language
                 )
                 
                 if real_materials_data:
@@ -120,7 +121,7 @@ class LearningPlanService:
                 
                 # Enrich with real materials from Tavily in parallel
                 enrich_tasks = [
-                    self._enrich_lesson_materials(lesson) 
+                    self._enrich_lesson_materials(lesson, language) 
                     for lesson in learning_path
                 ]
                 await asyncio.gather(*enrich_tasks)

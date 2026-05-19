@@ -51,15 +51,52 @@ class TavilySearch:
         
         return context
 
-    async def search_educational_materials(self, topic: str, max_results: int = 2) -> List[Dict[str, Any]]:
+    async def search_educational_materials(self, topic: str, max_results: int = 5, language: str = "en") -> List[Dict[str, Any]]:
         """
         Search for high-quality educational materials (docs, tutorials, videos).
         Filters out common course platforms to focus on free/official resources.
         """
-        search_query = (
-            f"best {topic} official documentation, youtube tutorials, and technical articles "
-            "-site:coursera.org -site:udemy.com -site:edx.org -site:skillshare.com"
-        )
+        # Common language detection in topic
+        target_languages = []
+        if language:
+            target_languages.append(language)
+            
+        # Basic heuristic for language learning: if topic mentions a language, search in that language too
+        lang_keywords = {
+            "spanish": ["spanish", "español"],
+            "french": ["french", "français"],
+            "german": ["german", "deutsch"],
+            "italian": ["italian", "italiano"],
+            "russian": ["russian", "русский"],
+            "kazakh": ["kazakh", "қазақ"],
+            "chinese": ["chinese", "中文"],
+            "japanese": ["japanese", "日本語"],
+        }
+        
+        topic_lower = topic.lower()
+        for lang_name, variations in lang_keywords.items():
+            if any(v in topic_lower for v in variations):
+                # Don't add if it's already the primary language
+                if lang_name not in target_languages:
+                    target_languages.append(lang_name)
+
+        # Build query
+        base_query = f"best {topic} official documentation, youtube tutorials, and technical articles"
+        
+        if len(target_languages) > 1:
+            # Multi-language search
+            lang_str = " or ".join([f"in {l}" for l in target_languages])
+            search_query = f"{base_query} {lang_str}"
+        elif language == "ru":
+            search_query = f"{base_query} на русском языке"
+        elif language == "kk":
+            search_query = f"{base_query} қазақ тілінде"
+        elif language != "en":
+            search_query = f"{base_query} in {language} language"
+        else:
+            search_query = base_query
+            
+        search_query += " -site:coursera.org -site:udemy.com -site:edx.org -site:skillshare.com"
         
         results = await self.search(search_query, max_results=max_results)
         

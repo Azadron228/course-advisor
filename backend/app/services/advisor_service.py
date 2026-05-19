@@ -28,12 +28,13 @@ class AdvisorService:
         self.plan_repo = plan_repo
         self.search_client = TavilySearch()
 
-    async def _enrich_lesson_materials(self, lesson: Lesson):
+    async def _enrich_lesson_materials(self, lesson: Lesson, language: str = "en"):
         """Fetches real educational materials for a lesson using Tavily."""
         try:
             if lesson.is_external:
                 real_materials_data = await self.search_client.search_educational_materials(
-                    f"{lesson.title} {lesson.description}"
+                    f"{lesson.title} {lesson.description}",
+                    language=language
                 )
                 if real_materials_data:
                     lesson.materials = [
@@ -86,7 +87,7 @@ class AdvisorService:
                 
                 # Enrich with real materials from Tavily in parallel
                 enrich_tasks = [
-                    self._enrich_lesson_materials(lesson) 
+                    self._enrich_lesson_materials(lesson, language) 
                     for lesson in learning_path
                 ]
                 await asyncio.gather(*enrich_tasks)
