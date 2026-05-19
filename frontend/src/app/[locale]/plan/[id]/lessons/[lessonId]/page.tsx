@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/config';
 import { cookies } from 'next/headers';
 import { ExternalLink, Video, BookOpen, Globe, ArrowLeft } from 'lucide-react';
-import { LearningPlan } from '@/components/features/plan-stepper';
+import { LearningPlan, LearningMaterial } from '@/components/features/plan-stepper';
 
 // Simple fetch function for server components
 async function getLesson(token: string, planId: string, stepOrder: string) {
@@ -110,7 +110,7 @@ export default async function LessonPage({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {lesson.materials.map((material, idx) => (
+                {lesson.materials.map((material: LearningMaterial, idx: number) => (
                   <a
                     key={idx}
                     href={material.url}

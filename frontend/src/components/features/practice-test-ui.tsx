@@ -21,11 +21,19 @@ interface Question {
   explanation: string;
 }
 
+interface TestResult {
+  question_index: number;
+  user_answer: number | string;
+  is_correct: boolean;
+  correct_answer_text?: string;
+  explanation?: string;
+}
+
 interface TestData {
   questions: Question[];
   last_attempt?: {
     score: number;
-    results: any[];
+    results: TestResult[];
   };
 }
 
@@ -51,7 +59,7 @@ export function PracticeTestUI({
   const [textAnswer, setTextAnswer] = useState<string>('');
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(testData.last_attempt?.score || 0);
-  const [results, setResults] = useState<any>(testData.last_attempt?.results || []);
+  const [results, setResults] = useState<TestResult[]>(testData.last_attempt?.results || []);
   const [userAnswers, setUserAnswers] = useState<(number | string)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -179,7 +187,7 @@ export function PracticeTestUI({
         </div>
 
         <div className="space-y-8">
-          {results.map((result: any, idx: number) => {
+          {results.map((result: TestResult, idx: number) => {
             const question = questions[result.question_index];
             if (!question) return null;
 

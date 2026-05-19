@@ -7,18 +7,30 @@ import { API_BASE_URL } from '@/lib/config';
 import Cookies from 'js-cookie';
 import { PracticeTestUI } from './practice-test-ui';
 
+type QuestionType = 'multiple_choice' | 'short_answer' | 'true_false' | 'fill_in_the_blank';
+
 interface Question {
+  type: QuestionType;
   question: string;
-  options: string[];
-  correct_answer_index: number;
+  options?: string[];
+  correct_answer_index?: number;
+  correct_answer_text?: string;
   explanation: string;
+}
+
+interface TestResult {
+  question_index: number;
+  user_answer: number | string;
+  is_correct: boolean;
+  correct_answer_text?: string;
+  explanation?: string;
 }
 
 interface TestData {
   questions: Question[];
   last_attempt?: {
     score: number;
-    results: any[];
+    results: TestResult[];
   };
 }
 
