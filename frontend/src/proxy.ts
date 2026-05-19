@@ -8,7 +8,7 @@ const intlMiddleware = createMiddleware(routing);
 const protectedRoutes = ['/dashboard', '/plan', '/chat'];
 const authRoutes = ['/login', '/register'];
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const {pathname} = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
