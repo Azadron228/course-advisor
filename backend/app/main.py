@@ -1,3 +1,5 @@
+import logging
+import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -7,6 +9,13 @@ from arq.connections import RedisSettings
 from app.core.config import settings
 from app.api.router import api_router
 
+# Configure logging to stdout
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

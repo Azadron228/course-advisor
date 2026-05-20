@@ -15,6 +15,8 @@ class TavilySearch:
             logger.warning("Tavily API key not found. Skipping search.")
             return []
 
+        logger.info(f"Tavily Search: [query='{query}'], [depth={search_depth}], [max_results={max_results}]")
+
         payload = {
             "api_key": self.api_key,
             "query": query,
@@ -83,22 +85,35 @@ class TavilySearch:
         # Build query
         base_query = f"best {topic} official documentation, youtube tutorials, and technical articles"
         
-        if len(target_languages) > 1:
-            # Multi-language search
-            lang_str = " or ".join([f"in {l}" for l in target_languages])
-            search_query = f"{base_query} {lang_str}"
-        elif language == "ru":
-            search_query = f"{base_query} на русском языке"
+        # Determine the primary search language suffix
+        lang_suffix = ""
+        search_depth = "basic"
+        
+        if language == "ru":
+            lang_suffix = " на русском языке (in Russian language)"
+            search_depth = "advanced" # Use advanced for better localized results
         elif language == "kk":
-            search_query = f"{base_query} қазақ тілінде"
+            lang_suffix = " қазақ тілінде (in Kazakh language)"
+            search_depth = "advanced"
         elif language != "en":
-            search_query = f"{base_query} in {language} language"
+            lang_suffix = f" in {language} language"
+            search_depth = "advanced"
+
+        if len(target_languages) > 1:
+            # Multi-language search: include target languages (e.g. for language learning)
+            # but still prioritize the primary user language
+            extra_langs = [l for l in target_languages if l != language]
+            lang_str = " or ".join([f"in {l}" for l in extra_langs])
+            search_query = f"{base_query}{lang_suffix} or {lang_str}"
+            search_depth = "advanced"
         else:
-            search_query = base_query
+            search_query = f"{base_query}{lang_suffix}"
             
         search_query += " -site:coursera.org -site:udemy.com -site:edx.org -site:skillshare.com"
         
-        results = await self.search(search_query, max_results=max_results)
+        logger.info(f"Educational Material Search: Constructed query: '{search_query}', depth: {search_depth}")
+        
+        results = await self.search(search_query, max_results=max_results, search_depth=search_depth)
         
         materials = []
         for res in results:
