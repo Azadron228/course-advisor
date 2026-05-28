@@ -328,3 +328,132 @@ def test_practice_test_review_persistence(
     assert data["last_attempt"]["total"] == 1
     assert data["last_attempt"]["results"][0]["user_answer"] == 0
     assert data["last_attempt"]["results"][0]["explanation"] == "E1"
+
+
+def test_submit_practice_test_ai_review(
+    client: TestClient, normal_user_token_headers, seeded_lesson, db
+):
+    # 1. Generate a test with a short_answer question
+    mock_response = AsyncMock()
+    mock_json = '[{"type": "short_answer", "question": "What is Python?", "correct_answer_text": "A programming language", "explanation": "Python is a language."}]'
+    mock_response.text = mock_json
+
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_json))]
+        )
+        mock_openai.return_value = mock_client
+        
+        client.get(f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers)
+
+    # 2. Submit an answer that doesn't exactly match, but gets AI approval ("YES")
+    ai_mock_response = AsyncMock()
+    ai_mock_response.text = "YES"
+    
+    with patch("app.infrastructure.ai.model_factory.get_model") as mock_get_model:
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = ai_mock_response
+        mock_get_model.return_value = mock_llm
+
+        response = client.post(
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/submit",
+            headers=normal_user_token_headers,
+            json={"answers": ["coding language"]},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["score"] == 1
+        assert data["results"][0]["is_correct"] is True
+        assert data["results"][0]["correct_answer_text"] == "A programming language"
+
+    # 3. Retrieve the test and verify cached result is correct
+    response = client.get(
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test",
+        headers=normal_user_token_headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["last_attempt"] is not None
+    assert data["last_attempt"]["score"] == 1
+    assert data["last_attempt"]["results"][0]["is_correct"] is True
+
+
+def test_check_step_answer_ai_review(
+    client: TestClient, normal_user_token_headers, seeded_lesson, db
+):
+    # 1. Generate a test with a short_answer question
+    mock_response = AsyncMock()
+    mock_json = '[{"type": "short_answer", "question": "What is Python?", "correct_answer_text": "A programming language", "explanation": "Python is a language."}]'
+    mock_response.text = mock_json
+
+    with patch("app.services.lesson_service.LlamaOpenAI") as mock_llama_openai, \
+         patch("openai.AsyncOpenAI") as mock_openai:
+        
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = mock_response
+        if mock_llama_openai:
+            mock_llama_openai.return_value = mock_llm
+
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create.return_value = AsyncMock(
+            choices=[AsyncMock(message=AsyncMock(content=mock_json))]
+        )
+        mock_openai.return_value = mock_client
+        
+        client.get(f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test", headers=normal_user_token_headers)
+
+    # 2. Check an answer that matches exactly
+    response = client.post(
+        f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/check-answer",
+        headers=normal_user_token_headers,
+        json={"question_index": 0, "answer": "A programming language"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["is_correct"] is True
+
+    # 3. Check an answer that doesn't exactly match but gets AI approval ("YES")
+    ai_mock_response = AsyncMock()
+    ai_mock_response.text = "YES"
+    
+    with patch("app.infrastructure.ai.model_factory.get_model") as mock_get_model:
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = ai_mock_response
+        mock_get_model.return_value = mock_llm
+
+        response = client.post(
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/check-answer",
+            headers=normal_user_token_headers,
+            json={"question_index": 0, "answer": "coding language"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_correct"] is True
+
+    # 4. Check an answer that gets AI rejection ("NO")
+    ai_mock_response_no = AsyncMock()
+    ai_mock_response_no.text = "NO"
+    
+    with patch("app.infrastructure.ai.model_factory.get_model") as mock_get_model:
+        mock_llm = AsyncMock()
+        mock_llm.acomplete.return_value = ai_mock_response_no
+        mock_get_model.return_value = mock_llm
+
+        response = client.post(
+            f"/api/v1/learning-plan/{seeded_lesson.plan_id}/lessons/{seeded_lesson.order}/test/check-answer",
+            headers=normal_user_token_headers,
+            json={"question_index": 0, "answer": "banana"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_correct"] is False
+        assert data["correct_answer_text"] == "A programming language"
+

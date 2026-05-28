@@ -11,6 +11,8 @@ from app.api.v1.schemas.recommendations import (
     PracticeTestResponse,
     TestSubmissionRequest,
     TestSubmissionResponse,
+    CheckAnswerRequest,
+    CheckAnswerResponse,
 )
 from typing import Dict, List
 
@@ -99,9 +101,25 @@ async def submit_step_test(
     current_user: User = Depends(get_current_active_user),
     service: LearningPlanService = Depends(get_learning_plan_service),
 ):
-    result = service.submit_step_test(current_user, plan_id, step_order, submission)
+    result = await service.submit_step_test(current_user, plan_id, step_order, submission)
     if not result:
         raise HTTPException(status_code=404, detail="Test submission failed or step not found")
+    return result
+
+
+@router.post(
+    "/{plan_id}/lessons/{step_order}/test/check-answer", response_model=CheckAnswerResponse
+)
+async def check_step_answer(
+    plan_id: int,
+    step_order: int,
+    request: CheckAnswerRequest,
+    current_user: User = Depends(get_current_active_user),
+    service: LearningPlanService = Depends(get_learning_plan_service),
+):
+    result = await service.check_step_answer(current_user, plan_id, step_order, request)
+    if not result:
+        raise HTTPException(status_code=404, detail="Test or question not found")
     return result
 
 

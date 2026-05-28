@@ -243,7 +243,7 @@ class LearningPlanService:
 
         return await self.lesson_service.get_practice_test(user, lesson_orm.id)
 
-    def submit_step_test(self, user: User, plan_id: int, step_order: int, submission: Any) -> Any:
+    async def submit_step_test(self, user: User, plan_id: int, step_order: int, submission: Any) -> Any:
         from app.infrastructure.db.models import LearningPlanORM
         from sqlalchemy import select
         from fastapi import HTTPException
@@ -256,5 +256,20 @@ class LearningPlanService:
         if not lesson_orm:
             return None
 
-        return self.lesson_service.submit_test(user, lesson_orm.id, submission)
+        return await self.lesson_service.submit_test(user, lesson_orm.id, submission)
+
+    async def check_step_answer(self, user: User, plan_id: int, step_order: int, request: Any) -> Any:
+        from app.infrastructure.db.models import LearningPlanORM
+        from sqlalchemy import select
+        from fastapi import HTTPException
+
+        plan_orm = self.plan_repo.db.scalar(select(LearningPlanORM).where(LearningPlanORM.id == plan_id))
+        if plan_orm and plan_orm.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this plan")
+
+        lesson_orm = self.plan_repo.get_lesson_by_order(user.id, plan_id, step_order)
+        if not lesson_orm:
+            return None
+
+        return await self.lesson_service.check_answer(user, lesson_orm.id, request)
 

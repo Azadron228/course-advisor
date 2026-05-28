@@ -84,6 +84,8 @@ export function PracticeTestUI({
   const [results, setResults] = useState<TestResult[]>(testData.last_attempt?.results || []);
   const [userAnswers, setUserAnswers] = useState<(number | string)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCurrentCorrect, setIsCurrentCorrect] = useState<boolean | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
 
   const currentQuestion = questions[currentIndex];
 
@@ -92,24 +94,67 @@ export function PracticeTestUI({
     setSelectedOption(index);
   };
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     const qType = currentQuestion.type || 'multiple_choice';
 
     if (qType === 'multiple_choice' || qType === 'true_false') {
       if (selectedOption === null || isAnswered) return;
 
+      const isCorrect = selectedOption === currentQuestion.correct_answer_index;
+      setIsCurrentCorrect(isCorrect);
       setIsAnswered(true);
       setUserAnswers(prev => [...prev, selectedOption]);
-      if (selectedOption === currentQuestion.correct_answer_index) {
+      if (isCorrect) {
         setScore(prev => prev + 1);
       }
     } else {
       if (!textAnswer.trim() || isAnswered) return;
 
-      setIsAnswered(true);
-      setUserAnswers(prev => [...prev, textAnswer]);
-      if (textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase()) {
-        setScore(prev => prev + 1);
+      setIsChecking(true);
+      try {
+        const token = Cookies.get('token');
+        const res = await fetch(`${API_BASE_URL}/learning-plan/${planId}/lessons/${stepOrder}/test/check-answer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            question_index: currentIndex,
+            answer: textAnswer
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setIsCurrentCorrect(data.is_correct);
+          setIsAnswered(true);
+          setUserAnswers(prev => [...prev, textAnswer]);
+          if (data.is_correct) {
+            setScore(prev => prev + 1);
+          }
+        } else {
+          // Fallback to local exact match
+          const isCorrect = textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase();
+          setIsCurrentCorrect(isCorrect);
+          setIsAnswered(true);
+          setUserAnswers(prev => [...prev, textAnswer]);
+          if (isCorrect) {
+            setScore(prev => prev + 1);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to check answer with AI", e);
+        // Fallback to local exact match
+        const isCorrect = textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase();
+        setIsCurrentCorrect(isCorrect);
+        setIsAnswered(true);
+        setUserAnswers(prev => [...prev, textAnswer]);
+        if (isCorrect) {
+          setScore(prev => prev + 1);
+        }
+      } finally {
+        setIsChecking(false);
       }
     }
   };
@@ -120,6 +165,7 @@ export function PracticeTestUI({
       setSelectedOption(null);
       setTextAnswer('');
       setIsAnswered(false);
+      setIsCurrentCorrect(null);
     } else {
       // Finished
       setIsSubmitting(true);
@@ -176,6 +222,8 @@ export function PracticeTestUI({
               setSelectedOption(null);
               setTextAnswer('');
               setIsAnswered(false);
+              setIsCurrentCorrect(null);
+              setIsChecking(false);
               setScore(0);
               setUserAnswers([]);
               setViewMode('test');
@@ -342,7 +390,7 @@ export function PracticeTestUI({
       );
     } else {
       // short_answer or fill_in_the_blank
-      const isCorrect = textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase();
+      const isCorrect = isCurrentCorrect !== null ? isCurrentCorrect : (textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase());
 
       return (
         <div className="space-y-4">
@@ -418,7 +466,7 @@ export function PracticeTestUI({
                 <span className="text-destructive flex items-center gap-1"><XCircle size={16} /> Incorrect</span>
               )
             ) : (
-              textAnswer.trim().toLowerCase() === currentQuestion.correct_answer_text?.trim().toLowerCase() ? (
+              isCurrentCorrect ? (
                 <span className="text-success flex items-center gap-1"><CheckCircle2 size={16} /> Correct</span>
               ) : (
                 <span className="text-destructive flex items-center gap-1"><XCircle size={16} /> Incorrect</span>
@@ -439,13 +487,15 @@ export function PracticeTestUI({
           <button
             onClick={handleCheck}
             disabled={
-              (currentQuestion.type === 'multiple_choice' || currentQuestion.type === 'true_false')
+              isChecking ||
+              ((currentQuestion.type === 'multiple_choice' || currentQuestion.type === 'true_false')
                 ? selectedOption === null
-                : !textAnswer.trim()
+                : !textAnswer.trim())
             }
-            className="px-8 py-3 bg-primary text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+            className="px-8 py-3 bg-primary text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
           >
-            Check Answer
+            {isChecking && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isChecking ? 'Checking...' : 'Check Answer'}
           </button>
         ) : (
           <button

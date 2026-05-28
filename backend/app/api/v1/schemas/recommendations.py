@@ -137,6 +137,17 @@ class TestSubmissionResponse(BaseModel):
     results: List[TestSubmissionResultItem]
 
 
+class CheckAnswerRequest(BaseModel):
+    question_index: int
+    answer: Union[int, str, bool]
+
+
+class CheckAnswerResponse(BaseModel):
+    is_correct: bool
+    correct_answer_text: Optional[str] = None
+    explanation: Optional[str] = None
+
+
 class QuestionType(str, Enum):
     MULTIPLE_CHOICE = "multiple_choice"
     SHORT_ANSWER = "short_answer"

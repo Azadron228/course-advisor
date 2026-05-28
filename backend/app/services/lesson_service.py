@@ -145,6 +145,42 @@ Description: {lesson.description}
         self.plan_repo.touch_plan(lesson.plan_id)
         return True
 
+    async def _review_typing_answer_with_ai(self, question: dict, user_answer: Any) -> bool:
+        if not isinstance(user_answer, str) or not user_answer.strip():
+            return False
+
+        correct_answer = question.get("correct_answer_text", "")
+        question_text = question.get("question", "")
+
+        prompt = f"""You are an expert grading assistant. Review if the student's answer is factually correct and equivalent to the correct answer for the following question.
+
+Question: {question_text}
+Correct Answer: {correct_answer}
+Student's Answer: {user_answer}
+
+Consider synonyms, spelling variations, minor typos, or slight variations in wording as correct.
+Output ONLY "YES" if the student's answer is correct/acceptable, or "NO" if it is wrong.
+No explanation, no markdown.
+"""
+        try:
+            from app.infrastructure.ai.model_factory import get_model
+            llm = get_model()
+            response = await llm.acomplete(prompt)
+            result = response.text.strip().upper()
+            
+            # Strip any non-alphabet characters
+            result = re.sub(r"[^A-Z]", "", result)
+            
+            if "YES" in result:
+                logger.info(f"AI review marked answer '{user_answer}' as CORRECT for question '{question_text}'")
+                return True
+            else:
+                logger.info(f"AI review marked answer '{user_answer}' as INCORRECT for question '{question_text}'")
+                return False
+        except Exception as e:
+            logger.error(f"Error during AI review of typing question: {e}")
+            return False
+
     async def get_practice_test(self, user: User, lesson_id: int) -> Optional[PracticeTestResponse]:
         if user.id is None:
             raise HTTPException(status_code=401, detail="User ID not found")
@@ -156,48 +192,46 @@ Description: {lesson.description}
 
         plan = self.plan_repo.get_by_id(user.id, lesson.plan_id)
         if not plan:
-            raise HTTPException(status_code=403, detail="Not authorized to view this lesson")
+            raise HTTPException(status_code=403, detail="Not authorized to view this test")
 
-        # 2. Check for existing test
+        # 2. Check if a test already exists
         test_orm = self.plan_repo.get_practice_test(lesson_id)
-        
-        if not test_orm:
-            # 3. Generate test if missing
-            logger.info(f"Generating practice test for lesson {lesson_id}")
 
-            # Get lesson content if it exists
+        # 3. Generate test if it doesn't exist
+        if not test_orm:
+            logger.info(f"Generating practice test for lesson {lesson_id}")
             lesson_content = lesson.content or ""
             language = plan.language if hasattr(plan, "language") else "en"
+            
+            prompt = f"""You are an expert educator. Generate a practice test with EXACTLY 10 questions based on this lesson:
+Title: {lesson.title}
+Description: {lesson.description}
+Content: {lesson_content}
 
-            prompt = f"""You are an expert educator. Generate a high-quality practice test for the following lesson.
-    
-Lesson Title: {lesson.title}
-Lesson Description: {lesson.description}
-Lesson Content: {lesson_content}
+Generate a balanced mix of:
+1. "multiple_choice" (4 options, correct_answer_index 0-3)
+2. "true_false" (2 options, correct_answer_index 0-1)
+3. "short_answer" (correct_answer_text)
+4. "fill_in_the_blank" (correct_answer_text)
 
-Strict Requirements:
-1. Generate between 8 and 10 questions of various types:
-   - multiple_choice: 4 options, 1 correct index.
-   - short_answer: concise text answer (1-3 words).
-   - true_false: 2 options (True, False), 1 correct index.
-   - fill_in_the_blank: question with a "____" placeholder, concise text answer (1-3 words).
-2. Distribute types relatively evenly.
-3. Provide a brief explanation of why the answer is correct.
-4. Use KaTeX/LaTeX for ALL mathematical expressions:
-   - Inline math: $x + y = z$
-   - Block math: $$ \\frac{{x}}{{y}} $$
-5. Output ONLY a valid JSON array of question objects.
-6. OUTPUT LANGUAGE: You MUST provide all text content (questions, options, explanations) in the following language: {language}.
+You MUST respond with a raw JSON array matching this format EXACTLY:
+[
+  {{
+    "type": "multiple_choice",
+    "question": "Question text?",
+    "options": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],
+    "correct_answer_index": 1,
+    "explanation": "Brief explanation..."
+  }},
+  {{
+    "type": "short_answer",
+    "question": "Question text?",
+    "correct_answer_text": "Expected answer text",
+    "explanation": "Brief explanation..."
+  }}
+]
 
-JSON Schema for each object:
-{{
-  "type": "multiple_choice" | "short_answer" | "true_false" | "fill_in_the_blank",
-  "question": "Question text here",
-  "options": ["Option 0", "Option 1", ...] (for multiple_choice and true_false ONLY),
-  "correct_answer_index": index (for multiple_choice and true_false ONLY),
-  "correct_answer_text": "text" (for short_answer and fill_in_the_blank ONLY),
-  "explanation": "Explanation here"
-}}
+OUTPUT LANGUAGE: You MUST provide all text content (questions, options, explanations) in the following language: {language}.
 """
             try:
                 if LlamaOpenAI:
@@ -206,7 +240,6 @@ JSON Schema for each object:
                     content_str = response.text.strip() if response.text else ""
                 else:
                     import openai
-
                     client = openai.AsyncOpenAI()
                     response = await client.chat.completions.create(
                         model="gpt-4o", messages=[{"role": "user", "content": prompt}], temperature=0.3
@@ -217,7 +250,6 @@ JSON Schema for each object:
                         else ""
                     )
 
-                # Robust JSON extraction
                 content_str = re.sub(r"^```json\s*", "", content_str, flags=re.MULTILINE)
                 content_str = re.sub(r"```\s*$", "", content_str, flags=re.MULTILINE)
                 start = content_str.find("[")
@@ -226,8 +258,6 @@ JSON Schema for each object:
                     content_str = content_str[start : end + 1]
 
                 questions = json.loads(content_str)
-
-                # Save to DB
                 test_orm = self.plan_repo.create_practice_test(lesson_id, {"questions": questions})
             except Exception as e:
                 logger.error(f"Error generating test for lesson {lesson_id}: {e}")
@@ -239,10 +269,19 @@ JSON Schema for each object:
         if last_score and last_score.answers:
             questions = test_orm.content["questions"]
             prev_answers = last_score.answers.get("answers", [])
+            ai_reviews = last_score.answers.get("ai_reviews", {})
             results = []
             for i, q in enumerate(questions):
                 submitted = prev_answers[i] if i < len(prev_answers) else None
-                is_correct = self._grade_question(q, submitted)
+                
+                # Check for cached AI review result
+                if str(i) in ai_reviews:
+                    is_correct = ai_reviews[str(i)]
+                elif i < len(prev_answers) and isinstance(ai_reviews, dict) and i in ai_reviews:
+                    is_correct = ai_reviews[i]
+                else:
+                    is_correct = self._grade_question(q, submitted)
+
                 results.append(
                     TestSubmissionResultItem(
                         question_index=i,
@@ -267,7 +306,7 @@ JSON Schema for each object:
             last_attempt=last_attempt
         )
 
-    def submit_test(
+    async def submit_test(
         self, user: User, lesson_id: int, submission: TestSubmissionRequest
     ) -> Optional[TestSubmissionResponse]:
         if user.id is None:
@@ -290,11 +329,19 @@ JSON Schema for each object:
         questions = test_orm.content["questions"]
         results = []
         correct_count = 0
+        ai_reviews = {}
 
         for i, q in enumerate(questions):
             submitted = submission.answers[i] if i < len(submission.answers) else None
             is_correct = self._grade_question(q, submitted)
             
+            # If exact match failed, but it is a short answer/fill in the blank, review with AI
+            q_type = q.get("type", "multiple_choice")
+            if not is_correct and q_type in ["short_answer", "fill_in_the_blank"] and submitted:
+                is_correct = await self._review_typing_answer_with_ai(q, submitted)
+
+            ai_reviews[str(i)] = is_correct
+
             if is_correct:
                 correct_count += 1
 
@@ -309,11 +356,53 @@ JSON Schema for each object:
                 )
             )
 
-        # 3. Save score as percentage
+        # 3. Save score as percentage and save ai_reviews
         score_percentage = int((correct_count / len(questions)) * 100) if questions else 0
-        self.plan_repo.save_test_score(user.id, lesson_id, score_percentage, submission.answers)
+        self.plan_repo.save_test_score(
+            user.id, lesson_id, score_percentage, submission.answers, ai_reviews=ai_reviews
+        )
 
         # 4. Mark lesson as completed and unlock next one
         self.plan_repo.complete_lesson(user.id, lesson_id)
 
         return TestSubmissionResponse(score=correct_count, total=len(questions), results=results)
+
+    async def check_answer(
+        self, user: User, lesson_id: int, request: Any
+    ) -> Optional[dict]:
+        if user.id is None:
+            raise HTTPException(status_code=401, detail="User ID not found")
+
+        # 1. Get lesson and check ownership
+        lesson = self.plan_repo.get_lesson(lesson_id)
+        if not lesson:
+            return None
+
+        plan = self.plan_repo.get_by_id(user.id, lesson.plan_id)
+        if not plan:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        # 2. Get the test
+        test_orm = self.plan_repo.get_practice_test(lesson_id)
+        if not test_orm:
+            return None
+
+        questions = test_orm.content["questions"]
+        q_idx = request.question_index
+        if q_idx < 0 or q_idx >= len(questions):
+            return None
+
+        q = questions[q_idx]
+        submitted = request.answer
+        is_correct = self._grade_question(q, submitted)
+
+        # AI review for short answer or fill in the blank questions if exact match failed
+        q_type = q.get("type", "multiple_choice")
+        if not is_correct and q_type in ["short_answer", "fill_in_the_blank"] and submitted:
+            is_correct = await self._review_typing_answer_with_ai(q, submitted)
+
+        return {
+            "is_correct": is_correct,
+            "correct_answer_text": q.get("correct_answer_text") if not is_correct else None,
+            "explanation": q.get("explanation"),
+        }
