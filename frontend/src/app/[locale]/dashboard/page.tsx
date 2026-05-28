@@ -45,6 +45,7 @@ async function getDashboardData() {
     const activePlan = plans.find(p => p.is_active);
 
     return {
+      active_plan_id: activePlan?.id || null,
       active_plan_title: activePlan?.goal || null,
       progress_percentage: 0, // Mocked for now as it was in backend
       full_name: user.full_name,
@@ -53,6 +54,7 @@ async function getDashboardData() {
   } catch (error) {
     console.error('Dashboard data fetch error:', error);
     return {
+      active_plan_id: null,
       active_plan_title: null,
       progress_percentage: 0,
       full_name: null,
@@ -90,6 +92,7 @@ export default async function DashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <DashboardSummary 
         welcomeMessage={welcomeMessage}
+        activePlanId={data.active_plan_id}
         activePlanTitle={data.active_plan_title}
         progressPercentage={data.progress_percentage}
       />

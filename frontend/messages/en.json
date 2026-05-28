@@ -1,6 +1,6 @@
 {
   "Common": {
-    "title": "EduPath AI",
+    "title": "Smart Advisor",
     "searchPlaceholder": "Search courses, skills...",
     "logout": "Logout",
     "profile": "My Profile",
@@ -64,7 +64,8 @@
     "quickActionsDesc": "Resume your last lesson with one click.",
     "welcomeBackUser": "Welcome back, {name}!",
     "welcomeBack": "Welcome back!",
-    "student": "Student"
+    "student": "Student",
+    "continue": "Continue Path"
   },
   "Chat": {
     "title": "AI Advisor",

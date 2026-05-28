@@ -21,7 +21,7 @@ const lexend = Lexend({
 });
 
 export const metadata: Metadata = {
-  title: "EduPath AI Navigator",
+  title: "Smart Advisor Navigator",
   description: "Your AI-powered personalized learning journey",
 };
 

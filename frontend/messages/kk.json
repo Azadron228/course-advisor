@@ -1,6 +1,6 @@
 {
   "Common": {
-    "title": "EduPath AI",
+    "title": "Smart Advisor",
     "searchPlaceholder": "Курстарды, дағдыларды іздеу...",
     "logout": "Шығу",
     "profile": "Менің профилім",
@@ -64,7 +64,8 @@
     "quickActionsDesc": "Соңғы сабақты бір басумен жалғастырыңыз.",
     "welcomeBackUser": "Қош келдіңіз, {name}!",
     "welcomeBack": "Қош келдіңіз!",
-    "student": "Студент"
+    "student": "Студент",
+    "continue": "Оқуды жалғастыру"
   },
   "Chat": {
     "title": "ИИ Кеңесші",
