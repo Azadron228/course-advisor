@@ -3,6 +3,30 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+const MarkdownComponents = {
+  code({ node, inline, className, children, ...props }: any) {
+    const match = /language-(\w+)/.exec(className || '');
+    return !inline && match ? (
+      <SyntaxHighlighter
+        style={vscDarkPlus}
+        language={match[1]}
+        PreTag="div"
+        {...props}
+      >
+        {String(children).replace(/\n$/, '')}
+      </SyntaxHighlighter>
+    ) : (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 interface Message {
   role: 'user' | 'assistant';
@@ -86,7 +110,11 @@ export function LessonSidebarChat() {
               {m.role === 'user' ? <User size={14} /> : <Bot size={14} />}
             </div>
             <div className={cn("p-3 rounded-xl max-w-[80%] shadow-sm", m.role === 'user' ? "bg-primary text-white rounded-tr-none" : "bg-surface border border-border rounded-tl-none")}>
-              {m.content}
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
+                  {m.content}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         ))}

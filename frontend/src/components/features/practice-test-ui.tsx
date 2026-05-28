@@ -3,6 +3,8 @@
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useState } from 'react';
 import { CheckCircle2, XCircle, ArrowRight, RefreshCcw, Loader2, ChevronLeft, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,6 +38,26 @@ interface TestData {
     results: TestResult[];
   };
 }
+
+const MarkdownComponents = {
+  code({ node, inline, className, children, ...props }: any) {
+    const match = /language-(\w+)/.exec(className || '');
+    return !inline && match ? (
+      <SyntaxHighlighter
+        style={vscDarkPlus}
+        language={match[1]}
+        PreTag="div"
+        {...props}
+      >
+        {String(children).replace(/\n$/, '')}
+      </SyntaxHighlighter>
+    ) : (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  },
+};
 
 export function PracticeTestUI({ 
   planId, 
@@ -211,7 +233,7 @@ export function PracticeTestUI({
                       Question {idx + 1}
                     </span>
                     <h3 className="font-bold leading-tight">
-                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
                         {question.question}
                       </ReactMarkdown>
                     </h3>
@@ -231,7 +253,7 @@ export function PracticeTestUI({
                   <div className="p-3 rounded-xl bg-muted/5 border border-border/50">
                     <span className="text-[10px] font-bold uppercase text-muted block mb-1">Your Answer</span>
                     <div className={cn("text-sm font-medium", result.is_correct ? "text-success" : "text-destructive")}>
-                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
                         {String(userAnsDisplay || 'No answer')}
                       </ReactMarkdown>
                     </div>
@@ -240,7 +262,7 @@ export function PracticeTestUI({
                     <div className="p-3 rounded-xl bg-success/5 border border-success/20">
                       <span className="text-[10px] font-bold uppercase text-success block mb-1">Correct Answer</span>
                       <div className="text-sm font-bold text-success">
-                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
                           {String(correctAnsDisplay || result.correct_answer_text || 'Unknown')}
                         </ReactMarkdown>
                       </div>
@@ -251,7 +273,7 @@ export function PracticeTestUI({
                 <div className="p-4 bg-muted/10 rounded-xl">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider mb-2 text-muted">Explanation</h4>
                   <div className="text-sm text-muted leading-relaxed">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
                       {result.explanation}
                     </ReactMarkdown>
                   </div>
@@ -307,7 +329,7 @@ export function PracticeTestUI({
                 )}
               >
                 <span className="font-medium">
-                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
                     {option}
                   </ReactMarkdown>
                 </span>
@@ -377,7 +399,7 @@ export function PracticeTestUI({
           </span>
         </div>
         <h2 className="text-xl sm:text-2xl font-bold leading-tight">
-          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
             {currentQuestion.question}
           </ReactMarkdown>
         </h2>
@@ -404,7 +426,7 @@ export function PracticeTestUI({
             )}
           </h4>
           <p className="text-muted leading-relaxed text-sm">
-            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={MarkdownComponents}>
               {currentQuestion.explanation}
             </ReactMarkdown>
           </p>
