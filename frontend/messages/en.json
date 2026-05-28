@@ -61,7 +61,10 @@
     "leaderboards": "Leaderboards",
     "leaderboardsDesc": "Compete with other learners in your field.",
     "quickActions": "Quick Actions",
-    "quickActionsDesc": "Resume your last lesson with one click."
+    "quickActionsDesc": "Resume your last lesson with one click.",
+    "welcomeBackUser": "Welcome back, {name}!",
+    "welcomeBack": "Welcome back!",
+    "student": "Student"
   },
   "Chat": {
     "title": "AI Advisor",
@@ -116,7 +119,30 @@
     "openExternal": "Open External Resource",
     "viewMaterials": "View Materials",
     "loadingMaterials": "Loading materials...",
-    "loadError": "Failed to load course materials"
+    "loadError": "Failed to load course materials",
+    "backToPlan": "Back to Learning Plan",
+    "stepOfJourney": "Step {order} of Journey",
+    "practiceTest": "Practice Test",
+    "lessonTutor": "Lesson Tutor",
+    "askTutorPlaceholder": "Ask about the lesson...",
+    "askAnythingAboutLesson": "Ask me anything about this lesson.",
+    "summarize": "Summarize",
+    "explainConcepts": "Explain Concepts",
+    "summarizeConcept": "Summarize this section",
+    "explainMainConcept": "Explain the main concept",
+    "tutorWelcomeMessage": "I'm your AI tutor anchored to this lesson. You asked: \"{text}\". Here is my helpful response based on the lesson text.",
+    "generatingPracticeTest": "Generating practice test...",
+    "failedToLoadPracticeTest": "Failed to load practice test.",
+    "downloadingPython": "Downloading Python WebAssembly runtime...",
+    "initializingInterpreter": "Initializing WebAssembly interpreter...",
+    "initializingEnv": "Initializing Python WebAssembly environment...",
+    "execSuccessNoOutput": "Code executed successfully. No output returned.",
+    "terminalOutput": "Terminal Output",
+    "running": "Running...",
+    "preview": "Preview",
+    "run": "Run",
+    "copyCode": "Copy Code",
+    "code": "Code"
   },
   "Navigation": {
     "dashboard": "Dashboard",

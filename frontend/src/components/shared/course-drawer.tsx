@@ -4,8 +4,7 @@ import { X, Loader2, BookOpen } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { InteractiveCodeBlock } from './interactive-code-block';
 import { apiClient } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -82,17 +81,17 @@ export function CourseDrawer({ courseId, isOpen, onClose }: CourseDrawerProps) {
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw]}
                         components={{
+                          pre({ children }) {
+                            return <>{children}</>;
+                          },
                           code({ node, inline, className, children, ...props }: any) {
                             const match = /language-(\w+)/.exec(className || '');
                             return !inline && match ? (
-                              <SyntaxHighlighter
-                                style={vscDarkPlus}
+                              <InteractiveCodeBlock
                                 language={match[1]}
-                                PreTag="div"
+                                code={String(children).replace(/\n$/, '')}
                                 {...props}
-                              >
-                                {String(children).replace(/\n$/, '')}
-                              </SyntaxHighlighter>
+                              />
                             ) : (
                               <code className={className} {...props}>
                                 {children}

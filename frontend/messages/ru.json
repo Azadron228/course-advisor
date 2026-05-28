@@ -61,7 +61,10 @@
     "leaderboards": "Таблицы лидеров",
     "leaderboardsDesc": "Соревнуйтесь с другими учениками в вашей области.",
     "quickActions": "Быстрые действия",
-    "quickActionsDesc": "Возобновите последний урок одним кликом."
+    "quickActionsDesc": "Возобновите последний урок одним кликом.",
+    "welcomeBackUser": "С возвращением, {name}!",
+    "welcomeBack": "С возвращением!",
+    "student": "Студент"
   },
   "Chat": {
     "title": "ИИ Советник",
@@ -116,7 +119,30 @@
     "openExternal": "Открыть внешний ресурс",
     "viewMaterials": "Просмотреть материалы",
     "loadingMaterials": "Загрузка материалов...",
-    "loadError": "Не удалось загрузить материалы курса"
+    "loadError": "Не удалось загрузить материалы курса",
+    "backToPlan": "Назад к плану обучения",
+    "stepOfJourney": "Шаг {order} путешествия",
+    "practiceTest": "Практический тест",
+    "lessonTutor": "Помощник по уроку",
+    "askTutorPlaceholder": "Спросите об уроке...",
+    "askAnythingAboutLesson": "Спросите меня о чем угодно по этому уроку.",
+    "summarize": "Кратко изложить",
+    "explainConcepts": "Объяснить понятия",
+    "summarizeConcept": "Кратко изложите этот раздел",
+    "explainMainConcept": "Объясните основную концепцию",
+    "tutorWelcomeMessage": "Я ваш ИИ-репетитор по этому уроку. Вы спросили: \"{text}\". Вот мой полезный ответ на основе текста урока.",
+    "generatingPracticeTest": "Генерация практического теста...",
+    "failedToLoadPracticeTest": "Не удалось загрузить практический тест.",
+    "downloadingPython": "Загрузка среды выполнения Python WebAssembly...",
+    "initializingInterpreter": "Инициализация интерпретатора WebAssembly...",
+    "initializingEnv": "Инициализация среды Python WebAssembly...",
+    "execSuccessNoOutput": "Код успешно выполнен. Выходные данные отсутствуют.",
+    "terminalOutput": "Вывод терминала",
+    "running": "Выполнение...",
+    "preview": "Предпросмотр",
+    "run": "Запустить",
+    "copyCode": "Копировать код",
+    "code": "Код"
   },
   "Navigation": {
     "dashboard": "Панель управления",

@@ -47,7 +47,7 @@ async function getDashboardData() {
     return {
       active_plan_title: activePlan?.goal || null,
       progress_percentage: 0, // Mocked for now as it was in backend
-      welcome_message: `Welcome back, ${user.full_name || 'Student'}!`,
+      full_name: user.full_name,
       onboarding_completed: user.onboarding_completed
     };
   } catch (error) {
@@ -55,7 +55,7 @@ async function getDashboardData() {
     return {
       active_plan_title: null,
       progress_percentage: 0,
-      welcome_message: "Welcome back!",
+      full_name: null,
       onboarding_completed: true
     };
   }
@@ -66,6 +66,8 @@ export default async function DashboardPage() {
   const t = await getTranslations('Dashboard');
   const tNav = await getTranslations('Navigation');
   const tCommon = await getTranslations('Common');
+
+  const welcomeMessage = t('welcomeBackUser', { name: data.full_name || t('student') });
 
   const navCards = [
     {
@@ -87,7 +89,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <DashboardSummary 
-        welcomeMessage={data.welcome_message}
+        welcomeMessage={welcomeMessage}
         activePlanTitle={data.active_plan_title}
         progressPercentage={data.progress_percentage}
       />

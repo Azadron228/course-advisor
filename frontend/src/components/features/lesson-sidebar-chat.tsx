@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTranslations } from 'next-intl';
 
 const MarkdownComponents = {
   code({ node, inline, className, children, ...props }: any) {
@@ -34,6 +35,7 @@ interface Message {
 }
 
 export function LessonSidebarChat() {
+  const t = useTranslations('Plan');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -63,7 +65,7 @@ export function LessonSidebarChat() {
       setTimeout(() => {
         setMessages(prev => [...prev, { 
             role: 'assistant', 
-            content: `I'm your AI tutor anchored to this lesson. You asked: "${text}". Here is my helpful response based on the lesson text.` 
+            content: t('tutorWelcomeMessage', { text }) 
         }]);
         setIsSending(false);
       }, 1000);
@@ -85,7 +87,7 @@ export function LessonSidebarChat() {
       <div className="p-4 border-b border-border bg-background flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-primary" />
-          <h3 className="font-bold text-sm">Lesson Tutor</h3>
+          <h3 className="font-bold text-sm">{t('lessonTutor')}</h3>
         </div>
       </div>
       
@@ -96,10 +98,10 @@ export function LessonSidebarChat() {
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-50">
             <Bot className="w-10 h-10 text-muted" />
-            <p className="text-sm">Ask me anything about this lesson.</p>
+            <p className="text-sm">{t('askAnythingAboutLesson')}</p>
             <div className="flex flex-wrap gap-2 justify-center mt-4">
-              <button onClick={() => sendMessage("Summarize this section")} className="text-xs bg-surface border border-border px-3 py-1.5 rounded-full hover:bg-muted/10 transition-colors">Summarize</button>
-              <button onClick={() => sendMessage("Explain the main concept")} className="text-xs bg-surface border border-border px-3 py-1.5 rounded-full hover:bg-muted/10 transition-colors">Explain Concepts</button>
+              <button onClick={() => sendMessage(t('summarizeConcept'))} className="text-xs bg-surface border border-border px-3 py-1.5 rounded-full hover:bg-muted/10 transition-colors">{t('summarize')}</button>
+              <button onClick={() => sendMessage(t('explainMainConcept'))} className="text-xs bg-surface border border-border px-3 py-1.5 rounded-full hover:bg-muted/10 transition-colors">{t('explainConcepts')}</button>
             </div>
           </div>
         )}
@@ -133,7 +135,7 @@ export function LessonSidebarChat() {
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about the lesson..."
+            placeholder={t('askTutorPlaceholder')}
             className="flex-1 bg-transparent text-sm outline-none px-2"
           />
           <button type="submit" disabled={!input.trim() || isSending} className="p-2 bg-primary text-white rounded-lg disabled:opacity-50 transition-opacity shadow-md">

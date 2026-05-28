@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { LessonSidebarChat } from '@/components/features/lesson-sidebar-chat';
 import { PracticeTestLoader } from '@/components/features/practice-test-loader';
 import ReactMarkdown from 'react-markdown';
@@ -71,6 +72,8 @@ export default async function LessonPage({
 
   if (!token) redirect('/login');
 
+  const t = await getTranslations('Plan');
+
   // Fetch both lesson and plan in parallel
   const [lesson, plan] = await Promise.all([
     getLesson(token, id, stepOrder),
@@ -105,7 +108,7 @@ export default async function LessonPage({
             className="inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Learning Plan
+            {t('backToPlan')}
           </Link>
 
           {/* Plan-Specific Header */}
@@ -113,7 +116,7 @@ export default async function LessonPage({
             {currentStep && (
               <div className="flex items-center gap-3 mb-2">
                 <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">
-                  Step {currentStep.order} of Journey
+                  {t('stepOfJourney', { order: currentStep.order })}
                 </span>
                 <span className="text-muted text-[10px] font-bold uppercase tracking-widest italic truncate max-w-[200px]">
                   {plan?.goal}
@@ -143,7 +146,7 @@ export default async function LessonPage({
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
-                <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">Материалы</h3>
+                <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">{t('materials')}</h3>
                 <div className="h-px flex-1 bg-border" />
               </div>
 
@@ -210,7 +213,7 @@ export default async function LessonPage({
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-border" />
                 <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] whitespace-nowrap">
-                  Practice Test
+                  {t('practiceTest')}
                 </h3>
                 <div className="h-px flex-1 bg-border" />
               </div>

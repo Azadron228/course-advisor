@@ -61,7 +61,10 @@
     "leaderboards": "Көшбасшылар тақтасы",
     "leaderboardsDesc": "Өз салаңыздағы басқа білім алушылармен бәсекелесіңіз.",
     "quickActions": "Жылдам әрекеттер",
-    "quickActionsDesc": "Соңғы сабақты бір басумен жалғастырыңыз."
+    "quickActionsDesc": "Соңғы сабақты бір басумен жалғастырыңыз.",
+    "welcomeBackUser": "Қош келдіңіз, {name}!",
+    "welcomeBack": "Қош келдіңіз!",
+    "student": "Студент"
   },
   "Chat": {
     "title": "ИИ Кеңесші",
@@ -116,7 +119,30 @@
     "openExternal": "Сыртқы ресурсты ашу",
     "viewMaterials": "Материалдарды қарау",
     "loadingMaterials": "Материалдар жүктелуде...",
-    "loadError": "Курс материалдарын жүктеу мүмкін болмады"
+    "loadError": "Курс материалдарын жүктеу мүмкін болмады",
+    "backToPlan": "Оқу жоспарына оралу",
+    "stepOfJourney": "Саяхаттың {order}-қадамы",
+    "practiceTest": "Практикалық тест",
+    "lessonTutor": "Сабақ бойынша көмекші",
+    "askTutorPlaceholder": "Сабақ туралы сұраңыз...",
+    "askAnythingAboutLesson": "Осы сабақ туралы кез келген нәрсені сұраңыз.",
+    "summarize": "Қысқаша мазмұндау",
+    "explainConcepts": "Ұғымдарды түсіндіру",
+    "summarizeConcept": "Бұл бөлімді қысқаша мазмұндаңыз",
+    "explainMainConcept": "Негізгі ұғымды түсіндіріңіз",
+    "tutorWelcomeMessage": "Мен осы сабақ бойынша сіздің ИИ-түторыңызбын. Сіз: \"{text}\" деп сұрадыңыз. Сабақ мәтіні негізінде менің жауабым.",
+    "generatingPracticeTest": "Практикалық тестті дайындау...",
+    "failedToLoadPracticeTest": "Практикалық тестті жүктеу сәтсіз аяқталды.",
+    "downloadingPython": "Python WebAssembly ортасын жүктеу...",
+    "initializingInterpreter": "WebAssembly интерпретаторын іске қосу...",
+    "initializingEnv": "Python WebAssembly ортасын іске қосу...",
+    "execSuccessNoOutput": "Код сәтті орындалды. Шығыс деректері жоқ.",
+    "terminalOutput": "Терминал шығысы",
+    "running": "Орындалуда...",
+    "preview": "Алдын ала қарау",
+    "run": "Іске қосу",
+    "copyCode": "Кодты көшіру",
+    "code": "Код"
   },
   "Navigation": {
     "dashboard": "Басқару панелі",

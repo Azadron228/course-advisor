@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTranslations } from 'next-intl';
 import { Play, RotateCcw, Copy, Check, Terminal, Eye, Code2, AlertTriangle, Info, X } from 'lucide-react';
 
 declare global {
@@ -23,6 +24,7 @@ interface LogEntry {
 }
 
 export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockProps) {
+  const t = useTranslations('Plan');
   const [copied, setCopied] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [pyodideStatus, setPyodideStatus] = useState<string>('');
@@ -66,7 +68,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
       return window.pyodidePromise;
     }
 
-    setPyodideStatus('Downloading Python WebAssembly runtime...');
+    setPyodideStatus(t('downloadingPython'));
     window.pyodidePromise = (async () => {
       if (!window.loadPyodide) {
         await new Promise<void>((resolve, reject) => {
@@ -77,7 +79,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
           document.head.appendChild(script);
         });
       }
-      setPyodideStatus('Initializing WebAssembly interpreter...');
+      setPyodideStatus(t('initializingInterpreter'));
       const pyodide = await window.loadPyodide({
         indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
       });
@@ -90,7 +92,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
 
   const runPython = async () => {
     setIsRunning(true);
-    setConsoleLogs([{ type: 'system', text: 'Initializing Python WebAssembly environment...' }]);
+    setConsoleLogs([{ type: 'system', text: t('initializingEnv') }]);
     
     try {
       const pyodide = await loadPyodideRuntime();
@@ -118,7 +120,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
       }
 
       if (outputLogs.length === 0) {
-        outputLogs.push({ type: 'system', text: 'Code executed successfully. No output returned.' });
+        outputLogs.push({ type: 'system', text: t('execSuccessNoOutput') });
       }
 
       setConsoleLogs(outputLogs);
@@ -178,7 +180,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
       }
       
       if (logs.length === 0) {
-        logs.push({ type: 'system', text: 'Code executed successfully. No output returned.' });
+        logs.push({ type: 'system', text: t('execSuccessNoOutput') });
       }
       setConsoleLogs(logs);
     } catch (err: any) {
@@ -256,7 +258,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
                 }`}
               >
                 <Code2 className="w-3 h-3" />
-                Code
+                {t('code')}
               </button>
               <button
                 type="button"
@@ -271,7 +273,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
                 }`}
               >
                 <Eye className="w-3 h-3" />
-                Preview
+                {t('preview')}
               </button>
             </div>
           )}
@@ -291,7 +293,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
               }`}
             >
               <Play className={`w-3.5 h-3.5 fill-current ${isRunning ? 'animate-pulse' : ''}`} />
-              {isRunning ? 'Running...' : isHtml ? 'Preview' : 'Run'}
+              {isRunning ? t('running') : isHtml ? t('preview') : t('run')}
             </button>
           )}
 
@@ -300,7 +302,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
             type="button"
             onClick={handleCopy}
             className="p-1.5 text-muted hover:text-foreground border border-border/40 hover:border-border rounded-lg bg-surface/50 transition-all active:scale-95"
-            title="Copy Code"
+            title={t('copyCode')}
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -352,7 +354,7 @@ export function InteractiveCodeBlock({ language, code }: InteractiveCodeBlockPro
           <div className="flex items-center justify-between px-5 py-2 border-b border-[#282c34] bg-[#121417] select-none text-[10px] font-bold text-muted uppercase tracking-wider">
             <span className="flex items-center gap-1.5">
               <Terminal className="w-3 h-3 text-emerald-400" />
-              Terminal Output
+              {t('terminalOutput')}
             </span>
             <div className="flex items-center gap-2">
               <button
