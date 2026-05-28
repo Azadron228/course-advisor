@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # External APIs
     TAVILY_API_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
+    YOUTUBE_API_KEY: Optional[str] = None
 
     # authentik
     AUTHENTIK_URL: Optional[str] = None

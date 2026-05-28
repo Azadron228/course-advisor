@@ -1,7 +1,9 @@
 import logging
 import httpx
+import asyncio
 from typing import List, Dict, Any, Optional
 from app.core.config import settings
+from app.infrastructure.ai.youtube_search import YouTubeSearch
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,7 @@ class TavilySearch:
         """
         Search for high-quality educational materials (docs, tutorials, videos).
         Filters out common course platforms to focus on free/official resources.
+        Uses YouTube Data API for video materials if YOUTUBE_API_KEY is configured.
         """
         # Common language detection in topic
         target_languages = []
@@ -111,16 +114,82 @@ class TavilySearch:
             
         search_query += " -site:coursera.org -site:udemy.com -site:edx.org -site:skillshare.com"
         
-        logger.info(f"Educational Material Search: Constructed query: '{search_query}', depth: {search_depth}")
-        
-        results = await self.search(search_query, max_results=max_results, search_depth=search_depth)
-        
-        materials = []
-        for res in results:
-            materials.append({
-                "title": res.get("title", "Educational Resource"),
-                "description": res.get("content", "")[:200] + "...",
-                "url": res.get("url"),
-                "type": "video" if "youtube.com" in (res.get("url") or "") else "article"
-            })
-        return materials
+        # Check if YouTube Data API is configured
+        has_youtube_key = settings.YOUTUBE_API_KEY and settings.YOUTUBE_API_KEY != "your_youtube_api_key_here"
+
+        if has_youtube_key:
+            # Exclude youtube from Tavily search query
+            tavily_query = search_query + " -site:youtube.com"
+            video_limit = max(1, max_results // 2)
+            article_limit = max_results - video_limit
+            
+            logger.info(f"Educational Material Search: Using YouTube Data API for videos and Tavily for articles.")
+            logger.info(f"Tavily Query: '{tavily_query}', depth: {search_depth}, limit: {article_limit}")
+            logger.info(f"YouTube Query: '{topic}', limit: {video_limit}")
+
+            # Run searches in parallel
+            youtube_client = YouTubeSearch()
+            tavily_task = self.search(tavily_query, max_results=article_limit * 2, search_depth=search_depth)
+            youtube_task = youtube_client.search_videos(topic, max_results=video_limit * 2, language=language)
+            
+            tavily_results, youtube_results = await asyncio.gather(tavily_task, youtube_task)
+            
+            articles = []
+            for res in tavily_results:
+                if "youtube.com" not in (res.get("url") or ""):
+                    articles.append({
+                        "title": res.get("title", "Educational Resource"),
+                        "description": res.get("content", "")[:200] + "...",
+                        "url": res.get("url"),
+                        "type": "article"
+                    })
+                    if len(articles) == article_limit:
+                        break
+
+            videos = youtube_results[:video_limit]
+            
+            # Combine results, maintaining the target proportions if possible.
+            # If we didn't get enough of one type, we fill from the other up to max_results.
+            materials = []
+            materials.extend(articles)
+            materials.extend(videos)
+            
+            # If we don't have enough results in total, grab more from our pools
+            if len(materials) < max_results:
+                remaining_slots = max_results - len(materials)
+                extra_articles = [a for a in tavily_results if "youtube.com" not in (a.get("url") or "")]
+                extra_articles_formatted = []
+                for res in extra_articles:
+                    formatted = {
+                        "title": res.get("title", "Educational Resource"),
+                        "description": res.get("content", "")[:200] + "...",
+                        "url": res.get("url"),
+                        "type": "article"
+                    }
+                    if formatted not in materials:
+                        extra_articles_formatted.append(formatted)
+                
+                extra_videos = [v for v in youtube_results if v not in materials]
+                
+                # First fill with extra articles, then extra videos
+                for art in extra_articles_formatted:
+                    if len(materials) < max_results:
+                        materials.append(art)
+                for vid in extra_videos:
+                    if len(materials) < max_results:
+                        materials.append(vid)
+
+            return materials[:max_results]
+        else:
+            logger.info(f"Educational Material Search: Constructed query: '{search_query}', depth: {search_depth}")
+            results = await self.search(search_query, max_results=max_results, search_depth=search_depth)
+            
+            materials = []
+            for res in results:
+                materials.append({
+                    "title": res.get("title", "Educational Resource"),
+                    "description": res.get("content", "")[:200] + "...",
+                    "url": res.get("url"),
+                    "type": "video" if "youtube.com" in (res.get("url") or "") else "article"
+                })
+            return materials
