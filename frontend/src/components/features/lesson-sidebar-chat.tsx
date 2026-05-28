@@ -112,7 +112,10 @@ export function LessonSidebarChat() {
               {m.role === 'user' ? <User size={14} /> : <Bot size={14} />}
             </div>
             <div className={cn("p-3 rounded-xl max-w-[80%] shadow-sm", m.role === 'user' ? "bg-primary text-white rounded-tr-none" : "bg-surface border border-border rounded-tl-none")}>
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
+              <div className={cn(
+                "prose prose-sm max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent",
+                m.role === 'user' ? "prose-invert text-white" : "dark:prose-invert text-foreground"
+              )}>
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                   {m.content}
                 </ReactMarkdown>

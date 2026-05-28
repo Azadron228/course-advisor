@@ -296,6 +296,7 @@ class PlanRepository:
                 is_active=p.is_active,
                 last_interacted_at=p.last_interacted_at,
                 step_count=len(p.lessons),
+                completed_steps=len([l for l in p.lessons if l.status == "completed"]),
             )
             for p in plans
         ]

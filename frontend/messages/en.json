@@ -142,7 +142,12 @@
     "preview": "Preview",
     "run": "Run",
     "copyCode": "Copy Code",
-    "code": "Code"
+    "code": "Code",
+    "activeJourney": "Active Journey",
+    "completedSteps": "{completed} of {total} steps completed ({percent}%)",
+    "resumeJourney": "Resume Journey",
+    "otherPaths": "Other Paths",
+    "allPaths": "All Paths"
   },
   "Navigation": {
     "dashboard": "Dashboard",

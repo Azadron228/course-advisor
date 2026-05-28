@@ -142,7 +142,12 @@
     "preview": "Предпросмотр",
     "run": "Запустить",
     "copyCode": "Копировать код",
-    "code": "Код"
+    "code": "Код",
+    "activeJourney": "Активный путь",
+    "completedSteps": "Завершено шагов: {completed} из {total} ({percent}%)",
+    "resumeJourney": "Продолжить обучение",
+    "otherPaths": "Другие пути",
+    "allPaths": "Все пути"
   },
   "Navigation": {
     "dashboard": "Панель управления",

@@ -158,7 +158,10 @@ export function ChatWindow() {
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
                     </>
                   )}
-                  <div className="relative z-10 prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
+                  <div className={cn(
+                    "relative z-10 prose prose-sm max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent",
+                    message.role === 'user' ? "prose-invert text-white" : "dark:prose-invert text-foreground"
+                  )}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={MarkdownComponents}>
                       {message.content}
                     </ReactMarkdown>

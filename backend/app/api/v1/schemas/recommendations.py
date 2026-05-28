@@ -25,6 +25,7 @@ class ChatMessage(BaseModel):
     role: str
     content: str
     created_at: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChatSession(BaseModel):
@@ -178,6 +179,7 @@ class LearningPlanSummary(BaseModel):
     is_active: bool
     last_interacted_at: datetime
     step_count: int
+    completed_steps: int = 0
     model_config = ConfigDict(from_attributes=True)
 
 

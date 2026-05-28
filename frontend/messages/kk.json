@@ -142,7 +142,12 @@
     "preview": "Алдын ала қарау",
     "run": "Іске қосу",
     "copyCode": "Кодты көшіру",
-    "code": "Код"
+    "code": "Код",
+    "activeJourney": "Белсенді жол",
+    "completedSteps": "{total} қадамның {completed}-ы аяқталды ({percent}%)",
+    "resumeJourney": "Оқуды жалғастыру",
+    "otherPaths": "Басқа жолдар",
+    "allPaths": "Барлық жолдар"
   },
   "Navigation": {
     "dashboard": "Басқару панелі",
