@@ -18,7 +18,8 @@ from app.infrastructure.cache.redis_chat import RedisChatHistory
 from app.infrastructure.db.repositories.chat_repository import ChatRepository
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
-from app.infrastructure.ai.agent import get_advisor_agent, get_model
+from app.infrastructure.ai.agent import get_advisor_agent
+from app.infrastructure.ai.model_factory import get_model
 from llama_index.core.base.llms.types import ChatMessage as LLMChatMessage, MessageRole
 from llama_index.core.agent.workflow.workflow_events import AgentStream, AgentOutput
 from app.domain.identity.entities import User

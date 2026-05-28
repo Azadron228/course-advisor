@@ -4,7 +4,6 @@ import logging
 from typing import List, Optional
 from pydantic import BaseModel, Field, model_validator, AliasChoices
 from llama_index.core.agent import ReActAgent
-from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import LLM
 from llama_index.core.tools import FunctionTool
 
@@ -13,6 +12,8 @@ from app.domain.identity.entities import User
 from app.api.v1.schemas.auth import UserPublic
 from app.core.config import settings
 from app.infrastructure.ai.tavily_search import TavilySearch
+from app.infrastructure.ai.model_factory import get_model
+from app.infrastructure.ai.prompts.manager import PromptManager
 
 logger = logging.getLogger(__name__)
 
@@ -47,22 +48,6 @@ class AgentRecommendation(BaseModel):
         if self.score > 0.8 and len(self.reasoning) < 10:
             raise ValueError("Reasoning must be at least 10 characters long for high scores.")
         return self
-
-
-def get_model(provider: ModelProvider = ModelProvider.AUTO) -> LLM:
-    # Auto-detection logic - default to OpenAI
-    if provider == ModelProvider.AUTO:
-        provider = ModelProvider.OPENAI
-
-    if provider == ModelProvider.OPENAI:
-        api_key = settings.OPENAI_API_KEY
-        if not api_key or api_key == "sk-placeholder-key" or api_key == "sk-dummy":
-            raise ValueError(
-                "OPENAI_API_KEY is missing or invalid. Please provide a valid OpenAI API key."
-            )
-        return OpenAI(model="gpt-4o", api_key=api_key, max_tokens=8192)
-
-    raise ValueError(f"Unsupported model provider: {provider}")
 
 
 async def search_external_resources(query: str) -> str:
@@ -106,22 +91,11 @@ def get_advisor_agent(
         )
         plan_context += f"- Plan Steps:\n{steps_str}\n"
 
-    system_prompt = (
-        "You are a professional university academic advisor. "
-        "Your goal is to help students with course selection, career advice, and learning strategies. "
-        "Use your knowledge and available tools to provide high-quality, personalized guidance.\n\n"
-        "Student Academic Context:\n"
-        f"{user_context}"
-        f"- Completed/Current Courses: {transcript_summary}\n"
-        f"- Current Skills: {current_skills}\n"
-        f"{plan_context}\n"
-        "When giving advice, prioritize high-quality external resources (documentation, videos, articles). "
-        "NEVER recommend external courses from platforms like Coursera or Udemy. "
-        "Search for materials in the user's preferred language, and if they are learning a new language, "
-        "provide resources in that language as well to aid their immersion. "
-        "Be professional, supportive, and comprehensive.\n\n"
-        "IMPORTANT: You MUST always conclude your response with 'Final Answer: ' followed by your advice. "
-        "Do not include your internal thoughts or tool calls in the final response to the student."
+    system_prompt = PromptManager.get_advisor_system_prompt(
+        user_context=user_context,
+        transcript_summary=transcript_summary,
+        current_skills=current_skills,
+        plan_context=plan_context,
     )
 
     return ReActAgent(tools=tools, llm=llm, system_prompt=system_prompt)  # type: ignore

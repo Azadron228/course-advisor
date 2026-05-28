@@ -11,7 +11,7 @@ from app.domain.recommendation.entities import (
 )
 from app.infrastructure.db.repositories.profile_repository import ProfileRepository
 from app.infrastructure.db.repositories.plan_repository import PlanRepository
-from app.infrastructure.ai.agent import get_model
+from app.infrastructure.ai.model_factory import get_model
 from app.infrastructure.ai.analysis_agent import generate_global_analysis
 from app.infrastructure.ai.tavily_search import TavilySearch
 

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
-from app.infrastructure.ai.analysis_agent import GlobalAnalysis
+from app.infrastructure.ai.analysis_agent import GlobalAnalysis, LessonPlanStep
 from app.domain.recommendation.entities import Lesson, SkillGapAnalysis
 
 
@@ -13,13 +13,11 @@ def test_plan_summary_list(mock_gen, client: TestClient, admin_token_headers):
             overall_gap_score=0.5, domain_breakdown=[], critical_skills=[]
         ),
         learning_path=[
-            Lesson(
+            LessonPlanStep(
                 order=1,
                 title="Lesson 1",
                 description="Desc",
                 is_external=False,
-                status="current",
-                materials=[],
             )
         ],
     )

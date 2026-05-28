@@ -11,6 +11,7 @@ from app.domain.recommendation.entities import (
     Lesson,
     LearningMaterial,
 )
+from app.infrastructure.ai.prompts.manager import PromptManager
 
 logger = logging.getLogger(__name__)
 
@@ -34,19 +35,10 @@ class InterestSuggestions(BaseModel):
 
 async def suggest_interests(llm: LLM, goal: str, language: str = "en") -> List[str]:
     parser = PydanticOutputParser(InterestSuggestions)
-
-    prompt_template_str = (
-        "You are an expert career advisor. Your goal is to suggest 5-8 relevant, specific, and professional interest tags "
-        "or specific topics that a student should focus on to achieve their career goal.\n\n"
-        f"USER CAREER GOAL: {goal}\n\n"
-        f"OUTPUT LANGUAGE: You MUST provide all tags in the following language: {language}.\n\n"
-        "1. TAGS: Generate 5-8 tags. Each tag should be 1-3 words long.\n"
-        "2. SPECIFICITY: Avoid generic tags like 'Programming' if the goal is 'React Developer'. Use 'State Management', 'Component Architecture', etc.\n\n"
-        "STRICT JSON RULES:\n"
-        "1. Output ONLY valid JSON matching the schema.\n"
-        "2. NO markdown formatting, NO ```json blocks.\n"
-        "Schema:\n"
-        f"{parser.format('')}\n"
+    prompt_template_str = PromptManager.get_interest_suggestions_prompt(
+        goal=goal,
+        language=language,
+        schema=parser.format(""),
     )
 
     try:
@@ -85,31 +77,12 @@ async def generate_global_analysis(
     current_skills = ", ".join(student.current_skills)
 
     parser = PydanticOutputParser(GlobalAnalysis)
-
-    prompt_template_str = (
-        "You are a senior academic strategist. Your goal is to provide a comprehensive "
-        "skill gap analysis and a structured learning path for a student based on their "
-        "transcript.\n\n"
-        f"OUTPUT LANGUAGE: You MUST provide all text content (titles, descriptions, reasoning) in the following language: {language}.\n\n"
-        "1. TITLE: Generate a VERY SHORT (2-5 words), catchy, professional, and specific title for this learning plan based on the user's goal.\n"
-        "2. Skill Gap Map: Identify missing skills and group them by domain.\n"
-        "3. Domain Scores: Provide a 0-1 gap score per domain.\n"
-        "4. Learning Path: Suggest a logical sequence of learning steps to achieve the goal.\n"
-        "   - LESSON TITLES: Each lesson title MUST be VERY SHORT and concise (2-4 words).\n"
-        "   - ALL STEPS ARE EXTERNAL/AI-GENERATED: You must generate the steps yourself. Do not rely on internal university courses.\n"
-        "   - Set `is_external` to true for all steps.\n\n"
-        "Always prioritize filling critical prerequisites and foundational skills first.\n\n"
-        f"Student Transcript: {transcript_summary}\n"
-        f"Student Current Skills: {current_skills}\n\n"
-        f"User Goal and Context: {goal_msg}\n\n"
-        "STRICT JSON RULES:\n"
-        "1. Output ONLY valid JSON matching the schema.\n"
-        "2. NO markdown formatting, NO ```json blocks.\n"
-        "3. NO trailing commas in lists or objects.\n"
-        '4. ALL double quotes within strings MUST be escaped as \\".\n'
-        "5. The output must be exactly ONE JSON object.\n\n"
-        "Schema:\n"
-        f"{parser.format('')}\n"
+    prompt_template_str = PromptManager.get_global_analysis_prompt(
+        language=language,
+        transcript_summary=transcript_summary,
+        current_skills=current_skills,
+        goal_msg=goal_msg,
+        schema=parser.format(""),
     )
 
     try:
